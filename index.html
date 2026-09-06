@@ -3,29 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diamond Rush - Classic Edition</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Diamond Rush 3D</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0b0b0e;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            background: rgba(15, 12, 10, 0.85);
+            padding: 8px 16px;
+            border: 2px solid #5a4939;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #f4d35e;
+            z-index: 10;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+        }
+        .control-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .ctrl-btn {
+            background-color: rgba(43, 36, 29, 0.85);
+            color: white;
+            border: 2px solid #5a4939;
+            font-size: 20px;
+            width: 55px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            user-select: none;
+        }
+        .ctrl-btn:active {
+            background-color: #4a3d31;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(11, 11, 14, 0.95);
+            border: 3px solid #e63946;
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            display: none;
+            z-index: 20;
+        }
+        #game-over h1 { color: #e63946; margin-top: 0; }
+    </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <canvas id="gameCanvas" width="360" height="420"></canvas>
-        
-        <div id="controls">
-            <div class="control-row">
-                <button class="ctrl-btn" id="btn-up">⬆️</button>
-            </div>
-            <div class="control-row middle-row">
-                <button class="ctrl-btn" id="btn-left">⬅️</button>
-                <button class="ctrl-btn action-btn" id="btn-action">Whip</button>
-                <button class="ctrl-btn" id="btn-right">➡️</button>
-            </div>
-            <div class="control-row">
-                <button class="ctrl-btn" id="btn-down">⬇️</button>
-            </div>
+    <div id="ui">
+        <span id="score-text">SCORE: 2150</span>
+        <span id="diamond-text">DIAMONDS: 14/30</span>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="controls">
+        <div class="control-row">
+            <button class="ctrl-btn" id="btn-up">⬆️</button>
+        </div>
+        <div class="control-row" style="gap: 50px;">
+            <button class="ctrl-btn" id="btn-left">⬅️</button>
+            <button class="ctrl-btn" id="btn-right">➡️</button>
+        </div>
+        <div class="control-row">
+            <button class="ctrl-btn" id="btn-down">⬇️</button>
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <div id="game-over">
+        <h1>CRUSHED!</h1>
+        <p>A boulder fell on you.</p>
+        <button onclick="location.reload()" style="padding: 10px 20px; background:#e63946; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Play Again</button>
+    </div>
+
+    <!-- Three.js Library CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const container = document.getElementById("canvas-container");
+        
+        // 1. Setup Three.js Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0c0b0a);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xfff5e6, 0.8);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 2. Map Layout (0=Empty, 1=Wall, 2=Dirt, 3=Diamond, 4=Boulder, 5=Player)
+        let map = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 5, 2, 3, 4, 2, 3, 3, 1],
+            [1, 2, 1, 1, 2, 1, 1, 2, 1],
+            [1, 3, 2, 4, 2, 3, 2, 2, 1],
+            [1, 2, 1, 2, 1, 2, 1, 4, 1],
+            [1, 2, 2, 3, 2, 2, 2, 2, 1],
+            [1, 1, 2, 1, 4, 1, 2, 1, 1],
+            [1, 3, 2, 2, 2, 2, 3, 2, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ];
+
+        let player = { x: 1, z: 1 };
+        let score = 2150;
+        let diamondsCollected = 14;
+        let gameOver = false;
+
+        // 3D Mesh Tracking Grid
+        let meshGrid = [];
+        for (let r = 0; r < map.length; r++) {
+            meshGrid[r] = [];
+            for (let c = 0; c < map[r].length; c++) {
+                meshGrid[r][c] = null;
+                if (map[r][c] === 5) {
+                    player.x = c;
+                    player.z = r;
+                    map[r][c] = 0;
+                }
+            }
+        }
+
+        // Create Materials
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x3b342b, roughness: 0.9 });
+        const dirtMat = new THREE.MeshStandardMaterial({ color: 0x6b3d1f, roughness: 0.9 });
+        const diamondMat = new THREE.MeshStandardMaterial({ color: 0x00b4d8, emissive: 0x0077b6, roughness: 0.2 });
+        const boulderMat = new THREE.MeshStandardMaterial({ color: 0x6c757d, roughness: 0.8 });
+
+        // Create Player Mesh (Explorer)
+        const playerGroup = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xc68b59 });
+        const playerMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        playerMesh.position.y = 0.3;
+        playerGroup.add(playerMesh);
+
+        // Explorer Hat
+        const hatGeo = new THREE.BoxGeometry(0.8, 0.2, 0.8);
+        const hatMat = new THREE.MeshStandardMaterial({ color: 0xdda15e });
+        const hatMesh = new THREE.Mesh(hatGeo, hatMat);
+        hatMesh.position.y = 0.7;
+        playerGroup.add(hatMesh);
+        scene.add(playerGroup);
+
+        // Build 3D World Objects from Map
+        function buildWorld() {
+            for (let r = 0; r < map.length; r++) {
+                for (let c = 0; c < map[r].length; c++) {
+                    updateTileMesh(r, c);
+                }
+            }
+        }
+
+        function updateTileMesh(r, c) {
+            if (meshGrid[r][c]) {
+                scene.remove(meshGrid[r][c]);
+                meshGrid[r][c] = null;
+            }
+
+            let type = map[r][c];
+            if (type === 0) return;
+
+            let mesh;
+            if (type === 1) { // Wall Box
+                mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), wallMat);
+            } else if (type === 2) { // Dirt Box
+                mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), dirtMat);
+            } else if (type === 3) { // Diamond (Octahedron)
+                mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.4), diamondMat);
+            } else if (type === 4) { // Boulder (Sphere)
+                mesh = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 16), boulderMat);
+            }
+
+            if (mesh) {
+                mesh.position.set(c - map[0].length / 2 + 0.5, 0.5, r - map.length / 2 + 0.5);
+                scene.add(mesh);
+                meshGrid[r][c] = mesh;
+            }
+        }
+
+        buildWorld();
+
+        // Game Movement Mechanics
+        function movePlayer(dx, dz) {
+            if (gameOver) return;
+
+            let newX = player.x + dx;
+            let newZ = player.z + dz;
+
+            if (newZ < 0 || newZ >= map.length || newX < 0 || newX >= map[0].length) return;
+
+            let targetTile = map[newZ][newX];
+
+            if (targetTile === 1) return; // Wall
+
+            // Pushing boulders
+            if (targetTile === 4 && dz === 0) {
+                let beyondX = newX + dx;
+                let beyondZ = newZ + dz;
+                if (beyondZ >= 0 && beyondZ < map.length && beyondX >= 0 && beyondX < map[0].length) {
+                    if (map[beyondZ][beyondX] === 0) {
+                        map[beyondZ][beyondX] = 4;
+                        map[newZ][newX] = 0;
+                        updateTileMesh(newZ, newX);
+                        updateTileMesh(beyondZ, beyondX);
+                        player.x = newX;
+                        player.z = newZ;
+                    }
+                }
+                return;
+            }
+
+            if (targetTile === 4 && dz !== 0) return;
+
+            if (targetTile === 3) {
+                score += 150;
+                diamondsCollected++;
+                document.getElementById("score-text").innerText = `SCORE: ${score}`;
+                document.getElementById("diamond-text").innerText = `DIAMONDS: ${diamondsCollected}/30`;
+            }
+
+            player.x = newX;
+            player.z = newZ;
+            map[newZ][newX] = 0;
+            updateTileMesh(newZ, newX);
+        }
+
+        // Physics Tick for Falling Boulders/Diamonds
+        function updatePhysics() {
+            if (gameOver) return;
+
+            for (let r = map.length - 2; r >= 0; r--) {
+                for (let c = 0; c < map[r].length; c++) {
+                    let tile = map[r][c];
+                    if (tile === 4 || tile === 3) {
+                        let below = map[r + 1][c];
+                        if (below === 0) {
+                            if (player.x === c && player.z === r + 1) {
+                                gameOver = true;
+                                document.getElementById("game-over").style.display = "block";
+                            }
+                            map[r + 1][c] = tile;
+                            map[r][c] = 0;
+                            updateTileMesh(r, c);
+                            updateTileMesh(r + 1, c);
+                        }
+                    }
+                }
+            }
+        }
+        setInterval(updatePhysics, 350);
+
+        // Input Bindings
+        window.addEventListener("keydown", e => {
+            if (e.key === "ArrowUp") movePlayer(0, -1);
+            if (e.key === "ArrowDown") movePlayer(0, 1);
+            if (e.key === "ArrowLeft") movePlayer(-1, 0);
+            if (e.key === "ArrowRight") movePlayer(1, 0);
+        });
+
+        document.getElementById("btn-up").addEventListener("click", () => movePlayer(0, -1));
+        document.getElementById("btn-down").addEventListener("click", () => movePlayer(0, 1));
+        document.getElementById("btn-left").addEventListener("click", () => movePlayer(-1, 0));
+        document.getElementById("btn-right").addEventListener("click", () => movePlayer(1, 0));
+
+        // Animation Loop & Smooth Camera Tracking
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smoothly interpolate player mesh position
+            let targetX = player.x - map[0].length / 2 + 0.5;
+            let targetZ = player.z - map.length / 2 + 0.5;
+            playerGroup.position.x += (targetX - playerGroup.position.x) * 0.2;
+            playerGroup.position.z += (targetZ - playerGroup.position.z) * 0.2;
+
+            // Follow camera behind and above the player
+            camera.position.x = playerGroup.position.x;
+            camera.position.y = playerGroup.position.y + 6;
+            camera.position.z = playerGroup.position.z + 5;
+            camera.lookAt(playerGroup.position.x, playerGroup.position.y, playerGroup.position.z);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive window resizing
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
