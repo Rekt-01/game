@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>True 3D Complex - Easy on Eyes</title>
+    <title>True 3D Complex - Bulletproof</title>
     <style>
         body {
             margin: 0;
@@ -91,7 +91,6 @@
             cursor: pointer;
         }
     </style>
-    <!-- Load Three.js Library for True, Stable 3D Acceleration -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -116,6 +115,20 @@
     </div>
 
     <script>
+        // Helper to generate a clean procedural fallback texture if external images fail
+        function createFallbackTexture(colorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = colorHex;
+            ctx.fillRect(0, 0, 128, 128);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(0, 0, 128, 128);
+            return new THREE.CanvasTexture(canvas);
+        }
+
         const textureLoader = new THREE.TextureLoader();
         let loadedAssets = 0;
         const totalAssets = 5;
@@ -127,22 +140,31 @@
             }
         }
 
-        // Load smooth photo textures with proper filtering to eliminate visual grain/strain
-        const brickTex = textureLoader.load("https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80", assetLoaded);
-        const woodTex = textureLoader.load("https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80", assetLoaded);
-        const stoneTex = textureLoader.load("https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80", assetLoaded);
-        const floorTex = textureLoader.load("https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80", assetLoaded);
-        const ceilingTex = textureLoader.load("https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80", assetLoaded);
+        function loadTextureWithFallback(url, fallbackColor) {
+            return textureLoader.load(
+                url,
+                (tex) => {
+                    tex.wrapS = THREE.RepeatWrapping;
+                    tex.wrapT = THREE.RepeatWrapping;
+                    assetLoaded();
+                },
+                undefined,
+                (err) => {
+                    console.warn("Asset load failed, using fallback:", err);
+                    assetLoaded();
+                }
+            );
+        }
 
-        [brickTex, woodTex, stoneTex, floorTex, ceilingTex].forEach(tex => {
-            tex.wrapS = THREE.RepeatWrapping;
-            tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(1, 1);
-        });
+        const brickTex = loadTextureWithFallback("https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80", "#8b4513");
+        const woodTex = loadTextureWithFallback("https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80", "#a0522d");
+        const stoneTex = loadTextureWithFallback("https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80", "#708090");
+        const floorTex = loadTextureWithFallback("https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80", "#2f4f4f");
+        const ceilingTex = loadTextureWithFallback("https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80", "#191970");
 
-        // Setup Three.js Scene, Camera, and Renderer
+        // Setup Scene, Camera, Renderer
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x0b0b0e, 0.15); // Smooth distance fog for mood and clarity
+        scene.fog = new THREE.FogExp2(0x0b0b0e, 0.15);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -150,16 +172,9 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
-        // Add soft ambient and directional lighting so textures look natural
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xfff3d1, 1, 10);
-        pointLight.position.set(0, 1, 0);
-        camera.add(pointLight);
-        scene.add(camera);
-
-        // Map Layout: 1=Brick Wall, 2=Wood Room, 3=Stone Chamber, 5=Diamond, 6=Crate, 7=Barrel, 9=Exit
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 5, 0, 1, 2, 2, 6, 2, 2, 0, 1],
@@ -178,7 +193,6 @@
         let gameWon = false;
         let interactiveObjects = [];
 
-        // Build 3D World Geometry from Map
         const wallSize = 2;
         const wallMaterials = {
             1: new THREE.MeshStandardMaterial({ map: brickTex }),
@@ -195,7 +209,6 @@
                 let posX = (c - map[0].length / 2) * wallSize;
                 let posZ = (r - map.length / 2) * wallSize;
 
-                // Create Floor and Ceiling for every valid tile
                 if (tile !== 1 && tile !== 2 && tile !== 3) {
                     let floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
                     floorMesh.rotation.x = -Math.PI / 2;
@@ -208,37 +221,35 @@
                     scene.add(ceilingMesh);
                 }
 
-                // Create Walls
                 if (tile >= 1 && tile <= 3) {
                     let wallMesh = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, wallSize), wallMaterials[tile]);
                     wallMesh.position.set(posX, 0, posZ);
                     scene.add(wallMesh);
-                }
-                // Create Diamond Collectibles (5)
-                else if (tile === 5) {
-                    let diamondGeo = new THREE.OctahedronGeometry(0.3);
-                    let diamondMat = new THREE.MeshStandardMaterial({ color: 0x00bfff, emissive: 0x0044aa, roughness: 0.2 });
-                    let diamondMesh = new THREE.Mesh(diamondGeo, diamondMat);
+                } else if (tile === 5) {
+                    let diamondMesh = new THREE.Mesh(
+                        new THREE.OctahedronGeometry(0.3),
+                        new THREE.MeshStandardMaterial({ color: 0x00bfff, emissive: 0x0044aa, roughness: 0.2 })
+                    );
                     diamondMesh.position.set(posX, 0, posZ);
                     diamondMesh.userData = { type: 'diamond', r: r, c: c };
                     scene.add(diamondMesh);
                     interactiveObjects.push(diamondMesh);
-                }
-                // Create Wooden Crates (6)
-                else if (tile === 6) {
-                    let crateMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), wallWood);
+                } else if (tile === 6) {
+                    let crateMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), wallMaterials[2]);
                     crateMesh.position.set(posX, -0.6, posZ);
                     scene.add(crateMesh);
-                }
-                // Create Toxic Barrels (7)
-                else if (tile === 7) {
-                    let barrelMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1, 16), new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.3 }));
+                } else if (tile === 7) {
+                    let barrelMesh = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.4, 0.4, 1, 16),
+                        new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.3 })
+                    );
                     barrelMesh.position.set(posX, -0.5, posZ);
                     scene.add(barrelMesh);
-                }
-                // Exit Portal (9)
-                else if (tile === 9) {
-                    let exitMesh = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, 0.1), new THREE.MeshStandardMaterial({ color: 0x57cc99, emissive: 0x2a9d8f }));
+                } else if (tile === 9) {
+                    let exitMesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(wallSize, wallSize, 0.1),
+                        new THREE.MeshStandardMaterial({ color: 0x57cc99, emissive: 0x2a9d8f })
+                    );
                     exitMesh.position.set(posX, 0, posZ);
                     exitMesh.userData = { type: 'exit', r: r, c: c };
                     scene.add(exitMesh);
@@ -247,11 +258,10 @@
             }
         }
 
-        // Initialize Player Starting Position
         let playerGridX = 1;
         let playerGridY = 1;
         camera.position.set((playerGridX - map[0].length / 2) * wallSize, 0, (playerGridY - map.length / 2) * wallSize);
-        let playerDirection = 0; // Angle in radians
+        let playerDirection = 0;
 
         function updatePlayerPosition(forward, turn) {
             if (gameWon) return;
@@ -262,7 +272,6 @@
             let newX = camera.position.x + Math.sin(playerDirection) * moveStep;
             let newZ = camera.position.z + Math.cos(playerDirection) * moveStep;
 
-            // Convert back to grid coordinates to check collisions
             let targetC = Math.floor(newX / wallSize + map[0].length / 2);
             let targetR = Math.floor(newZ / wallSize + map.length / 2);
 
@@ -273,7 +282,6 @@
                     camera.position.x = newX;
                     camera.position.z = newZ;
 
-                    // Check item collection
                     if (tile === 5) {
                         map[targetR][targetC] = 0;
                         score += 150;
@@ -281,7 +289,6 @@
                         document.getElementById("score-text").innerText = `SCORE: ${score}`;
                         document.getElementById("diamond-text").innerText = `DIAMONDS: ${diamondsCollected}/${totalDiamonds}`;
 
-                        // Remove diamond mesh from scene
                         let objIndex = interactiveObjects.findIndex(o => o.userData.r === targetR && o.userData.c === targetC);
                         if (objIndex > -1) {
                             scene.remove(interactiveObjects[objIndex]);
@@ -298,11 +305,9 @@
                 }
             }
 
-            // Update camera rotation smoothly
             camera.rotation.y = playerDirection;
         }
 
-        // Controls binding
         document.getElementById("btn-left").addEventListener("click", () => updatePlayerPosition(0, 0.4));
         document.getElementById("btn-right").addEventListener("click", () => updatePlayerPosition(0, -0.4));
         document.getElementById("btn-forward").addEventListener("click", () => updatePlayerPosition(1, 0));
@@ -319,11 +324,9 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Animation loop for smooth rendering & glowing spinning diamonds
         function animate() {
             requestAnimationFrame(animate);
 
-            // Spin diamonds gently
             interactiveObjects.forEach(obj => {
                 if (obj.userData.type === 'diamond') {
                     obj.rotation.y += 0.03;
