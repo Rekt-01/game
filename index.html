@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Next-Gen Enhanced Edition</title>
+    <title>Rug Ville - High-Poly Realistic Edition</title>
     <style>
         body {
             margin: 0;
@@ -13,7 +13,6 @@
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
-            transition: background-color 2s;
         }
         #ui {
             position: absolute;
@@ -183,7 +182,6 @@
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
         }
-        #win-screen button:hover { background: #16a34a; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -209,13 +207,9 @@
     </div>
 
     <script>
-        if (typeof THREE === 'undefined') {
-            alert('Failed to load Three.js library.');
-        }
-
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0f172a);
-        scene.fog = new THREE.FogExp2(0x0f172a, 0.012);
+        scene.background = new THREE.Color(0x0b1329);
+        scene.fog = new THREE.FogExp2(0x0b1329, 0.010);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -224,19 +218,19 @@
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
+        renderer.toneMappingExposure = 1.3;
         document.body.appendChild(renderer.domElement);
 
-        // Enhanced Cinematic Lighting Setup
-        const ambientLight = new THREE.AmbientLight(0x38bdf8, 0.4);
+        // Cinematic Lighting Setup
+        const ambientLight = new THREE.AmbientLight(0x1e293b, 0.6);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffedd5, 1.8);
-        sunLight.position.set(60, 120, 60);
+        const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.2);
+        sunLight.position.set(80, 150, 80);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
-        let d = 120;
+        let d = 140;
         sunLight.shadow.camera.left = -d;
         sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d;
@@ -247,40 +241,44 @@
         let timeOfDay = 0;
 
         // Ground Plane
-        const groundGeo = new THREE.PlaneGeometry(1000, 1000);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8, metalness: 0.1 });
+        const groundGeo = new THREE.PlaneGeometry(1000, 1000, 64, 64);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9, metalness: 0.05 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -1.2;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Enhanced Roads with Curbs & Markings
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.6 });
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-        const curbMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.5 });
+        // Smooth Rounded Roads & Curved Curbs
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x030712, roughness: 0.7 });
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+        const curbMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.4 });
 
-        function createRoad(x, z, width, length, rotation = 0) {
+        function createSmoothRoad(x, z, width, length, rotation = 0) {
             let roadGroup = new THREE.Group();
             let road = new THREE.Mesh(new THREE.PlaneGeometry(width, length), roadMat);
             road.rotation.x = -Math.PI / 2;
             road.receiveShadow = true;
             roadGroup.add(road);
 
-            let curbLeft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, length), curbMat);
-            curbLeft.position.set(-width/2 - 0.2, -1.13, 0);
+            // High-poly rounded curbs using Cylinders instead of harsh boxes
+            let curbGeom = new THREE.CylinderGeometry(0.2, 0.2, length, 16);
+            let curbLeft = new THREE.Mesh(curbGeom, curbMat);
+            curbLeft.rotation.x = Math.PI / 2;
+            curbLeft.position.set(-width/2 - 0.1, -1.13, 0);
             curbLeft.castShadow = true;
             curbLeft.receiveShadow = true;
             roadGroup.add(curbLeft);
 
-            let curbRight = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, length), curbMat);
-            curbRight.position.set(width/2 + 0.2, -1.13, 0);
+            let curbRight = new THREE.Mesh(curbGeom, curbMat);
+            curbRight.rotation.x = Math.PI / 2;
+            curbRight.position.set(width/2 + 0.1, -1.13, 0);
             curbRight.castShadow = true;
             curbRight.receiveShadow = true;
             roadGroup.add(curbRight);
 
-            for (let i = -length / 2 + 3; i < length / 2; i += 6) {
-                let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2), lineMat);
+            for (let i = -length / 2 + 4; i < length / 2; i += 6) {
+                let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2.5), lineMat);
                 line.rotation.x = -Math.PI / 2;
                 line.position.y = 0.01;
                 if (rotation === 0) line.position.z = i;
@@ -292,12 +290,12 @@
             scene.add(roadGroup);
         }
 
-        createRoad(0, 0, 16, 400, 0);
-        createRoad(0, 0, 400, 16, Math.PI / 2);
-        createRoad(0, -120, 16, 400, 0);
-        createRoad(-120, 0, 400, 16, Math.PI / 2);
+        createSmoothRoad(0, 0, 18, 400, 0);
+        createSmoothRoad(0, 0, 400, 18, Math.PI / 2);
+        createSmoothRoad(0, -120, 18, 400, 0);
+        createSmoothRoad(-120, 0, 400, 18, Math.PI / 2);
 
-        // Modern Glass & Concrete Buildings
+        // Cylindrical & Sculpted Modern Architecture
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
@@ -307,34 +305,36 @@
             "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"
         ];
 
-        function createBuilding(x, z, width, height, depth, wallColor, signText) {
+        function createSculptedBuilding(x, z, radius, height, wallColor, signText) {
             let group = new THREE.Group();
             
+            // Using Smooth Cylinders for more organic/realistic futuristic towers instead of boring squares
+            let towerGeom = new THREE.CylinderGeometry(radius, radius * 1.1, height, 32);
             let walls = new THREE.Mesh(
-                new THREE.BoxGeometry(width, height, depth),
-                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.4, metalness: 0.2 })
+                towerGeom,
+                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.3, metalness: 0.4 })
             );
             walls.position.y = height / 2 - 1.18;
             walls.castShadow = true;
             walls.receiveShadow = true;
             group.add(walls);
 
-            let glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, metalness: 0.8, emissive: 0x0369a1, emissiveIntensity: 0.2 });
-            let windowPanel = new THREE.Mesh(new THREE.BoxGeometry(width + 0.1, height * 0.7, depth + 0.1), glassMat);
-            windowPanel.position.y = height / 2 - 1.18;
-            group.add(windowPanel);
+            // Curved Glass Wrap Around Facade
+            let glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, metalness: 0.9, emissive: 0x0284c7, emissiveIntensity: 0.3 });
+            let glassWrap = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.1, radius + 0.1, height * 0.75, 32), glassMat);
+            glassWrap.position.y = height / 2 - 1.18;
+            group.add(glassWrap);
 
-            let roof = new THREE.Mesh(
-                new THREE.BoxGeometry(width + 0.6, 0.8, depth + 0.6),
-                new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 })
-            );
-            roof.position.y = height - 0.7;
+            // Sculpted Dome / Helipad Roof
+            let roofGeom = new THREE.SphereGeometry(radius + 0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+            let roof = new THREE.Mesh(roofGeom, new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 }));
+            roof.position.y = height - 1.18;
             roof.castShadow = true;
             group.add(roof);
 
             group.position.set(x, 0, z);
             scene.add(group);
-            solidColliders.push({ x: x, z: z, sizeX: width + 0.6, sizeZ: depth + 0.6 });
+            solidColliders.push({ x: x, z: z, sizeX: radius * 2, sizeZ: radius * 2 });
 
             let signEl = document.createElement('div');
             signEl.className = 'building-sign';
@@ -344,35 +344,55 @@
             buildingSignsData.push({
                 mesh: group,
                 signElement: signEl,
-                offsetY: height + 0.8
+                offsetY: height + 0.5
             });
         }
 
-        const bColors = [0x334155, 0x475569, 0x1e293b, 0x334155];
+        const bColors = [0x1e293b, 0x334155, 0x0f172a, 0x475569];
         let nameIdx = 0;
-        for (let xPos of [-70, -35, 35, 70]) {
-            for (let zPos of [-70, -35, 35, 70]) {
-                createBuilding(xPos, zPos, 14, 11, 14, bColors[Math.floor(Math.random()*bColors.length)], buildingNames[nameIdx % buildingNames.length]);
+        for (let xPos of [-75, -38, 38, 75]) {
+            for (let zPos of [-75, -38, 38, 75]) {
+                createSculptedBuilding(xPos, zPos, 7.5, 14, bColors[Math.floor(Math.random()*bColors.length)], buildingNames[nameIdx % buildingNames.length]);
                 nameIdx++;
             }
         }
 
-        // --- TRAFFIC SYSTEM ---
+        // --- SMOOTH REALISTIC VEHICLES ---
         const activeVehicles = [];
 
-        function createVehicle(x, z, color, isBus = false, axis = 'z', minBound = -150, maxBound = 150, speed = 12) {
+        function createSleekVehicle(x, z, color, isBus = false, axis = 'z', minBound = -150, maxBound = 150, speed = 12) {
             let carGroup = new THREE.Group();
-            let w = isBus ? 2.4 : 1.8;
-            let l = isBus ? 6.5 : 3.8;
-            let h = isBus ? 2.6 : 1.4;
+            let l = isBus ? 7.0 : 4.2;
+            let w = isBus ? 2.4 : 1.9;
+            let h = isBus ? 2.5 : 1.3;
 
-            let body = new THREE.Mesh(
-                new THREE.BoxGeometry(w, h, l),
-                new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.6 })
-            );
-            body.position.y = h / 2 - 0.7;
+            // Rounded aerodynamic body using combined smoother meshes
+            let bodyMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.7 });
+            let body = new THREE.Mesh(new THREE.BoxGeometry(w, h * 0.6, l), bodyMat);
+            body.position.y = h * 0.3 - 0.7;
             body.castShadow = true;
             carGroup.add(body);
+
+            let cabinGeom = new THREE.SphereGeometry(w * 0.45, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            let cabin = new THREE.Mesh(cabinGeom, new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.1, metalness: 0.9, transparent: true, opacity: 0.85 }));
+            cabin.scale.set(1, 0.8, 1.8);
+            cabin.position.set(0, h * 0.6 - 0.7, -0.2);
+            carGroup.add(cabin);
+
+            // Smooth Rounded Wheels
+            let wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            let wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
+            let wheelOffsets = [
+                [-w/2 - 0.1, -0.85, l/3], [w/2 + 0.1, -0.85, l/3],
+                [-w/2 - 0.1, -0.85, -l/3], [w/2 + 0.1, -0.85, -l/3]
+            ];
+            wheelOffsets.forEach(pos => {
+                let wheel = new THREE.Mesh(wheelGeom, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(...pos);
+                wheel.castShadow = true;
+                carGroup.add(wheel);
+            });
 
             carGroup.position.set(x, 0, z);
             if (axis === 'x') carGroup.rotation.y = (speed > 0) ? Math.PI / 2 : -Math.PI / 2;
@@ -390,12 +410,12 @@
             });
         }
 
-        createVehicle(4, -150, 0xdc2626, false, 'z', -160, 160, 12);
-        createVehicle(-4, 150, 0x2563eb, false, 'z', -160, 160, -14);
-        createVehicle(150, 4, 0xf59e0b, true, 'x', -160, 160, 10);
-        createVehicle(-150, -4, 0xf8fafc, true, 'x', -160, 160, -11);
+        createSleekVehicle(4.5, -150, 0xef4444, false, 'z', -160, 160, 14);
+        createSleekVehicle(-4.5, 150, 0x3b82f6, false, 'z', -160, 160, -16);
+        createSleekVehicle(150, 4.5, 0xf59e0b, true, 'x', -160, 160, 11);
+        createSleekVehicle(-150, -4.5, 0xf8fafc, true, 'x', -160, 160, -12);
 
-        // --- CITIZENS (Upgraded with Cyber Aesthetic) ---
+        // --- CYBERPUNK HIGH-POLY CITIZENS (Matching the reference aesthetic) ---
         const activeCitizens = [];
         const degenQuotes = [
             "Dev dumped the floor! Rugged again!",
@@ -407,74 +427,75 @@
             "SEC is auditing the liquidity pool!"
         ];
 
-        function createRealisticPerson(x, z, shirtColor, isWorker = false, isPolice = false) {
+        function createCyborgPerson(x, z, shirtColor, isWorker = false, isPolice = false) {
             let personGroup = new THREE.Group();
 
-            let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 });
+            let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.6 });
             let cyberSkinMat = new THREE.MeshStandardMaterial({ 
                 color: 0x38bdf8, 
                 roughness: 0.2, 
-                metalness: 0.8, 
+                metalness: 0.9, 
                 emissive: 0x0284c7, 
-                emissiveIntensity: 0.5 
+                emissiveIntensity: 0.6 
             });
             
             let outfitColor = isPolice ? 0x1e3a8a : shirtColor;
-            let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.7 });
-            let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e3a8a, roughness: 0.8 });
+            let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.6 });
+            let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e293b, roughness: 0.7 });
 
-            // Torso
-            let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), outfitMat);
+            // Rounded Torso (Cylinder instead of harsh box)
+            let torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.85, 16), outfitMat);
             torso.position.y = -0.2;
             torso.castShadow = true;
             personGroup.add(torso);
 
-            // Head & Cyber Jaw Implant
-            let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), skinMat);
-            head.position.y = 0.35;
+            // Smooth Head & Robotic Jaw Implant
+            let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), skinMat);
+            head.position.y = 0.38;
             head.castShadow = true;
             personGroup.add(head);
 
-            let cyberJaw = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.18, 0.25), cyberSkinMat);
-            cyberJaw.position.set(0.12, 0.28, 0.05);
+            let cyberJaw = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.2, 16), cyberSkinMat);
+            cyberJaw.rotation.z = Math.PI / 2;
+            cyberJaw.position.set(0.1, 0.32, 0.05);
             personGroup.add(cyberJaw);
 
-            // Glowing Cyber Goggles / Visor
+            // Neon Goggles / Visor
             let visorMat = new THREE.MeshStandardMaterial({ 
                 color: 0x10b981, 
                 roughness: 0.1, 
                 metalness: 0.9, 
                 emissive: 0x059669, 
-                emissiveIntensity: 0.8 
+                emissiveIntensity: 0.9 
             });
-            let visor = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, 0.28), visorMat);
-            visor.position.set(0, 0.38, 0.1);
+            let visor = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.12, 16, 1, false, 0, Math.PI), visorMat);
+            visor.rotation.y = Math.PI / 2;
+            visor.position.set(0, 0.41, 0.05);
             personGroup.add(visor);
 
             // Backward Green Cap
-            let capMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.5 });
-            let capDome = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2), capMat);
-            capDome.position.y = 0.45;
+            let capMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4 });
+            let capDome = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), capMat);
+            capDome.position.y = 0.46;
             personGroup.add(capDome);
 
-            let capBill = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.04, 0.2), capMat);
-            capBill.position.set(0, 0.48, -0.15);
+            let capBill = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 0.2), capMat);
+            capBill.position.set(0, 0.48, -0.16); // Facing backward
             personGroup.add(capBill);
 
-            // Arms & Legs
-            let armGeo = new THREE.BoxGeometry(0.16, 0.7, 0.18);
-            let leftArm = new THREE.Mesh(armGeo, outfitMat);
-            leftArm.position.set(-0.38, -0.2, 0);
-            let rightArm = new THREE.Mesh(armGeo, outfitMat);
-            rightArm.position.set(0.38, -0.2, 0);
+            // Smooth Rounded Arms & Legs (Cylinders)
+            let limbGeom = new THREE.CylinderGeometry(0.09, 0.08, 0.75, 12);
+            let leftArm = new THREE.Mesh(limbGeom, outfitMat);
+            leftArm.position.set(-0.4, -0.2, 0);
+            let rightArm = new THREE.Mesh(limbGeom, outfitMat);
+            rightArm.position.set(0.4, -0.2, 0);
             personGroup.add(leftArm);
             personGroup.add(rightArm);
 
-            let legGeo = new THREE.BoxGeometry(0.2, 0.75, 0.2);
-            let leftLeg = new THREE.Mesh(legGeo, pantsMat);
-            leftLeg.position.set(-0.15, -0.85, 0);
-            let rightLeg = new THREE.Mesh(legGeo, pantsMat);
-            rightLeg.position.set(0.15, -0.85, 0);
+            let leftLeg = new THREE.Mesh(limbGeom, pantsMat);
+            leftLeg.position.set(-0.16, -0.85, 0);
+            let rightLeg = new THREE.Mesh(limbGeom, pantsMat);
+            rightLeg.position.set(0.16, -0.85, 0);
             personGroup.add(leftLeg);
             personGroup.add(rightLeg);
 
@@ -499,25 +520,25 @@
         }
 
         const colors = [0xef4444, 0x3b82f6, 0x10b981, 0xa855f7, 0xf97316];
-        for (let i = 0; i < 10; i++) {
-            createRealisticPerson((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100, colors[Math.floor(Math.random()*colors.length)]);
+        for (let i = 0; i < 12; i++) {
+            createCyborgPerson((Math.random() - 0.5) * 110, (Math.random() - 0.5) * 110, colors[Math.floor(Math.random()*colors.length)]);
         }
-        createRealisticPerson(20, 20, 0, false, true);
+        createCyborgPerson(22, 22, 0, false, true);
 
-        // Trees
-        function createTree(x, z) {
+        // Organic Sculpted Trees
+        function createOrganicTree(x, z) {
             let treeGroup = new THREE.Group();
             let trunk = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.4, 0.6, 3.5, 8),
-                new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 })
+                new THREE.CylinderGeometry(0.3, 0.5, 3.5, 12),
+                new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 })
             );
             trunk.position.y = 0.8;
             trunk.castShadow = true;
             treeGroup.add(trunk);
 
             let leaves = new THREE.Mesh(
-                new THREE.DodecahedronGeometry(2.5),
-                new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.8 })
+                new THREE.SphereGeometry(2.2, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.7 })
             );
             leaves.position.y = 3.5;
             leaves.castShadow = true;
@@ -529,9 +550,9 @@
         }
 
         for (let i = -140; i <= 140; i += 35) {
-            if (Math.abs(i) > 20) {
-                createTree(i, -22);
-                createTree(i, 22);
+            if (Math.abs(i) > 22) {
+                createOrganicTree(i, -24);
+                createOrganicTree(i, 24);
             }
         }
 
@@ -543,9 +564,10 @@
         const interactiveObjects = [];
 
         function createPackage(x, z, isDip = false) {
+            let pkgGeom = isDip ? new THREE.IcosahedronGeometry(0.8) : new THREE.BoxGeometry(1.2, 1.2, 1.2);
             let pkg = new THREE.Mesh(
-                new THREE.BoxGeometry(1.2, 1.2, 1.2),
-                new THREE.MeshStandardMaterial({ color: isDip ? 0xfacc15 : 0xef4444, roughness: 0.2, metalness: 0.4 })
+                pkgGeom,
+                new THREE.MeshStandardMaterial({ color: isDip ? 0xfacc15 : 0xef4444, roughness: 0.1, metalness: 0.8, emissive: isDip ? 0xca8a04 : 0x991b1b, emissiveIntensity: 0.5 })
             );
             pkg.position.set(x, -0.5, z);
             pkg.castShadow = true;
@@ -554,16 +576,16 @@
             interactiveObjects.push(pkg);
         }
 
-        createPackage(-50, -50);
-        createPackage(50, -50);
-        createPackage(-50, 50);
-        createPackage(60, 60);
+        createPackage(-55, -55);
+        createPackage(55, -55);
+        createPackage(-55, 55);
+        createPackage(65, 65);
 
         let exitZone = new THREE.Mesh(
-            new THREE.BoxGeometry(6, 0.1, 6),
+            new THREE.CylinderGeometry(4, 4, 0.1, 32),
             new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 })
         );
-        exitZone.position.set(0, -1.15, -90);
+        exitZone.position.set(0, -1.15, -95);
         scene.add(exitZone);
 
         camera.position.set(0, 0, 80);
@@ -690,7 +712,7 @@
 
                 timeOfDay += delta * 0.05;
                 let cycle = Math.sin(timeOfDay);
-                sunLight.intensity = Math.max(0.2, cycle * 1.8);
+                sunLight.intensity = Math.max(0.3, cycle * 2.2);
 
                 rugPullTimer += delta;
                 if (rugPullTimer > 25 && !rugPullActive) {
