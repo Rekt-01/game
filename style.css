@@ -1,0 +1,60 @@
+body {
+    background-color: #111;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    touch-action: manipulation; /* Prevents unwanted zooming on mobile */
+}
+
+#game-container {
+    text-align: center;
+}
+
+h2 {
+    margin: 5px 0 10px 0;
+    font-size: 1.2rem;
+    color: #00d2ff;
+}
+
+canvas {
+    border: 3px solid #444;
+    background-color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+    max-width: 100%;
+    height: auto;
+}
+
+#controls {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.horizontal-btns {
+    display: flex;
+    gap: 80px;
+}
+
+.ctrl-btn {
+    background-color: #333;
+    color: white;
+    border: 2px solid #666;
+    font-size: 24px;
+    width: 60px;
+    height: 50px;
+    border-radius: 10px;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+}
+
+.ctrl-btn:active {
+    background-color: #00d2ff;
+    color: #111;
+}
