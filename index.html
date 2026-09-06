@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Multi-Room Textured Maze</title>
+    <title>Maze with Crates and Toxic Barrels</title>
     <style>
         body {
             margin: 0;
@@ -18,12 +18,14 @@
             top: 15px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
             background: rgba(15, 12, 10, 0.9);
             padding: 10px 20px;
             border: 2px solid #5a4939;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
             color: #f4d35e;
             z-index: 10;
         }
@@ -97,10 +99,11 @@
 </head>
 <body>
 
-    <div id="loading-screen">Loading Room Textures...</div>
+    <div id="loading-screen">Loading Environment & Props...</div>
 
     <div id="ui">
-        <span id="level-text">ROOMS & HALLWAYS COMPLEX</span>
+        <span id="score-text">SCORE: 0</span>
+        <span id="diamond-text">DIAMONDS: 0/3</span>
     </div>
 
     <canvas id="raycastCanvas"></canvas>
@@ -113,7 +116,7 @@
 
     <div id="win-screen">
         <h1>COMPLEX CLEARED!</h1>
-        <p>You navigated all rooms and hallways!</p>
+        <p>All diamonds collected and exit reached!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
@@ -124,26 +127,26 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Load Different Real Photo Textures for Walls, Floor, and Ceiling
+        // Load Wall, Floor, and Ceiling Textures
         const wallBrick = new Image();
         wallBrick.crossOrigin = "anonymous";
-        wallBrick.src = "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80"; // Red brick wall
+        wallBrick.src = "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80";
 
         const wallWood = new Image();
         wallWood.crossOrigin = "anonymous";
-        wallWood.src = "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80"; // Wooden panels
+        wallWood.src = "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80";
 
         const wallStone = new Image();
         wallStone.crossOrigin = "anonymous";
-        wallStone.src = "https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80"; // Stone dungeon wall
+        wallStone.src = "https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80";
 
         const floorTex = new Image();
         floorTex.crossOrigin = "anonymous";
-        floorTex.src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80"; // Pavement floor
+        floorTex.src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80";
 
         const ceilingTex = new Image();
         ceilingTex.crossOrigin = "anonymous";
-        ceilingTex.src = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80"; // Interior ceiling panels
+        ceilingTex.src = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80";
 
         let loadedCount = 0;
         function checkAllLoaded() {
@@ -159,20 +162,23 @@
         floorTex.onload = checkAllLoaded;
         ceilingTex.onload = checkAllLoaded;
 
-        // Map Grid defining interconnected Rooms and Hallways (1=Brick, 2=Wood Room, 3=Stone Chamber, 9=Exit)
+        // Map Grid: 1=Brick, 2=Wood, 3=Stone, 5=Diamond, 6=Wooden Crate, 7=Toxic Barrel, 9=Exit Portal
         let map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 0, 1],
+            [1, 0, 5, 0, 1, 2, 2, 6, 2, 2, 0, 1],
             [1, 0, 1, 0, 1, 2, 0, 0, 0, 2, 0, 1],
-            [1, 0, 1, 0, 0, 0, 0, 3, 0, 2, 0, 1],
+            [1, 0, 1, 0, 6, 0, 0, 3, 0, 2, 7, 1],
             [1, 1, 1, 1, 1, 0, 3, 3, 3, 3, 0, 1],
-            [1, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 1],
-            [1, 0, 1, 1, 1, 1, 3, 0, 0, 3, 9, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1],
+            [1, 0, 5, 0, 0, 0, 3, 7, 0, 3, 0, 1],
+            [1, 0, 1, 1, 1, 1, 3, 0, 5, 3, 9, 1],
+            [1, 0, 6, 0, 0, 0, 0, 0, 0, 3, 0, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
 
         let player = { x: 1.5, y: 1.5, angle: 0 };
+        let score = 0;
+        let diamondsCollected = 0;
+        let totalDiamonds = 3;
         let gameWon = false;
 
         function renderScene() {
@@ -180,7 +186,7 @@
 
             let halfH = canvas.height / 2;
 
-            // Render Floor and Ceiling with perspective scanning
+            // 1. Render Floor and Ceiling
             for (let y = 0; y < canvas.height; y++) {
                 let isFloor = y > halfH;
                 let row = isFloor ? y - halfH : halfH - y;
@@ -189,10 +195,8 @@
                 let dist = (canvas.height / 2) / row;
                 let textureYIndex = Math.floor((dist * 15) % floorTex.height);
 
-                // Quick scanline background fill per row
                 ctx.drawImage(isFloor ? floorTex : ceilingTex, 0, textureYIndex, floorTex.width, 1, 0, y, canvas.width, 1);
                 
-                // Distance dimming shadow effect for depth
                 let dim = Math.min(0.85, dist / 8);
                 ctx.fillStyle = `rgba(0, 0, 0, ${dim})`;
                 ctx.fillRect(0, y, canvas.width, 1);
@@ -200,8 +204,9 @@
 
             let numRays = canvas.width;
             let fov = Math.PI / 3;
+            let zBuffer = new Array(canvas.width);
 
-            // Raycasting Loop for Walls
+            // 2. Raycasting Loop for Walls
             for (let i = 0; i < numRays; i++) {
                 let rayAngle = player.angle - fov / 2 + (i / numRays) * fov;
                 
@@ -226,22 +231,27 @@
                     if (mapX < 0 || mapX >= map[0].length || mapY < 0 || mapY >= map.length) {
                         hitWall = true;
                         distanceToWall = 16;
-                    } else if (map[mapY][mapX] > 0) {
-                        hitWall = true;
-                        hitXCoord = testX;
-                        hitYCoord = testY;
-                        wallType = map[mapY][mapX];
-                        if (Math.abs(testX - mapX) < 0.05 || Math.abs(testX - (mapX + 1)) < 0.05) {
-                            isVerticalHit = true;
+                    } else {
+                        let tile = map[mapY][mapX];
+                        // Only tiles 1, 2, 3 stop wall rays
+                        if (tile > 0 && tile < 5) {
+                            hitWall = true;
+                            hitXCoord = testX;
+                            hitYCoord = testY;
+                            wallType = tile;
+                            if (Math.abs(testX - mapX) < 0.05 || Math.abs(testX - (mapX + 1)) < 0.05) {
+                                isVerticalHit = true;
+                            }
                         }
                     }
                 }
 
                 let correctedDistance = distanceToWall * Math.cos(rayAngle - player.angle);
+                zBuffer[i] = correctedDistance;
+
                 let wallHeight = Math.min(canvas.height * 2, (canvas.height / correctedDistance));
                 let ceilingPos = (canvas.height - wallHeight) / 2;
 
-                // Pick the correct photo texture based on room/wall ID
                 let activeTexture = wallBrick;
                 if (wallType === 2) activeTexture = wallWood;
                 if (wallType === 3) activeTexture = wallStone;
@@ -252,10 +262,81 @@
                 let sourceX = Math.max(0, Math.min(activeTexture.width - 1, textureX));
                 ctx.drawImage(activeTexture, sourceX, 0, 1, activeTexture.height, i, ceilingPos, 1, wallHeight);
 
-                // Depth shading overlay
                 let shade = Math.min(0.8, correctedDistance / 10);
                 ctx.fillStyle = `rgba(0, 0, 0, ${shade})`;
                 ctx.fillRect(i, ceilingPos, 1, wallHeight);
+            }
+
+            // 3. Render Sprites (Diamonds=5, Crates=6, Toxic Barrels=7)
+            let sprites = [];
+            for (let r = 0; r < map.length; r++) {
+                for (let c = 0; c < map[r].length; c++) {
+                    if (map[r][c] >= 5 && map[r][c] <= 7) {
+                        let spriteX = (c + 0.5) - player.x;
+                        let spriteY = (r + 0.5) - player.y;
+                        let distance = Math.sqrt(spriteX * spriteX + spriteY * spriteY);
+                        sprites.push({ x: spriteX, y: spriteY, type: map[r][c], dist: distance });
+                    }
+                }
+            }
+
+            // Sort sprites by distance (furthest first for correct depth rendering)
+            sprites.sort((a, b) => b.dist - a.dist);
+
+            for (let s of sprites) {
+                let cosA = Math.cos(-player.angle);
+                let sinA = Math.sin(-player.angle);
+                
+                let transX = s.x * cosA - s.y * sinA;
+                let transY = s.x * sinA + s.y * cosA;
+
+                if (transY > 0.2) {
+                    let screenX = Math.floor((canvas.width / 2) * (1 + transX / transY));
+                    let spriteHeight = Math.abs(Math.floor(canvas.height / transY));
+                    let spriteWidth = spriteHeight;
+                    let drawStartY = Math.floor((canvas.height - spriteHeight) / 2);
+                    let drawStartX = Math.floor(screenX - spriteWidth / 2);
+                    let drawEndX = Math.floor(screenX + spriteWidth / 2);
+
+                    for (let stripe = drawStartX; stripe < drawEndX; stripe++) {
+                        if (stripe >= 0 && stripe < canvas.width && transY < zBuffer[stripe]) {
+                            let distShade = Math.min(1, transY / 8);
+                            let relX = (stripe - drawStartX) / spriteWidth;
+
+                            if (s.type === 5) {
+                                // Diamond Sprite Graphic
+                                ctx.fillStyle = `rgb(${Math.floor(0 + distShade*50)}, ${Math.floor(180 - distShade*50)}, ${Math.floor(255 - distShade*50)})`;
+                                let hOffset = spriteHeight * 0.3 * (1 - Math.abs(stripe - screenX) / (spriteWidth / 2));
+                                if (hOffset > 0) ctx.fillRect(stripe, canvas.height/2 - hOffset/2, 1, hOffset);
+                            } 
+                            else if (s.type === 6) {
+                                // Wooden Crate Graphic (Brown box with inner cross plank lines)
+                                let boxTop = canvas.height/2 - spriteHeight/2;
+                                let boxHeight = spriteHeight;
+                                ctx.fillStyle = `rgb(${Math.floor(139 - distShade*40)}, ${Math.floor(90 - distShade*30)}, ${Math.floor(43 - distShade*20)})`;
+                                ctx.fillRect(stripe, boxTop, 1, boxHeight);
+                                // Add dark border/plank lines
+                                if (relX < 0.05 || relX > 0.95 || Math.abs(relX - 0.5) < 0.05) {
+                                    ctx.fillStyle = `rgb(40, 25, 10)`;
+                                    ctx.fillRect(stripe, boxTop, 1, boxHeight);
+                                }
+                            } 
+                            else if (s.type === 7) {
+                                // Toxic Barrel Graphic (Dark metallic green with a yellow radiation band)
+                                let barrelTop = canvas.height/2 - spriteHeight/2;
+                                let barrelHeight = spriteHeight;
+                                ctx.fillStyle = `rgb(${Math.floor(34 - distShade*20)}, ${Math.floor(139 - distShade*50)}, ${Math.floor(34 - distShade*20)})`;
+                                ctx.fillRect(stripe, barrelTop, 1, barrelHeight);
+                                // Yellow biohazard ring in the middle
+                                let relY = (canvas.height/2 - barrelTop) / barrelHeight;
+                                if (Math.abs(relY - 0.4) < 0.1) {
+                                    ctx.fillStyle = `rgb(${Math.floor(255 - distShade*50)}, ${Math.floor(215 - distShade*50)}, 0)`;
+                                    ctx.fillRect(stripe, barrelTop + barrelHeight * 0.35, 1, barrelHeight * 0.1);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -277,9 +358,25 @@
                 if (targetTile === 0) {
                     player.x = newX;
                     player.y = newY;
+                } else if (targetTile === 5) {
+                    // Collect Diamond
+                    map[mapY][mapX] = 0;
+                    score += 150;
+                    diamondsCollected++;
+                    document.getElementById("score-text").innerText = `SCORE: ${score}`;
+                    document.getElementById("diamond-text").innerText = `DIAMONDS: ${diamondsCollected}/${totalDiamonds}`;
+                    player.x = newX;
+                    player.y = newY;
+                } else if (targetTile === 6 || targetTile === 7) {
+                    // Solid obstacles (Crates and Barrels block movement)
+                    return;
                 } else if (targetTile === 9) {
-                    gameWon = true;
-                    document.getElementById("win-screen").style.display = "block";
+                    if (diamondsCollected >= totalDiamonds) {
+                        gameWon = true;
+                        document.getElementById("win-screen").style.display = "block";
+                    } else {
+                        alert(`Door locked! Collect all ${totalDiamonds} diamonds first (${diamondsCollected}/${totalDiamonds}).`);
+                    }
                 }
             }
 
