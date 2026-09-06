@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Degen Edition</title>
+    <title>Rug Ville - Ultimate Degen Edition</title>
     <style>
         body {
             margin: 0;
@@ -13,6 +13,7 @@
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
+            transition: background-color 2s;
         }
         #ui {
             position: absolute;
@@ -49,6 +50,27 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 10;
             white-space: nowrap;
+        }
+        #alert-banner {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(220, 38, 38, 0.95);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            display: none;
+            z-index: 15;
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.05); }
         }
         #crosshair {
             position: absolute;
@@ -168,6 +190,7 @@
         <span id="score-text">RUG VILLE CASH: $0</span>
         <span id="package-text">PACKAGES: 0/4</span>
     </div>
+    <div id="alert-banner">🚨 MARKET CRASH: RUG PULL IMMINENT! 🚨</div>
     <div id="speech-overlay"></div>
     <div id="instructions">PC: Click to look &amp; WASD | Mobile: Drag Joystick to Move &amp; Turn</div>
     
@@ -176,8 +199,8 @@
     </div>
 
     <div id="win-screen">
-        <h1>RUG VILLE COMPLETED!</h1>
-        <p>You survived the streets and delivered everything!</p>
+        <h1>RUG VILLE SAVED!</h1>
+        <p>You survived the crash and delivered everything!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
@@ -198,7 +221,7 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Lighting
+        // Lighting & Day/Night Cycle Setup
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
         scene.add(ambientLight);
 
@@ -213,6 +236,8 @@
         sunLight.shadow.camera.top = d;
         sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
+
+        let timeOfDay = 0; // 0 = day, increments to cycle
 
         // Ground Plane
         const groundGeo = new THREE.PlaneGeometry(1000, 1000);
@@ -277,7 +302,7 @@
         }
         createWelcomeSign(0, 75, 0);
 
-        // Buildings & Degen Signs Setup
+        // Buildings & Degen Signs
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
@@ -310,7 +335,6 @@
             scene.add(group);
             solidColliders.push({ x: x, z: z, sizeX: width + 0.5, sizeZ: depth + 0.5 });
 
-            // DOM 3D building sign tracking
             let signEl = document.createElement('div');
             signEl.className = 'building-sign';
             signEl.innerText = signText;
@@ -380,13 +404,12 @@
             });
         }
 
-        // Dedicated road channels (Lane locked traffic)
         createVehicle(4, -150, 0xdc2626, false, 'z', -160, 160, 16);
         createVehicle(-4, 150, 0x2563eb, false, 'z', -160, 160, -20);
         createVehicle(150, 4, 0xf59e0b, true, 'x', -160, 160, 14);
         createVehicle(-150, -4, 0xffffff, true, 'x', -160, 160, -15);
 
-        // --- REALISTIC PEOPLE & WORKERS WITH JOINTED LIMBS & SPEECH BUBBLES ---
+        // --- REALISTIC PEOPLE, SEC POLICE & PATROLLING AGENTS ---
         const activeCitizens = [];
         const degenQuotes = [
             "Dev dumped the floor! Rugged again!",
@@ -395,23 +418,22 @@
             "Working overtime just to buy the dip",
             "Touching grass is bullish",
             "Paper hands everywhere in Rug Ville",
-            "Stake your tokens or stay poor",
+            "SEC is auditing the liquidity pool!",
             "Who built this road? Absolute scam!"
         ];
 
-        function createRealisticPerson(x, z, shirtColor, isWorker = false) {
+        function createRealisticPerson(x, z, shirtColor, isWorker = false, isPolice = false) {
             let personGroup = new THREE.Group();
 
             let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 });
-            let shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.7 });
-            let pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.8 });
+            let outfitColor = isPolice ? 0x1e3a8a : shirtColor;
+            let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.7 });
+            let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e3a8a, roughness: 0.8 });
 
-            // Torso
-            let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), shirtMat);
+            let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), outfitMat);
             torso.position.y = -0.2;
             personGroup.add(torso);
 
-            // Head
             let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), skinMat);
             head.position.y = 0.35;
             personGroup.add(head);
@@ -420,18 +442,20 @@
                 let hat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.18, 0.5), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
                 hat.position.y = 0.52;
                 personGroup.add(hat);
+            } else if (isPolice) {
+                let cap = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.6), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+                cap.position.y = 0.52;
+                personGroup.add(cap);
             }
 
-            // Articulated Arms
             let armGeo = new THREE.BoxGeometry(0.16, 0.7, 0.18);
-            let leftArm = new THREE.Mesh(armGeo, shirtMat);
+            let leftArm = new THREE.Mesh(armGeo, outfitMat);
             leftArm.position.set(-0.38, -0.2, 0);
-            let rightArm = new THREE.Mesh(armGeo, shirtMat);
+            let rightArm = new THREE.Mesh(armGeo, outfitMat);
             rightArm.position.set(0.38, -0.2, 0);
             personGroup.add(leftArm);
             personGroup.add(rightArm);
 
-            // Articulated Legs
             let legGeo = new THREE.BoxGeometry(0.2, 0.75, 0.2);
             let leftLeg = new THREE.Mesh(legGeo, pantsMat);
             leftLeg.position.set(-0.15, -0.85, 0);
@@ -445,7 +469,7 @@
 
             let bubble = document.createElement('div');
             bubble.className = 'speech-bubble';
-            bubble.innerText = degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
+            bubble.innerText = isPolice ? "SEC Agent: Show me your crypto license!" : degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
             speechOverlay.appendChild(bubble);
 
             activeCitizens.push({
@@ -459,16 +483,20 @@
                 originX: x,
                 originZ: z,
                 angle: Math.random() * Math.PI * 2,
-                speed: 1.2 + Math.random() * 1.2,
+                speed: isPolice ? 2.2 : (1.2 + Math.random() * 1.2),
+                isPolice: isPolice,
                 bubble: bubble,
                 timer: Math.random() * 10
             });
         }
 
         const colors = [0xef4444, 0x3b82f6, 0x10b981, 0xa855f7, 0xf97316];
-        for (let i = 0; i < 14; i++) {
-            createRealisticPerson((Math.random() - 0.5) * 120, (Math.random() - 0.5) * 120, colors[Math.floor(Math.random()*colors.length)], Math.random() > 0.4);
+        for (let i = 0; i < 12; i++) {
+            createRealisticPerson((Math.random() - 0.5) * 120, (Math.random() - 0.5) * 120, colors[Math.floor(Math.random()*colors.length)], Math.random() > 0.4, false);
         }
+        // Spawn SEC Police Patrollers
+        createRealisticPerson(20, 20, 0, false, true);
+        createRealisticPerson(-30, -30, 0, false, true);
 
         // Animals
         function createDog(x, z) {
@@ -525,21 +553,21 @@
             }
         }
 
-        // Collectibles & Packages
+        // Collectibles & Packages (Including Rug Pull Event "Dip Packages")
         let score = 0;
         let packagesCollected = 0;
         const totalPackages = 4;
         let gameWon = false;
         const interactiveObjects = [];
 
-        function createPackage(x, z) {
+        function createPackage(x, z, isDip = false) {
             let pkg = new THREE.Mesh(
                 new THREE.BoxGeometry(1.2, 1.2, 1.2),
-                new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.2 })
+                new THREE.MeshStandardMaterial({ color: isDip ? 0xfacc15 : 0xef4444, roughness: 0.3, metalness: 0.2 })
             );
             pkg.position.set(x, -0.5, z);
             pkg.castShadow = true;
-            pkg.userData = { type: 'package', x: x, z: z };
+            pkg.userData = { type: 'package', x: x, z: z, isDip: isDip };
             scene.add(pkg);
             interactiveObjects.push(pkg);
         }
@@ -557,6 +585,10 @@
         scene.add(exitZone);
 
         camera.position.set(0, 0, 80);
+
+        // Random Rug Pull Event Timer
+        let rugPullTimer = 0;
+        let rugPullActive = false;
 
         // Controls State
         let yaw = 0;
@@ -704,7 +736,32 @@
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.y = 0;
 
-                // Animate Road-Locked Traffic
+                // Day / Night Cycle Progression
+                timeOfDay += delta * 0.05;
+                let cycle = Math.sin(timeOfDay);
+                sunLight.intensity = Math.max(0.2, cycle * 1.3);
+                if (cycle < 0) {
+                    scene.background.setHex(0x0f172a); // Night sky
+                    scene.fog.color.setHex(0x0f172a);
+                } else {
+                    scene.background.setHex(0x87ceeb); // Day sky
+                    scene.fog.color.setHex(0x87ceeb);
+                }
+
+                // Random Rug Pull Event Trigger
+                rugPullTimer += delta;
+                if (rugPullTimer > 25 && !rugPullActive) {
+                    rugPullActive = true;
+                    document.getElementById("alert-banner").style.display = "block";
+                    createPackage((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, true);
+                    setTimeout(() => {
+                        document.getElementById("alert-banner").style.display = "none";
+                        rugPullActive = false;
+                        rugPullTimer = 0;
+                    }, 6000);
+                }
+
+                // Animate Road Traffic
                 activeVehicles.forEach(v => {
                     v.pos += v.speed * delta;
                     if (v.pos > v.max) v.pos = v.min;
@@ -717,30 +774,30 @@
                     }
                 });
 
-                // Animate Citizens, Limbs Walk Cycle, and Speech Bubbles
+                // Animate Citizens, Limbs & Police Patrollers
                 activeCitizens.forEach(c => {
-                    c.angle += delta * c.speed * 0.6;
-                    c.x = c.originX + Math.sin(c.angle) * 7;
-                    c.z = c.originZ + Math.cos(c.angle) * 7;
+                    let moveMultiplier = c.isPolice ? 1.5 : 1.0;
+                    if (rugPullActive) moveMultiplier *= 1.8; // Panicked movement during crash
+
+                    c.angle += delta * c.speed * 0.6 * moveMultiplier;
+                    c.x = c.originX + Math.sin(c.angle) * (c.isPolice ? 15 : 7);
+                    c.z = c.originZ + Math.cos(c.angle) * (c.isPolice ? 15 : 7);
                     c.mesh.position.set(c.x, 0, c.z);
 
-                    // Procedural walk limb swing
-                    let swing = Math.sin(time * 0.01 * c.speed) * 0.5;
+                    let swing = Math.sin(time * 0.01 * c.speed * moveMultiplier) * 0.5;
                     c.leftLeg.rotation.x = swing;
                     c.rightLeg.rotation.x = -swing;
                     c.leftArm.rotation.x = -swing;
                     c.rightArm.rotation.x = swing;
 
-                    // Speech bubble dynamic updating
                     c.timer += delta;
                     if (c.timer > 6) {
                         c.timer = 0;
-                        if (Math.random() > 0.3) {
+                        if (Math.random() > 0.3 && !c.isPolice) {
                             c.bubble.innerText = degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
                         }
                     }
 
-                    // Projection of speech bubble onto screen
                     let vector = new THREE.Vector3(c.x, 1.2, c.z);
                     vector.project(camera);
                     let distanceToPlayer = camera.position.distanceTo(c.mesh.position);
@@ -753,9 +810,15 @@
                     } else {
                         c.bubble.style.display = 'none';
                     }
+
+                    // SEC Police Chase check
+                    if (c.isPolice && distanceToPlayer < 4) {
+                        score = Math.max(0, score - 100);
+                        document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
+                    }
                 });
 
-                // Project Building Signs onto Screen Coordinates
+                // Project Building Signs
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z);
                     vector.project(camera);
@@ -766,6 +829,16 @@
                         b.signElement.style.left = `${xCoord}px`;
                         b.signElement.style.top = `${yCoord}px`;
                         b.signElement.style.display = 'block';
+                        // Glow neon at night
+                        if (cycle < 0) {
+                            b.signElement.style.background = '#facc15';
+                            b.signElement.style.color = '#0f172a';
+                            b.signElement.style.boxShadow = '0 0 15px #facc15';
+                        } else {
+                            b.signElement.style.background = '#0f172a';
+                            b.signElement.style.color = '#facc15';
+                            b.signElement.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+                        }
                     } else {
                         b.signElement.style.display = 'none';
                     }
@@ -776,8 +849,8 @@
                     if (dist < 1.8) {
                         scene.remove(obj);
                         interactiveObjects.splice(index, 1);
-                        score += 500;
-                        packagesCollected++;
+                        score += obj.userData.isDip ? 1500 : 500;
+                        if (!obj.userData.isDip) packagesCollected++;
                         document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
                         document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
                     }
