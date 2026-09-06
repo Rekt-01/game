@@ -3,178 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>True 3D Complex - Bulletproof</title>
+    <title>Modern 3D Complex</title>
     <style>
         body {
             margin: 0;
-            background-color: #000;
+            background-color: #050508;
             color: #fff;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
-            touch-action: manipulation;
+            user-select: none;
         }
         #ui {
             position: absolute;
-            top: 15px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 20px;
-            background: rgba(15, 12, 10, 0.85);
-            padding: 10px 20px;
-            border: 2px solid #5a4939;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 15px;
-            color: #f4d35e;
+            gap: 30px;
+            background: rgba(10, 10, 15, 0.85);
+            padding: 12px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: #4ade80;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             z-index: 10;
         }
-        #controls {
+        #instructions {
             position: absolute;
-            bottom: 25px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
+            background: rgba(10, 10, 15, 0.85);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 13px;
+            color: #94a3b8;
+            text-align: center;
+            pointer-events: none;
             z-index: 10;
         }
-        .ctrl-btn {
-            background-color: rgba(43, 36, 29, 0.9);
-            color: white;
-            border: 2px solid #5a4939;
-            font-size: 16px;
-            padding: 14px 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            outline: none;
-            user-select: none;
-            font-weight: bold;
-        }
-        .ctrl-btn:active {
-            background-color: #5a4939;
-        }
-        #loading-screen {
+        #crosshair {
             position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #111;
-            color: #f4d35e;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 50;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
         }
         #win-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(11, 11, 14, 0.95);
-            border: 3px solid #f4d35e;
+            background: rgba(15, 15, 22, 0.95);
+            border: 2px solid #4ade80;
             padding: 40px;
             text-align: center;
-            border-radius: 14px;
+            border-radius: 20px;
             display: none;
             z-index: 20;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
-        #win-screen h1 { color: #57cc99; margin-top: 0; }
+        #win-screen h1 { color: #4ade80; margin-top: 0; font-size: 28px; }
         #win-screen button {
-            margin-top: 15px;
-            padding: 12px 25px;
-            background: #2a9d8f;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #22c55e;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
+        #win-screen button:hover { background: #16a34a; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="loading-screen">Loading 3D Environment...</div>
+    <div id="crosshair"></div>
 
     <div id="ui">
         <span id="score-text">SCORE: 0</span>
         <span id="diamond-text">DIAMONDS: 0/3</span>
     </div>
 
-    <div id="controls">
-        <button class="ctrl-btn" id="btn-left">Turn Left ⬅️</button>
-        <button class="ctrl-btn" id="btn-forward">Move Forward ⬆️</button>
-        <button class="ctrl-btn" id="btn-right">Turn Right ➡️</button>
+    <div id="instructions">
+        Click anywhere to look around &bull; Use <b>W, A, S, D</b> to Move
     </div>
 
     <div id="win-screen">
-        <h1>COMPLEX CLEARED!</h1>
-        <p>All items collected and exit reached!</p>
+        <h1>COMPLEX CLEARED</h1>
+        <p>You collected all items and found the exit portal.</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
-        // Helper to generate a clean procedural fallback texture if external images fail
-        function createFallbackTexture(colorHex) {
+        // Procedural Clean Textures generator to guarantee zero loading stalls
+        function makeTexture(baseColor, accentColor, type) {
             const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
+            canvas.width = 256;
+            canvas.height = 256;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = colorHex;
-            ctx.fillRect(0, 0, 128, 128);
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(0, 0, 128, 128);
-            return new THREE.CanvasTexture(canvas);
-        }
+            
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(0, 0, 256, 256);
 
-        const textureLoader = new THREE.TextureLoader();
-        let loadedAssets = 0;
-        const totalAssets = 5;
-
-        function assetLoaded() {
-            loadedAssets++;
-            if (loadedAssets >= totalAssets) {
-                document.getElementById("loading-screen").style.display = "none";
-            }
-        }
-
-        function loadTextureWithFallback(url, fallbackColor) {
-            return textureLoader.load(
-                url,
-                (tex) => {
-                    tex.wrapS = THREE.RepeatWrapping;
-                    tex.wrapT = THREE.RepeatWrapping;
-                    assetLoaded();
-                },
-                undefined,
-                (err) => {
-                    console.warn("Asset load failed, using fallback:", err);
-                    assetLoaded();
+            ctx.fillStyle = accentColor;
+            if (type === 'brick') {
+                for (let y = 0; y < 256; y += 32) {
+                    ctx.fillRect(0, y, 256, 256);
+                    let offset = (y / 32) % 2 === 0 ? 0 : 32;
+                    for (let x = 0; x < 256; x += 64) {
+                        ctx.clearRect(x + offset - 2, y, 4, 32);
+                    }
                 }
-            );
+            } else if (type === 'wood') {
+                for (let i = 0; i < 256; i += 16) {
+                    ctx.fillStyle = i % 32 === 0 ? accentColor : baseColor;
+                    ctx.fillRect(0, i, 256, 16);
+                }
+            } else if (type === 'stone') {
+                for (let i = 0; i < 400; i++) {
+                    ctx.fillStyle = Math.random() > 0.5 ? accentColor : '#000000';
+                    ctx.fillRect(Math.random()*256, Math.random()*256, 4, 4);
+                }
+            } else if (type === 'grid') {
+                ctx.strokeStyle = accentColor;
+                ctx.lineWidth = 4;
+                ctx.strokeRect(0, 0, 256, 256);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
         }
 
-        const brickTex = loadTextureWithFallback("https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80", "#8b4513");
-        const woodTex = loadTextureWithFallback("https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80", "#a0522d");
-        const stoneTex = loadTextureWithFallback("https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80", "#708090");
-        const floorTex = loadTextureWithFallback("https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80", "#2f4f4f");
-        const ceilingTex = loadTextureWithFallback("https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80", "#191970");
+        const brickTex = makeTexture('#332211', '#1a1108', 'brick');
+        const woodTex = makeTexture('#5c3a21', '#3d2514', 'wood');
+        const stoneTex = makeTexture('#2a2f35', '#15171a', 'stone');
+        const floorTex = makeTexture('#111318', '#1f242d', 'grid');
+        const ceilingTex = makeTexture('#0b0c10', '#000000', 'grid');
 
-        // Setup Scene, Camera, Renderer
+        // Setup Scene & Renderer
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x0b0b0e, 0.15);
+        scene.background = new THREE.Color(0x050508);
+        scene.fog = new THREE.FogExp2(0x050508, 0.12);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
 
+        const pointLight = new THREE.PointLight(0x60a5fa, 1, 8);
+        camera.add(pointLight);
+        scene.add(camera);
+
+        // Map Layout: 1=Brick, 2=Wood, 3=Stone, 5=Diamond, 6=Crate, 7=Barrel, 9=Exit
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 5, 0, 1, 2, 2, 6, 2, 2, 0, 1],
@@ -195,31 +196,31 @@
 
         const wallSize = 2;
         const wallMaterials = {
-            1: new THREE.MeshStandardMaterial({ map: brickTex }),
-            2: new THREE.MeshStandardMaterial({ map: woodTex }),
-            3: new THREE.MeshStandardMaterial({ map: stoneTex })
+            1: new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.8 }),
+            2: new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.7 }),
+            3: new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 })
         };
 
-        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex });
-        const ceilingMat = new THREE.MeshStandardMaterial({ map: ceilingTex });
+        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.5 });
+        const ceilingMat = new THREE.MeshStandardMaterial({ map: ceilingTex, roughness: 0.9 });
 
+        // Build Environment Geometry
         for (let r = 0; r < map.length; r++) {
             for (let c = 0; c < map[r].length; c++) {
                 let tile = map[r][c];
                 let posX = (c - map[0].length / 2) * wallSize;
                 let posZ = (r - map.length / 2) * wallSize;
 
-                if (tile !== 1 && tile !== 2 && tile !== 3) {
-                    let floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
-                    floorMesh.rotation.x = -Math.PI / 2;
-                    floorMesh.position.set(posX, -wallSize / 2, posZ);
-                    scene.add(floorMesh);
+                // Floor & Ceiling
+                let floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
+                floorMesh.rotation.x = -Math.PI / 2;
+                floorMesh.position.set(posX, -wallSize / 2, posZ);
+                scene.add(floorMesh);
 
-                    let ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), ceilingMat);
-                    ceilingMesh.rotation.x = Math.PI / 2;
-                    ceilingMesh.position.set(posX, wallSize / 2, posZ);
-                    scene.add(ceilingMesh);
-                }
+                let ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), ceilingMat);
+                ceilingMesh.rotation.x = Math.PI / 2;
+                ceilingMesh.position.set(posX, wallSize / 2, posZ);
+                scene.add(ceilingMesh);
 
                 if (tile >= 1 && tile <= 3) {
                     let wallMesh = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, wallSize), wallMaterials[tile]);
@@ -227,28 +228,28 @@
                     scene.add(wallMesh);
                 } else if (tile === 5) {
                     let diamondMesh = new THREE.Mesh(
-                        new THREE.OctahedronGeometry(0.3),
-                        new THREE.MeshStandardMaterial({ color: 0x00bfff, emissive: 0x0044aa, roughness: 0.2 })
+                        new THREE.OctahedronGeometry(0.35),
+                        new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, roughness: 0.2, metalness: 0.8 })
                     );
                     diamondMesh.position.set(posX, 0, posZ);
                     diamondMesh.userData = { type: 'diamond', r: r, c: c };
                     scene.add(diamondMesh);
                     interactiveObjects.push(diamondMesh);
                 } else if (tile === 6) {
-                    let crateMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), wallMaterials[2]);
-                    crateMesh.position.set(posX, -0.6, posZ);
+                    let crateMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), wallMaterials[2]);
+                    crateMesh.position.set(posX, -0.55, posZ);
                     scene.add(crateMesh);
                 } else if (tile === 7) {
                     let barrelMesh = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.4, 0.4, 1, 16),
-                        new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.3 })
+                        new THREE.CylinderGeometry(0.4, 0.4, 1.1, 16),
+                        new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4, metalness: 0.3 })
                     );
-                    barrelMesh.position.set(posX, -0.5, posZ);
+                    barrelMesh.position.set(posX, -0.45, posZ);
                     scene.add(barrelMesh);
                 } else if (tile === 9) {
                     let exitMesh = new THREE.Mesh(
                         new THREE.BoxGeometry(wallSize, wallSize, 0.1),
-                        new THREE.MeshStandardMaterial({ color: 0x57cc99, emissive: 0x2a9d8f })
+                        new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x16a34a, roughness: 0.2 })
                     );
                     exitMesh.position.set(posX, 0, posZ);
                     exitMesh.userData = { type: 'exit', r: r, c: c };
@@ -258,31 +259,85 @@
             }
         }
 
-        let playerGridX = 1;
-        let playerGridY = 1;
-        camera.position.set((playerGridX - map[0].length / 2) * wallSize, 0, (playerGridY - map.length / 2) * wallSize);
-        let playerDirection = 0;
+        // Set Start Position
+        camera.position.set((1 - map[0].length / 2) * wallSize, 0, (1 - map.length / 2) * wallSize);
 
-        function updatePlayerPosition(forward, turn) {
-            if (gameWon) return;
+        // Pointer Lock & Mouse Look Controls
+        let euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
 
-            playerDirection += turn;
-            let moveStep = forward * 0.4;
+        document.body.addEventListener('click', () => {
+            document.body.requestPointerLock();
+        });
 
-            let newX = camera.position.x + Math.sin(playerDirection) * moveStep;
-            let newZ = camera.position.z + Math.cos(playerDirection) * moveStep;
+        document.addEventListener('mousemove', (event) => {
+            if (document.pointerLockElement !== document.body || gameWon) return;
+            const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+            const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-            let targetC = Math.floor(newX / wallSize + map[0].length / 2);
-            let targetR = Math.floor(newZ / wallSize + map.length / 2);
+            euler.setFromQuaternion(camera.quaternion);
+            euler.y -= movementX * 0.0025;
+            euler.x -= movementY * 0.0025;
+            euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+            camera.quaternion.setFromEuler(euler);
+        });
 
-            if (targetR >= 0 && targetR < map.length && targetC >= 0 && targetC < map[0].length) {
-                let tile = map[targetR][targetC];
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = true;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = true;
+        });
 
-                if (tile === 0 || tile === 5) {
-                    camera.position.x = newX;
-                    camera.position.z = newZ;
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = false;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = false;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
+        });
 
-                    if (tile === 5) {
+        let prevTime = performance.now();
+
+        // Animation Loop & Collision Physics
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+            prevTime = time;
+
+            if (!gameWon) {
+                velocity.x = 0;
+                velocity.z = 0;
+
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+
+                if (moveForward || moveBackward) velocity.z -= direction.z * 4.5;
+                if (moveLeft || moveRight) velocity.x -= direction.x * 4.5;
+
+                // Attempt movement with wall sliding / collision boundaries
+                let oldX = camera.position.x;
+                let oldZ = camera.position.z;
+
+                camera.translateX(-velocity.x * delta);
+                camera.translateZ(-velocity.z * delta);
+
+                let targetC = Math.floor(camera.position.x / wallSize + map[0].length / 2);
+                let targetR = Math.floor(camera.position.z / wallSize + map.length / 2);
+
+                if (targetR >= 0 && targetR < map.length && targetC >= 0 && targetC < map[0].length) {
+                    let tile = map[targetR][targetC];
+
+                    // Block movement if hitting walls (1-3) or props (6-7)
+                    if ((tile >= 1 && tile <= 3) || tile === 6 || tile === 7) {
+                        camera.position.x = oldX;
+                        camera.position.z = oldZ;
+                    } else if (tile === 5) {
+                        // Collect diamond
                         map[targetR][targetC] = 0;
                         score += 150;
                         diamondsCollected++;
@@ -294,39 +349,23 @@
                             scene.remove(interactiveObjects[objIndex]);
                             interactiveObjects.splice(objIndex, 1);
                         }
+                    } else if (tile === 9) {
+                        if (diamondsCollected >= totalDiamonds) {
+                            gameWon = true;
+                            document.exitPointerLock();
+                            document.getElementById("win-screen").style.display = "block";
+                        } else {
+                            camera.position.x = oldX;
+                            camera.position.z = oldZ;
+                        }
                     }
-                } else if (tile === 9) {
-                    if (diamondsCollected >= totalDiamonds) {
-                        gameWon = true;
-                        document.getElementById("win-screen").style.display = "block";
-                    } else {
-                        alert(`Door locked! Collect all ${totalDiamonds} diamonds first (${diamondsCollected}/${totalDiamonds}).`);
-                    }
+                } else {
+                    camera.position.x = oldX;
+                    camera.position.z = oldZ;
                 }
             }
 
-            camera.rotation.y = playerDirection;
-        }
-
-        document.getElementById("btn-left").addEventListener("click", () => updatePlayerPosition(0, 0.4));
-        document.getElementById("btn-right").addEventListener("click", () => updatePlayerPosition(0, -0.4));
-        document.getElementById("btn-forward").addEventListener("click", () => updatePlayerPosition(1, 0));
-
-        window.addEventListener("keydown", e => {
-            if (e.key === "ArrowLeft" || e.key === "a") updatePlayerPosition(0, 0.4);
-            if (e.key === "ArrowRight" || e.key === "d") updatePlayerPosition(0, -0.4);
-            if (e.key === "ArrowUp" || e.key === "w") updatePlayerPosition(1, 0);
-        });
-
-        window.addEventListener("resize", () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        function animate() {
-            requestAnimationFrame(animate);
-
+            // Spin collectibles
             interactiveObjects.forEach(obj => {
                 if (obj.userData.type === 'diamond') {
                     obj.rotation.y += 0.03;
@@ -336,6 +375,12 @@
             renderer.render(scene, camera);
         }
         animate();
+
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
