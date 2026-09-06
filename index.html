@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diamond Rush - Photo Textured Maze</title>
+    <title>Multi-Room Textured Maze</title>
     <style>
         body {
             margin: 0;
@@ -97,10 +97,10 @@
 </head>
 <body>
 
-    <div id="loading-screen">Loading Textures...</div>
+    <div id="loading-screen">Loading Room Textures...</div>
 
     <div id="ui">
-        <span id="level-text">LEVEL 1 - REAL PHOTO MAZE</span>
+        <span id="level-text">ROOMS & HALLWAYS COMPLEX</span>
     </div>
 
     <canvas id="raycastCanvas"></canvas>
@@ -112,9 +112,9 @@
     </div>
 
     <div id="win-screen">
-        <h1>WELL DONE!</h1>
-        <p>Maze complete!</p>
-        <button onclick="nextLevel()">NEXT LEVEL 2</button>
+        <h1>COMPLEX CLEARED!</h1>
+        <p>You navigated all rooms and hallways!</p>
+        <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
@@ -124,64 +124,84 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Load Real Photographic Textures from reliable online sources
-        const wallImage = new Image();
-        wallImage.crossOrigin = "anonymous";
-        wallImage.src = "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=256&auto=format&fit=crop&q=80"; // Dense green jungle leaves
+        // Load Different Real Photo Textures for Walls, Floor, and Ceiling
+        const wallBrick = new Image();
+        wallBrick.crossOrigin = "anonymous";
+        wallBrick.src = "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80"; // Red brick wall
 
-        const floorImage = new Image();
-        floorImage.crossOrigin = "anonymous";
-        floorImage.src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80"; // Tarmac pavement road surface
+        const wallWood = new Image();
+        wallWood.crossOrigin = "anonymous";
+        wallWood.src = "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80"; // Wooden panels
 
-        let texturesLoaded = 0;
-        function checkImagesLoaded() {
-            texturesLoaded++;
-            if (texturesLoaded >= 2) {
+        const wallStone = new Image();
+        wallStone.crossOrigin = "anonymous";
+        wallStone.src = "https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80"; // Stone dungeon wall
+
+        const floorTex = new Image();
+        floorTex.crossOrigin = "anonymous";
+        floorTex.src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80"; // Pavement floor
+
+        const ceilingTex = new Image();
+        ceilingTex.crossOrigin = "anonymous";
+        ceilingTex.src = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80"; // Interior ceiling panels
+
+        let loadedCount = 0;
+        function checkAllLoaded() {
+            loadedCount++;
+            if (loadedCount >= 5) {
                 document.getElementById("loading-screen").style.display = "none";
                 renderScene();
             }
         }
-        wallImage.onload = checkImagesLoaded;
-        floorImage.onload = checkImagesLoaded;
+        wallBrick.onload = checkAllLoaded;
+        wallWood.onload = checkAllLoaded;
+        wallStone.onload = checkAllLoaded;
+        floorTex.onload = checkAllLoaded;
+        ceilingTex.onload = checkAllLoaded;
 
-        // Maze Grid Configuration
+        // Map Grid defining interconnected Rooms and Hallways (1=Brick, 2=Wood Room, 3=Stone Chamber, 9=Exit)
         let map = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1, 0, 0, 0, 9, 1],
-            [1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
-            [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-            [1, 0, 1, 1, 1, 1, 0, 1, 0, 1],
-            [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-            [1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 0, 1],
+            [1, 0, 1, 0, 1, 2, 0, 0, 0, 2, 0, 1],
+            [1, 0, 1, 0, 0, 0, 0, 3, 0, 2, 0, 1],
+            [1, 1, 1, 1, 1, 0, 3, 3, 3, 3, 0, 1],
+            [1, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 1],
+            [1, 0, 1, 1, 1, 1, 3, 0, 0, 3, 9, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
 
         let player = { x: 1.5, y: 1.5, angle: 0 };
         let gameWon = false;
 
         function renderScene() {
-            if (texturesLoaded < 2) return;
+            if (loadedCount < 5) return;
 
-            // Simple soft gradient sky for background comfort
-            let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height / 2);
-            skyGrad.addColorStop(0, '#1a2530');
-            skyGrad.addColorStop(1, '#3a506b');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
-
-            // Floor rendering using real tarmac photo texture strip stamping
             let halfH = canvas.height / 2;
-            for (let y = halfH; y < canvas.height; y += 4) {
-                let dist = (canvas.height / 2) / (y - halfH);
-                let tarmacYIndex = Math.floor((dist * 20) % floorImage.height);
-                ctx.drawImage(floorImage, 0, tarmacYIndex, floorImage.width, 1, 0, y, canvas.width, 4);
+
+            // Render Floor and Ceiling with perspective scanning
+            for (let y = 0; y < canvas.height; y++) {
+                let isFloor = y > halfH;
+                let row = isFloor ? y - halfH : halfH - y;
+                if (row === 0) continue;
+
+                let dist = (canvas.height / 2) / row;
+                let textureYIndex = Math.floor((dist * 15) % floorTex.height);
+
+                // Quick scanline background fill per row
+                ctx.drawImage(isFloor ? floorTex : ceilingTex, 0, textureYIndex, floorTex.width, 1, 0, y, canvas.width, 1);
+                
+                // Distance dimming shadow effect for depth
+                let dim = Math.min(0.85, dist / 8);
+                ctx.fillStyle = `rgba(0, 0, 0, ${dim})`;
+                ctx.fillRect(0, y, canvas.width, 1);
             }
 
             let numRays = canvas.width;
             let fov = Math.PI / 3;
 
-            // Raycasting Loop for Photographic Wall Slices
+            // Raycasting Loop for Walls
             for (let i = 0; i < numRays; i++) {
                 let rayAngle = player.angle - fov / 2 + (i / numRays) * fov;
                 
@@ -190,6 +210,7 @@
                 let hitXCoord = 0;
                 let hitYCoord = 0;
                 let isVerticalHit = false;
+                let wallType = 1;
 
                 let eyeX = Math.cos(rayAngle);
                 let eyeY = Math.sin(rayAngle);
@@ -209,6 +230,7 @@
                         hitWall = true;
                         hitXCoord = testX;
                         hitYCoord = testY;
+                        wallType = map[mapY][mapX];
                         if (Math.abs(testX - mapX) < 0.05 || Math.abs(testX - (mapX + 1)) < 0.05) {
                             isVerticalHit = true;
                         }
@@ -217,19 +239,23 @@
 
                 let correctedDistance = distanceToWall * Math.cos(rayAngle - player.angle);
                 let wallHeight = Math.min(canvas.height * 2, (canvas.height / correctedDistance));
-                let ceiling = (canvas.height - wallHeight) / 2;
+                let ceilingPos = (canvas.height - wallHeight) / 2;
 
-                // Map exact column coordinate onto the leaf photograph
+                // Pick the correct photo texture based on room/wall ID
+                let activeTexture = wallBrick;
+                if (wallType === 2) activeTexture = wallWood;
+                if (wallType === 3) activeTexture = wallStone;
+
                 let textureX = isVerticalHit ? (hitYCoord % 1) : (hitXCoord % 1);
-                textureX = Math.floor(textureX * wallImage.width);
+                textureX = Math.floor(textureX * activeTexture.width);
 
-                let sourceX = Math.max(0, Math.min(wallImage.width - 1, textureX));
-                ctx.drawImage(wallImage, sourceX, 0, 1, wallImage.height, i, ceiling, 1, wallHeight);
+                let sourceX = Math.max(0, Math.min(activeTexture.width - 1, textureX));
+                ctx.drawImage(activeTexture, sourceX, 0, 1, activeTexture.height, i, ceilingPos, 1, wallHeight);
 
-                // Natural atmospheric darkness shadow overlay based on distance
+                // Depth shading overlay
                 let shade = Math.min(0.8, correctedDistance / 10);
                 ctx.fillStyle = `rgba(0, 0, 0, ${shade})`;
-                ctx.fillRect(i, ceiling, 1, wallHeight);
+                ctx.fillRect(i, ceilingPos, 1, wallHeight);
             }
         }
 
@@ -257,24 +283,6 @@
                 }
             }
 
-            renderScene();
-        }
-
-        function nextLevel() {
-            document.getElementById("win-screen").style.display = "none";
-            map = [
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-                [1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-                [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-                [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1],
-                [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-                [1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 1, 9, 1],
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-            ];
-            player.x = 1.5; player.y = 1.5; player.angle = 0;
-            gameWon = false;
             renderScene();
         }
 
