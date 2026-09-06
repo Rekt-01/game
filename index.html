@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Ultimate Degen Edition</title>
+    <title>Rug Ville - Bloom & Post-Processing Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #78b1f5;
+            background-color: #050b14;
             color: #111;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
-            transition: background-color 2s;
         }
         #ui {
             position: absolute;
@@ -22,15 +21,16 @@
             transform: translateX(-50%);
             display: flex;
             gap: 20px;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
             padding: 10px 24px;
-            border: 2px solid #2563eb;
+            border: 2px solid #38bdf8;
             border-radius: 30px;
             font-weight: bold;
             font-size: 13px;
             letter-spacing: 1px;
-            color: #1d4ed8;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            color: #38bdf8;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             z-index: 10;
             pointer-events: none;
         }
@@ -39,38 +39,18 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
             padding: 8px 16px;
             border-radius: 10px;
-            border: 2px solid #2563eb;
+            border: 2px solid #38bdf8;
             font-size: 12px;
-            color: #334155;
+            color: #e2e8f0;
             text-align: center;
             pointer-events: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             z-index: 10;
             white-space: nowrap;
-        }
-        #alert-banner {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(220, 38, 38, 0.95);
-            color: #fff;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
-            display: none;
-            z-index: 15;
-            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
-            animation: pulse 1s infinite alternate;
-        }
-        @keyframes pulse {
-            0% { transform: translateX(-50%) scale(1); }
-            100% { transform: translateX(-50%) scale(1.05); }
         }
         #crosshair {
             position: absolute;
@@ -79,7 +59,7 @@
             transform: translate(-50%, -50%);
             width: 8px;
             height: 8px;
-            background-color: #ef4444;
+            background-color: #38bdf8;
             border: 2px solid #fff;
             border-radius: 50%;
             pointer-events: none;
@@ -97,14 +77,15 @@
         }
         .speech-bubble {
             position: absolute;
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #0f172a;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(4px);
+            border: 2px solid #38bdf8;
             padding: 6px 12px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: bold;
-            color: #0f172a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            color: #f8fafc;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
             white-space: nowrap;
             transform: translate(-50%, -100%);
             display: none;
@@ -119,54 +100,28 @@
             font-size: 10px;
             font-weight: 900;
             letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.8); /* Glow effect */
             white-space: nowrap;
             transform: translate(-50%, -100%);
             display: none;
             text-transform: uppercase;
-        }
-        #joystick-zone {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 140px;
-            background: rgba(255, 255, 255, 0.25);
-            border: 3px solid rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            z-index: 15;
-            touch-action: none;
-            display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        #joystick-handle {
-            position: absolute;
-            top: 42px;
-            left: 42px;
-            width: 50px;
-            height: 50px;
-            background: rgba(37, 99, 235, 0.85);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            pointer-events: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         #win-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(15, 23, 42, 0.95);
             border: 3px solid #22c55e;
             padding: 40px;
             text-align: center;
             border-radius: 20px;
             display: none;
             z-index: 25;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            color: #fff;
         }
-        #win-screen h1 { color: #16a34a; margin-top: 0; }
+        #win-screen h1 { color: #22c55e; margin-top: 0; }
         #win-screen button {
             margin-top: 20px;
             padding: 12px 30px;
@@ -177,11 +132,17 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
         }
-        #win-screen button:hover { background: #16a34a; }
     </style>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 </head>
 <body>
 
@@ -190,421 +151,111 @@
         <span id="score-text">RUG VILLE CASH: $0</span>
         <span id="package-text">PACKAGES: 0/4</span>
     </div>
-    <div id="alert-banner">🚨 MARKET CRASH: RUG PULL IMMINENT! 🚨</div>
     <div id="speech-overlay"></div>
-    <div id="instructions">PC: Click to look &amp; WASD | Mobile: Drag Joystick to Move &amp; Turn</div>
-    
-    <div id="joystick-zone">
-        <div id="joystick-handle"></div>
-    </div>
+    <div id="instructions">Click to look &amp; WASD to move</div>
 
     <div id="win-screen">
         <h1>RUG VILLE SAVED!</h1>
-        <p>You survived the crash and delivered everything!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
-        if (typeof THREE === 'undefined') {
-            alert('Failed to load Three.js library.');
-        }
-
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        scene.fog = new THREE.FogExp2(0x87ceeb, 0.012);
+        scene.background = new THREE.Color(0x050b14);
+        scene.fog = new THREE.FogExp2(0x050b14, 0.012);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
         document.body.appendChild(renderer.domElement);
 
-        // Lighting & Day/Night Cycle Setup
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+        // --- POST PROCESSING & BLOOM SETUP ---
+        const composer = new THREE.EffectComposer(renderer);
+        const renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            0.65,  // Bloom Strength (Makes emissive materials glow)
+            0.4,   // Radius
+            0.8    // Threshold
+        );
+        composer.addPass(bloomPass);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x38bdf8, 0.5);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.3);
+        const sunLight = new THREE.DirectionalLight(0xffedd5, 1.5);
         sunLight.position.set(50, 100, 50);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        let d = 100;
-        sunLight.shadow.camera.left = -d;
-        sunLight.shadow.camera.right = d;
-        sunLight.shadow.camera.top = d;
-        sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        let timeOfDay = 0; // 0 = day, increments to cycle
-
         // Ground Plane
-        const groundGeo = new THREE.PlaneGeometry(1000, 1000);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x38a169, roughness: 0.9 });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(1000, 1000),
+            new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 })
+        );
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -1.2;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Roads
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-
-        function createRoad(x, z, width, length, rotation = 0) {
-            let roadGroup = new THREE.Group();
-            let road = new THREE.Mesh(new THREE.PlaneGeometry(width, length), roadMat);
-            road.rotation.x = -Math.PI / 2;
-            road.receiveShadow = true;
-            roadGroup.add(road);
-
-            for (let i = -length / 2 + 3; i < length / 2; i += 6) {
-                let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2), lineMat);
-                line.rotation.x = -Math.PI / 2;
-                line.position.y = 0.01;
-                if (rotation === 0) line.position.z = i;
-                else line.position.x = i;
-                roadGroup.add(line);
-            }
-            roadGroup.position.set(x, -1.18, z);
-            roadGroup.rotation.y = rotation;
-            scene.add(roadGroup);
-        }
-
-        createRoad(0, 0, 16, 400, 0);
-        createRoad(0, 0, 400, 16, Math.PI / 2);
-        createRoad(0, -120, 16, 400, 0);
-        createRoad(-120, 0, 400, 16, Math.PI / 2);
-
-        // Welcome Sign
-        function createWelcomeSign(x, z, rotation) {
-            let signGroup = new THREE.Group();
-            let postMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
-            
-            let p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5), postMat);
-            p1.position.set(-2, 1.3, 0);
-            let p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5), postMat);
-            p2.position.set(2, 1.3, 0);
-            signGroup.add(p1);
-            signGroup.add(p2);
-
-            let board = new THREE.Mesh(
-                new THREE.BoxGeometry(6, 1.8, 0.3),
-                new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.3 })
-            );
-            board.position.y = 3.2;
-            signGroup.add(board);
-
-            signGroup.position.set(x, 0, z);
-            signGroup.rotation.y = rotation;
-            scene.add(signGroup);
-        }
-        createWelcomeSign(0, 75, 0);
-
-        // Buildings & Degen Signs
+        // Basic Building with Glowing Emissive Windows
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        const buildingNames = [
-            "Rug Casino", "Rug Shop", "Rug Hotel", "Rug Bank", 
-            "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"
-        ];
-
-        function createBuilding(x, z, width, height, depth, wallColor, roofColor, signText) {
+        function createBuilding(x, z, width, height, depth, signText) {
             let group = new THREE.Group();
             let walls = new THREE.Mesh(
                 new THREE.BoxGeometry(width, height, depth),
-                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.6 })
+                new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 })
             );
             walls.position.y = height / 2 - 1.18;
             walls.castShadow = true;
             walls.receiveShadow = true;
             group.add(walls);
 
-            let roof = new THREE.Mesh(
-                new THREE.BoxGeometry(width + 0.5, 0.8, depth + 0.5),
-                new THREE.MeshStandardMaterial({ color: roofColor, roughness: 0.5 })
+            // Emissive window layer that catches the Bloom effect
+            let glowWindow = new THREE.Mesh(
+                new THREE.BoxGeometry(width + 0.1, height * 0.6, depth + 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.6, roughness: 0.2 })
             );
-            roof.position.y = height - 0.7;
-            roof.castShadow = true;
-            group.add(roof);
+            glowWindow.position.y = height / 2 - 1.18;
+            group.add(glowWindow);
 
             group.position.set(x, 0, z);
             scene.add(group);
-            solidColliders.push({ x: x, z: z, sizeX: width + 0.5, sizeZ: depth + 0.5 });
+            solidColliders.push({ x: x, z: z, sizeX: width + 0.6, sizeZ: depth + 0.6 });
 
             let signEl = document.createElement('div');
             signEl.className = 'building-sign';
             signEl.innerText = signText;
             speechOverlay.appendChild(signEl);
 
-            buildingSignsData.push({
-                mesh: group,
-                signElement: signEl,
-                offsetY: height + 0.8
-            });
+            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: height + 0.8 });
         }
 
-        const bColors = [0xe2e8f0, 0xcbd5e1, 0x94a3b8, 0xf1f5f9, 0xdcbdab];
-        const rColors = [0x334155, 0x1e293b, 0x0f172a, 0x475569];
+        createBuilding(-35, -35, 14, 11, 14, "Rug Casino");
+        createBuilding(35, -35, 14, 11, 14, "Scam Exchange");
 
-        let nameIdx = 0;
-        for (let xPos of [-70, -35, 35, 70]) {
-            for (let zPos of [-70, -35, 35, 70]) {
-                createBuilding(xPos, zPos, 14, 9, 14, bColors[Math.floor(Math.random()*bColors.length)], rColors[Math.floor(Math.random()*rColors.length)], buildingNames[nameIdx % buildingNames.length]);
-                nameIdx++;
-            }
-        }
-
-        // --- MOVING VEHICLES SYSTEM (Strictly on Road Grid) ---
-        const activeVehicles = [];
-
-        function createVehicle(x, z, color, isBus = false, axis = 'z', minBound = -150, maxBound = 150, speed = 12) {
-            let carGroup = new THREE.Group();
-            let w = isBus ? 2.4 : 1.8;
-            let l = isBus ? 6.5 : 3.8;
-            let h = isBus ? 2.6 : 1.4;
-
-            let body = new THREE.Mesh(
-                new THREE.BoxGeometry(w, h, l),
-                new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.4 })
-            );
-            body.position.y = h / 2 - 0.7;
-            body.castShadow = true;
-            carGroup.add(body);
-
-            let wheelMat = new THREE.MeshStandardMaterial({ color: 0x111, roughness: 0.8 });
-            let wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12);
-            wheelGeo.rotateZ(Math.PI / 2);
-
-            [-w/2 - 0.1, w/2 + 0.1].forEach(wx => {
-                [-l/3, l/3].forEach(wz => {
-                    let wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                    wheel.position.set(wx, -0.6, wz);
-                    carGroup.add(wheel);
-                });
-            });
-
-            carGroup.position.set(x, 0, z);
-            if (axis === 'x') carGroup.rotation.y = (speed > 0) ? Math.PI / 2 : -Math.PI / 2;
-            else carGroup.rotation.y = (speed > 0) ? 0 : Math.PI;
-
-            scene.add(carGroup);
-
-            activeVehicles.push({
-                mesh: carGroup,
-                axis: axis,
-                pos: (axis === 'z') ? z : x,
-                min: minBound,
-                max: maxBound,
-                speed: speed,
-                fixedCoord: (axis === 'z') ? x : z
-            });
-        }
-
-        createVehicle(4, -150, 0xdc2626, false, 'z', -160, 160, 16);
-        createVehicle(-4, 150, 0x2563eb, false, 'z', -160, 160, -20);
-        createVehicle(150, 4, 0xf59e0b, true, 'x', -160, 160, 14);
-        createVehicle(-150, -4, 0xffffff, true, 'x', -160, 160, -15);
-
-        // --- REALISTIC PEOPLE, SEC POLICE & PATROLLING AGENTS ---
-        const activeCitizens = [];
-        const degenQuotes = [
-            "Dev dumped the floor! Rugged again!",
-            "Bro I'm down 90% on memecoins",
-            "Wen moon ser? This project is cooked",
-            "Working overtime just to buy the dip",
-            "Touching grass is bullish",
-            "Paper hands everywhere in Rug Ville",
-            "SEC is auditing the liquidity pool!",
-            "Who built this road? Absolute scam!"
-        ];
-
-        function createRealisticPerson(x, z, shirtColor, isWorker = false, isPolice = false) {
-            let personGroup = new THREE.Group();
-
-            let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 });
-            let outfitColor = isPolice ? 0x1e3a8a : shirtColor;
-            let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.7 });
-            let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e3a8a, roughness: 0.8 });
-
-            let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), outfitMat);
-            torso.position.y = -0.2;
-            personGroup.add(torso);
-
-            let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), skinMat);
-            head.position.y = 0.35;
-            personGroup.add(head);
-
-            if (isWorker) {
-                let hat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.18, 0.5), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
-                hat.position.y = 0.52;
-                personGroup.add(hat);
-            } else if (isPolice) {
-                let cap = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.6), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-                cap.position.y = 0.52;
-                personGroup.add(cap);
-            }
-
-            let armGeo = new THREE.BoxGeometry(0.16, 0.7, 0.18);
-            let leftArm = new THREE.Mesh(armGeo, outfitMat);
-            leftArm.position.set(-0.38, -0.2, 0);
-            let rightArm = new THREE.Mesh(armGeo, outfitMat);
-            rightArm.position.set(0.38, -0.2, 0);
-            personGroup.add(leftArm);
-            personGroup.add(rightArm);
-
-            let legGeo = new THREE.BoxGeometry(0.2, 0.75, 0.2);
-            let leftLeg = new THREE.Mesh(legGeo, pantsMat);
-            leftLeg.position.set(-0.15, -0.85, 0);
-            let rightLeg = new THREE.Mesh(legGeo, pantsMat);
-            rightLeg.position.set(0.15, -0.85, 0);
-            personGroup.add(leftLeg);
-            personGroup.add(rightLeg);
-
-            personGroup.position.set(x, 0, z);
-            scene.add(personGroup);
-
-            let bubble = document.createElement('div');
-            bubble.className = 'speech-bubble';
-            bubble.innerText = isPolice ? "SEC Agent: Show me your crypto license!" : degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
-            speechOverlay.appendChild(bubble);
-
-            activeCitizens.push({
-                mesh: personGroup,
-                leftArm: leftArm,
-                rightArm: rightArm,
-                leftLeg: leftLeg,
-                rightLeg: rightLeg,
-                x: x,
-                z: z,
-                originX: x,
-                originZ: z,
-                angle: Math.random() * Math.PI * 2,
-                speed: isPolice ? 2.2 : (1.2 + Math.random() * 1.2),
-                isPolice: isPolice,
-                bubble: bubble,
-                timer: Math.random() * 10
-            });
-        }
-
-        const colors = [0xef4444, 0x3b82f6, 0x10b981, 0xa855f7, 0xf97316];
-        for (let i = 0; i < 12; i++) {
-            createRealisticPerson((Math.random() - 0.5) * 120, (Math.random() - 0.5) * 120, colors[Math.floor(Math.random()*colors.length)], Math.random() > 0.4, false);
-        }
-        // Spawn SEC Police Patrollers
-        createRealisticPerson(20, 20, 0, false, true);
-        createRealisticPerson(-30, -30, 0, false, true);
-
-        // Animals
-        function createDog(x, z) {
-            let dog = new THREE.Group();
-            let body = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 0.4, 0.9),
-                new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 })
-            );
-            body.position.y = -0.8;
-            dog.add(body);
-
-            let head = new THREE.Mesh(
-                new THREE.BoxGeometry(0.3, 0.3, 0.3),
-                new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 })
-            );
-            head.position.set(0, -0.6, 0.5);
-            dog.add(head);
-
-            dog.position.set(x, 0, z);
-            scene.add(dog);
-        }
-
-        createDog(-12, 12);
-        createDog(15, -20);
-
-        // Trees
-        function createTree(x, z) {
-            let treeGroup = new THREE.Group();
-            let trunk = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.5, 0.7, 4, 8),
-                new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 })
-            );
-            trunk.position.y = 1;
-            treeGroup.add(trunk);
-
-            let leaves = new THREE.Mesh(
-                new THREE.DodecahedronGeometry(3),
-                new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.8 })
-            );
-            leaves.position.y = 4.5;
-            treeGroup.add(leaves);
-
-            treeGroup.position.set(x, -1.18, z);
-            scene.add(treeGroup);
-            solidColliders.push({ x: x, z: z, sizeX: 1.2, sizeZ: 1.2 });
-        }
-
-        for (let i = -140; i <= 140; i += 35) {
-            if (Math.abs(i) > 20) {
-                createTree(i, -22);
-                createTree(i, 22);
-                createTree(-22, i);
-                createTree(22, i);
-            }
-        }
-
-        // Collectibles & Packages (Including Rug Pull Event "Dip Packages")
-        let score = 0;
-        let packagesCollected = 0;
-        const totalPackages = 4;
-        let gameWon = false;
-        const interactiveObjects = [];
-
-        function createPackage(x, z, isDip = false) {
-            let pkg = new THREE.Mesh(
-                new THREE.BoxGeometry(1.2, 1.2, 1.2),
-                new THREE.MeshStandardMaterial({ color: isDip ? 0xfacc15 : 0xef4444, roughness: 0.3, metalness: 0.2 })
-            );
-            pkg.position.set(x, -0.5, z);
-            pkg.castShadow = true;
-            pkg.userData = { type: 'package', x: x, z: z, isDip: isDip };
-            scene.add(pkg);
-            interactiveObjects.push(pkg);
-        }
-
-        createPackage(-50, -50);
-        createPackage(50, -50);
-        createPackage(-50, 50);
-        createPackage(60, 60);
-
-        let exitZone = new THREE.Mesh(
-            new THREE.BoxGeometry(6, 0.1, 6),
-            new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 })
-        );
-        exitZone.position.set(0, -1.15, -90);
-        scene.add(exitZone);
-
-        camera.position.set(0, 0, 80);
-
-        // Random Rug Pull Event Timer
-        let rugPullTimer = 0;
-        let rugPullActive = false;
-
-        // Controls State
-        let yaw = 0;
-        let pitch = 0;
-        const playerRadius = 0.5;
+        // Player Controls state
+        let yaw = 0, pitch = 0;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        let joystickX = 0, joystickY = 0;
 
         renderer.domElement.addEventListener('click', () => {
-            if (!('ontouchstart' in window) && document.pointerLockElement !== document.body) {
+            if (document.pointerLockElement !== document.body) {
                 document.body.requestPointerLock();
             }
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== document.body || gameWon) return;
+            if (document.pointerLockElement !== document.body) return;
             yaw -= e.movementX * 0.002;
             pitch -= e.movementY * 0.002;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
@@ -612,89 +263,20 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
-            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
-            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = true;
-            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = true;
+            if (e.code === 'KeyW') moveForward = true;
+            if (e.code === 'KeyS') moveBackward = true;
+            if (e.code === 'KeyA') moveLeft = true;
+            if (e.code === 'KeyD') moveRight = true;
         });
 
         document.addEventListener('keyup', (e) => {
-            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = false;
-            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = false;
-            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
-            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
+            if (e.code === 'KeyW') moveForward = false;
+            if (e.code === 'KeyS') moveBackward = false;
+            if (e.code === 'KeyA') moveLeft = false;
+            if (e.code === 'KeyD') moveRight = false;
         });
 
-        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        if (isTouchDevice) {
-            document.getElementById('joystick-zone').style.display = 'block';
-            document.getElementById('instructions').innerText = 'Rug Ville: Push joystick to move & steer!';
-
-            let joystickZone = document.getElementById('joystick-zone');
-            let joystickHandle = document.getElementById('joystick-handle');
-            let touchId = null;
-            let centerPos = { x: 0, y: 0 };
-
-            joystickZone.addEventListener('touchstart', (e) => {
-                if (touchId !== null) return;
-                let touch = e.changedTouches[0];
-                touchId = touch.identifier;
-                let rect = joystickZone.getBoundingClientRect();
-                centerPos.x = rect.left + rect.width / 2;
-                centerPos.y = rect.top + rect.height / 2;
-            });
-
-            joystickZone.addEventListener('touchmove', (e) => {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    let touch = e.changedTouches[i];
-                    if (touch.identifier === touchId) {
-                        let dx = touch.clientX - centerPos.x;
-                        let dy = touch.clientY - centerPos.y;
-                        let dist = Math.hypot(dx, dy);
-                        let maxDist = 45;
-
-                        if (dist > maxDist) {
-                            dx = (dx / dist) * maxDist;
-                            dy = (dy / dist) * maxDist;
-                        }
-
-                        joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
-                        joystickX = dx / maxDist;
-                        joystickY = dy / maxDist;
-                    }
-                }
-            });
-
-            let endTouch = (e) => {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === touchId) {
-                        touchId = null;
-                        joystickX = 0;
-                        joystickY = 0;
-                        joystickHandle.style.transform = `translate(0px, 0px)`;
-                    }
-                }
-            };
-            joystickZone.addEventListener('touchend', endTouch);
-            joystickZone.addEventListener('touchcancel', endTouch);
-        }
-
-        function checkCollision(x, z) {
-            for (let obj of solidColliders) {
-                let halfX = obj.sizeX / 2;
-                let halfZ = obj.sizeZ / 2;
-                if (
-                    x + playerRadius > obj.x - halfX &&
-                    x - playerRadius < obj.x + halfX &&
-                    z + playerRadius > obj.z - halfZ &&
-                    z - playerRadius < obj.z + halfZ
-                ) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
+        camera.position.set(0, 0, 40);
         let prevTime = performance.now();
 
         function animate() {
@@ -704,171 +286,39 @@
             let delta = Math.min((time - prevTime) / 1000, 0.1);
             prevTime = time;
 
-            if (!gameWon) {
-                let speed = 8.5 * delta;
-                let dir = new THREE.Vector3();
+            let speed = 8.5 * delta;
+            let dir = new THREE.Vector3();
+            if (moveForward) dir.z -= 1;
+            if (moveBackward) dir.z += 1;
+            if (moveLeft) dir.x -= 1;
+            if (moveRight) dir.x += 1;
 
-                if (moveForward) dir.z -= 1;
-                if (moveBackward) dir.z += 1;
-                if (moveLeft) dir.x -= 1;
-                if (moveRight) dir.x += 1;
-
-                if (isTouchDevice) {
-                    if (Math.abs(joystickX) > 0.1) {
-                        yaw -= joystickX * 2.2 * delta;
-                    }
-                    if (Math.abs(joystickY) > 0.1) {
-                        dir.z += joystickY;
-                    }
-                }
-
-                if (dir.lengthSq() > 0) {
-                    dir.normalize();
-                    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-
-                    let nextX = camera.position.x + dir.x * speed;
-                    let nextZ = camera.position.z + dir.z * speed;
-
-                    if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
-                    if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
-                }
-
-                camera.rotation.set(pitch, yaw, 0, 'YXZ');
-                camera.position.y = 0;
-
-                // Day / Night Cycle Progression
-                timeOfDay += delta * 0.05;
-                let cycle = Math.sin(timeOfDay);
-                sunLight.intensity = Math.max(0.2, cycle * 1.3);
-                if (cycle < 0) {
-                    scene.background.setHex(0x0f172a); // Night sky
-                    scene.fog.color.setHex(0x0f172a);
-                } else {
-                    scene.background.setHex(0x87ceeb); // Day sky
-                    scene.fog.color.setHex(0x87ceeb);
-                }
-
-                // Random Rug Pull Event Trigger
-                rugPullTimer += delta;
-                if (rugPullTimer > 25 && !rugPullActive) {
-                    rugPullActive = true;
-                    document.getElementById("alert-banner").style.display = "block";
-                    createPackage((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, true);
-                    setTimeout(() => {
-                        document.getElementById("alert-banner").style.display = "none";
-                        rugPullActive = false;
-                        rugPullTimer = 0;
-                    }, 6000);
-                }
-
-                // Animate Road Traffic
-                activeVehicles.forEach(v => {
-                    v.pos += v.speed * delta;
-                    if (v.pos > v.max) v.pos = v.min;
-                    if (v.pos < v.min) v.pos = v.max;
-
-                    if (v.axis === 'z') {
-                        v.mesh.position.z = v.pos;
-                    } else {
-                        v.mesh.position.x = v.pos;
-                    }
-                });
-
-                // Animate Citizens, Limbs & Police Patrollers
-                activeCitizens.forEach(c => {
-                    let moveMultiplier = c.isPolice ? 1.5 : 1.0;
-                    if (rugPullActive) moveMultiplier *= 1.8; // Panicked movement during crash
-
-                    c.angle += delta * c.speed * 0.6 * moveMultiplier;
-                    c.x = c.originX + Math.sin(c.angle) * (c.isPolice ? 15 : 7);
-                    c.z = c.originZ + Math.cos(c.angle) * (c.isPolice ? 15 : 7);
-                    c.mesh.position.set(c.x, 0, c.z);
-
-                    let swing = Math.sin(time * 0.01 * c.speed * moveMultiplier) * 0.5;
-                    c.leftLeg.rotation.x = swing;
-                    c.rightLeg.rotation.x = -swing;
-                    c.leftArm.rotation.x = -swing;
-                    c.rightArm.rotation.x = swing;
-
-                    c.timer += delta;
-                    if (c.timer > 6) {
-                        c.timer = 0;
-                        if (Math.random() > 0.3 && !c.isPolice) {
-                            c.bubble.innerText = degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
-                        }
-                    }
-
-                    let vector = new THREE.Vector3(c.x, 1.2, c.z);
-                    vector.project(camera);
-                    let distanceToPlayer = camera.position.distanceTo(c.mesh.position);
-                    if (vector.z < 1 && distanceToPlayer < 35) {
-                        let xCoord = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                        let yCoord = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-                        c.bubble.style.left = `${xCoord}px`;
-                        c.bubble.style.top = `${yCoord}px`;
-                        c.bubble.style.display = 'block';
-                    } else {
-                        c.bubble.style.display = 'none';
-                    }
-
-                    // SEC Police Chase check
-                    if (c.isPolice && distanceToPlayer < 4) {
-                        score = Math.max(0, score - 100);
-                        document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
-                    }
-                });
-
-                // Project Building Signs
-                buildingSignsData.forEach(b => {
-                    let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z);
-                    vector.project(camera);
-                    let distanceToPlayer = camera.position.distanceTo(b.mesh.position);
-                    if (vector.z < 1 && distanceToPlayer < 60) {
-                        let xCoord = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                        let yCoord = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-                        b.signElement.style.left = `${xCoord}px`;
-                        b.signElement.style.top = `${yCoord}px`;
-                        b.signElement.style.display = 'block';
-                        // Glow neon at night
-                        if (cycle < 0) {
-                            b.signElement.style.background = '#facc15';
-                            b.signElement.style.color = '#0f172a';
-                            b.signElement.style.boxShadow = '0 0 15px #facc15';
-                        } else {
-                            b.signElement.style.background = '#0f172a';
-                            b.signElement.style.color = '#facc15';
-                            b.signElement.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
-                        }
-                    } else {
-                        b.signElement.style.display = 'none';
-                    }
-                });
-
-                interactiveObjects.forEach((obj, index) => {
-                    let dist = Math.hypot(camera.position.x - obj.userData.x, camera.position.z - obj.userData.z);
-                    if (dist < 1.8) {
-                        scene.remove(obj);
-                        interactiveObjects.splice(index, 1);
-                        score += obj.userData.isDip ? 1500 : 500;
-                        if (!obj.userData.isDip) packagesCollected++;
-                        document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
-                        document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
-                    }
-                });
-
-                let distToExit = Math.hypot(camera.position.x - exitZone.position.x, camera.position.z - exitZone.position.z);
-                if (distToExit < 4 && packagesCollected >= totalPackages) {
-                    gameWon = true;
-                    if (document.pointerLockElement) document.exitPointerLock();
-                    document.getElementById("win-screen").style.display = "block";
-                }
+            if (dir.lengthSq() > 0) {
+                dir.normalize();
+                dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                camera.position.x += dir.x * speed;
+                camera.position.z += dir.z * speed;
             }
+            camera.position.y = 0;
 
-            interactiveObjects.forEach(obj => {
-                obj.rotation.y += 0.02;
+            // Project building sign markers to DOM overlay
+            buildingSignsData.forEach(b => {
+                let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z);
+                vector.project(camera);
+                let distance = camera.position.distanceTo(b.mesh.position);
+                if (vector.z < 1 && distance < 60) {
+                    let xCoord = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                    let yCoord = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
+                    b.signElement.style.left = `${xCoord}px`;
+                    b.signElement.style.top = `${yCoord}px`;
+                    b.signElement.style.display = 'block';
+                } else {
+                    b.signElement.style.display = 'none';
+                }
             });
 
-            renderer.render(scene, camera);
+            // Render through Post-Processing Composer instead of standard renderer
+            composer.render();
         }
         animate();
 
@@ -876,6 +326,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
