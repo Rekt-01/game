@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - High-Poly Realistic Edition</title>
+    <title>Rug Ville - Loop Circuit & Driveable Cars Edition</title>
     <style>
         body {
             margin: 0;
@@ -190,11 +190,11 @@
     <div id="crosshair"></div>
     <div id="ui">
         <span id="score-text">RUG VILLE CASH: $0</span>
-        <span id="package-text">PACKAGES: 0/4</span>
+        <span id="package-text">PACKAGES: 0/4 | MODE: ON FOOT</span>
     </div>
     <div id="alert-banner">🚨 MARKET CRASH: RUG PULL IMMINENT! 🚨</div>
     <div id="speech-overlay"></div>
-    <div id="instructions">PC: Click to look &amp; WASD | Mobile: Drag Joystick to Move &amp; Turn</div>
+    <div id="instructions">WASD: Walk/Drive | Click Car to Enter/Exit | Mobile: Joystick</div>
     
     <div id="joystick-zone">
         <div id="joystick-handle"></div>
@@ -208,8 +208,8 @@
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0b1329);
-        scene.fog = new THREE.FogExp2(0x0b1329, 0.010);
+        scene.background = new THREE.Color(0x38bdf8); // Bright permanent daytime sky
+        scene.fog = new THREE.FogExp2(0x38bdf8, 0.006);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -218,19 +218,19 @@
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.3;
+        renderer.toneMappingExposure = 1.2;
         document.body.appendChild(renderer.domElement);
 
-        // Cinematic Lighting Setup
-        const ambientLight = new THREE.AmbientLight(0x1e293b, 0.6);
+        // Permanent Bright Day Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfff7ed, 2.2);
-        sunLight.position.set(80, 150, 80);
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 2.0);
+        sunLight.position.set(100, 200, 100);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
-        let d = 140;
+        let d = 160;
         sunLight.shadow.camera.left = -d;
         sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d;
@@ -238,30 +238,31 @@
         sunLight.shadow.bias = -0.0005;
         scene.add(sunLight);
 
-        let timeOfDay = 0;
-
         // Ground Plane
         const groundGeo = new THREE.PlaneGeometry(1000, 1000, 64, 64);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9, metalness: 0.05 });
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.9, metalness: 0.05 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -1.2;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Smooth Rounded Roads & Curved Curbs
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x030712, roughness: 0.7 });
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-        const curbMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.4 });
+        // --- LOOP ROAD SYSTEM ---
+        const solidColliders = [];
+        const buildingSignsData = [];
+        const speechOverlay = document.getElementById('speech-overlay');
 
-        function createSmoothRoad(x, z, width, length, rotation = 0) {
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+        const curbMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.4 });
+
+        function createLoopRoadSegment(x, z, width, length, rotation = 0) {
             let roadGroup = new THREE.Group();
             let road = new THREE.Mesh(new THREE.PlaneGeometry(width, length), roadMat);
             road.rotation.x = -Math.PI / 2;
             road.receiveShadow = true;
             roadGroup.add(road);
 
-            // High-poly rounded curbs using Cylinders instead of harsh boxes
             let curbGeom = new THREE.CylinderGeometry(0.2, 0.2, length, 16);
             let curbLeft = new THREE.Mesh(curbGeom, curbMat);
             curbLeft.rotation.x = Math.PI / 2;
@@ -290,16 +291,15 @@
             scene.add(roadGroup);
         }
 
-        createSmoothRoad(0, 0, 18, 400, 0);
-        createSmoothRoad(0, 0, 400, 18, Math.PI / 2);
-        createSmoothRoad(0, -120, 18, 400, 0);
-        createSmoothRoad(-120, 0, 400, 18, Math.PI / 2);
+        // Build a continuous loop track (Rectangle circuit)
+        const trackWidth = 18;
+        const trackSize = 140;
+        createLoopRoadSegment(0, -trackSize, trackWidth, trackSize * 2, 0); // North-South Left
+        createLoopRoadSegment(0, trackSize, trackWidth, trackSize * 2, 0);  // North-South Right
+        createLoopRoadSegment(-trackSize, 0, trackWidth, trackSize * 2, Math.PI / 2); // West
+        createLoopRoadSegment(trackSize, 0, trackWidth, trackSize * 2, Math.PI / 2);  // East
 
-        // Cylindrical & Sculpted Modern Architecture
-        const solidColliders = [];
-        const buildingSignsData = [];
-        const speechOverlay = document.getElementById('speech-overlay');
-
+        // Sculpted Modern Architecture
         const buildingNames = [
             "Rug Casino", "Rug Shop", "Rug Hotel", "Rug Bank", 
             "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"
@@ -307,25 +307,18 @@
 
         function createSculptedBuilding(x, z, radius, height, wallColor, signText) {
             let group = new THREE.Group();
-            
-            // Using Smooth Cylinders for more organic/realistic futuristic towers instead of boring squares
             let towerGeom = new THREE.CylinderGeometry(radius, radius * 1.1, height, 32);
-            let walls = new THREE.Mesh(
-                towerGeom,
-                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.3, metalness: 0.4 })
-            );
+            let walls = new THREE.Mesh(towerGeom, new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.3, metalness: 0.4 }));
             walls.position.y = height / 2 - 1.18;
             walls.castShadow = true;
             walls.receiveShadow = true;
             group.add(walls);
 
-            // Curved Glass Wrap Around Facade
             let glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, metalness: 0.9, emissive: 0x0284c7, emissiveIntensity: 0.3 });
             let glassWrap = new THREE.Mesh(new THREE.CylinderGeometry(radius + 0.1, radius + 0.1, height * 0.75, 32), glassMat);
             glassWrap.position.y = height / 2 - 1.18;
             group.add(glassWrap);
 
-            // Sculpted Dome / Helipad Roof
             let roofGeom = new THREE.SphereGeometry(radius + 0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
             let roof = new THREE.Mesh(roofGeom, new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 }));
             roof.position.y = height - 1.18;
@@ -350,23 +343,21 @@
 
         const bColors = [0x1e293b, 0x334155, 0x0f172a, 0x475569];
         let nameIdx = 0;
-        for (let xPos of [-75, -38, 38, 75]) {
-            for (let zPos of [-75, -38, 38, 75]) {
+        for (let xPos of [-85, -42, 42, 85]) {
+            for (let zPos of [-85, -42, 42, 85]) {
                 createSculptedBuilding(xPos, zPos, 7.5, 14, bColors[Math.floor(Math.random()*bColors.length)], buildingNames[nameIdx % buildingNames.length]);
                 nameIdx++;
             }
         }
 
-        // --- SMOOTH REALISTIC VEHICLES ---
-        const activeVehicles = [];
+        // --- DRIVEABLE CARS & PARKED CARS SYSTEM ---
+        const drivableVehicles = [];
+        let currentVehicle = null;
 
-        function createSleekVehicle(x, z, color, isBus = false, axis = 'z', minBound = -150, maxBound = 150, speed = 12) {
+        function createCar(x, z, color, rotationY = 0, isParked = true) {
             let carGroup = new THREE.Group();
-            let l = isBus ? 7.0 : 4.2;
-            let w = isBus ? 2.4 : 1.9;
-            let h = isBus ? 2.5 : 1.3;
+            let l = 4.2, w = 1.9, h = 1.3;
 
-            // Rounded aerodynamic body using combined smoother meshes
             let bodyMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.7 });
             let body = new THREE.Mesh(new THREE.BoxGeometry(w, h * 0.6, l), bodyMat);
             body.position.y = h * 0.3 - 0.7;
@@ -379,7 +370,6 @@
             cabin.position.set(0, h * 0.6 - 0.7, -0.2);
             carGroup.add(cabin);
 
-            // Smooth Rounded Wheels
             let wheelGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
             let wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
             let wheelOffsets = [
@@ -395,27 +385,27 @@
             });
 
             carGroup.position.set(x, 0, z);
-            if (axis === 'x') carGroup.rotation.y = (speed > 0) ? Math.PI / 2 : -Math.PI / 2;
-            else carGroup.rotation.y = (speed > 0) ? 0 : Math.PI;
-
+            carGroup.rotation.y = rotationY;
             scene.add(carGroup);
 
-            activeVehicles.push({
+            let carObj = {
                 mesh: carGroup,
-                axis: axis,
-                pos: (axis === 'z') ? z : x,
-                min: minBound,
-                max: maxBound,
-                speed: speed
-            });
+                x: x, z: z,
+                rotationY: rotationY,
+                speed: 0,
+                isParked: isParked
+            };
+            drivableVehicles.push(carObj);
+            return carObj;
         }
 
-        createSleekVehicle(4.5, -150, 0xef4444, false, 'z', -160, 160, 14);
-        createSleekVehicle(-4.5, 150, 0x3b82f6, false, 'z', -160, 160, -16);
-        createSleekVehicle(150, 4.5, 0xf59e0b, true, 'x', -160, 160, 11);
-        createSleekVehicle(-150, -4.5, 0xf8fafc, true, 'x', -160, 160, -12);
+        // Parked cars on driveways and sidewalks near the buildings
+        createCar(-30, -110, 0xef4444, 0, true);
+        createCar(30, 110, 0x3b82f6, Math.PI, true);
+        createCar(-110, 30, 0xf59e0b, Math.PI / 2, true);
+        createCar(110, -30, 0xa855f7, -Math.PI / 2, true);
 
-        // --- CYBERPUNK HIGH-POLY CITIZENS (Matching the reference aesthetic) ---
+        // --- CYBERPUNK CITIZENS ---
         const activeCitizens = [];
         const degenQuotes = [
             "Dev dumped the floor! Rugged again!",
@@ -427,29 +417,19 @@
             "SEC is auditing the liquidity pool!"
         ];
 
-        function createCyborgPerson(x, z, shirtColor, isWorker = false, isPolice = false) {
+        function createCyborgPerson(x, z, shirtColor, isPolice = false) {
             let personGroup = new THREE.Group();
-
             let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.6 });
-            let cyberSkinMat = new THREE.MeshStandardMaterial({ 
-                color: 0x38bdf8, 
-                roughness: 0.2, 
-                metalness: 0.9, 
-                emissive: 0x0284c7, 
-                emissiveIntensity: 0.6 
-            });
-            
+            let cyberSkinMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2, metalness: 0.9, emissive: 0x0284c7, emissiveIntensity: 0.6 });
             let outfitColor = isPolice ? 0x1e3a8a : shirtColor;
             let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.6 });
             let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e293b, roughness: 0.7 });
 
-            // Rounded Torso (Cylinder instead of harsh box)
             let torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 0.85, 16), outfitMat);
             torso.position.y = -0.2;
             torso.castShadow = true;
             personGroup.add(torso);
 
-            // Smooth Head & Robotic Jaw Implant
             let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), skinMat);
             head.position.y = 0.38;
             head.castShadow = true;
@@ -460,30 +440,21 @@
             cyberJaw.position.set(0.1, 0.32, 0.05);
             personGroup.add(cyberJaw);
 
-            // Neon Goggles / Visor
-            let visorMat = new THREE.MeshStandardMaterial({ 
-                color: 0x10b981, 
-                roughness: 0.1, 
-                metalness: 0.9, 
-                emissive: 0x059669, 
-                emissiveIntensity: 0.9 
-            });
+            let visorMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.1, metalness: 0.9, emissive: 0x059669, emissiveIntensity: 0.9 });
             let visor = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.12, 16, 1, false, 0, Math.PI), visorMat);
             visor.rotation.y = Math.PI / 2;
             visor.position.set(0, 0.41, 0.05);
             personGroup.add(visor);
 
-            // Backward Green Cap
             let capMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4 });
             let capDome = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), capMat);
             capDome.position.y = 0.46;
             personGroup.add(capDome);
 
             let capBill = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 0.2), capMat);
-            capBill.position.set(0, 0.48, -0.16); // Facing backward
+            capBill.position.set(0, 0.48, -0.16);
             personGroup.add(capBill);
 
-            // Smooth Rounded Arms & Legs (Cylinders)
             let limbGeom = new THREE.CylinderGeometry(0.09, 0.08, 0.75, 12);
             let leftArm = new THREE.Mesh(limbGeom, outfitMat);
             leftArm.position.set(-0.4, -0.2, 0);
@@ -520,41 +491,10 @@
         }
 
         const colors = [0xef4444, 0x3b82f6, 0x10b981, 0xa855f7, 0xf97316];
-        for (let i = 0; i < 12; i++) {
-            createCyborgPerson((Math.random() - 0.5) * 110, (Math.random() - 0.5) * 110, colors[Math.floor(Math.random()*colors.length)]);
+        for (let i = 0; i < 10; i++) {
+            createCyborgPerson((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100, colors[Math.floor(Math.random()*colors.length)]);
         }
-        createCyborgPerson(22, 22, 0, false, true);
-
-        // Organic Sculpted Trees
-        function createOrganicTree(x, z) {
-            let treeGroup = new THREE.Group();
-            let trunk = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.3, 0.5, 3.5, 12),
-                new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 })
-            );
-            trunk.position.y = 0.8;
-            trunk.castShadow = true;
-            treeGroup.add(trunk);
-
-            let leaves = new THREE.Mesh(
-                new THREE.SphereGeometry(2.2, 16, 16),
-                new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.7 })
-            );
-            leaves.position.y = 3.5;
-            leaves.castShadow = true;
-            treeGroup.add(leaves);
-
-            treeGroup.position.set(x, -1.18, z);
-            scene.add(treeGroup);
-            solidColliders.push({ x: x, z: z, sizeX: 1.2, sizeZ: 1.2 });
-        }
-
-        for (let i = -140; i <= 140; i += 35) {
-            if (Math.abs(i) > 22) {
-                createOrganicTree(i, -24);
-                createOrganicTree(i, 24);
-            }
-        }
+        createCyborgPerson(20, 20, 0, true);
 
         // Collectibles & Exit
         let score = 0;
@@ -576,19 +516,21 @@
             interactiveObjects.push(pkg);
         }
 
-        createPackage(-55, -55);
-        createPackage(55, -55);
-        createPackage(-55, 55);
-        createPackage(65, 65);
+        createPackage(-60, -60);
+        createPackage(60, -60);
+        createPackage(-60, 60);
+        createPackage(70, 70);
 
         let exitZone = new THREE.Mesh(
             new THREE.CylinderGeometry(4, 4, 0.1, 32),
             new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 })
         );
-        exitZone.position.set(0, -1.15, -95);
+        exitZone.position.set(0, -1.15, -120);
         scene.add(exitZone);
 
-        camera.position.set(0, 0, 80);
+        // Player State Setup
+        let playerPos = new THREE.Vector3(0, 0, 80);
+        camera.position.copy(playerPos);
 
         let rugPullTimer = 0;
         let rugPullActive = false;
@@ -601,6 +543,23 @@
             if (!('ontouchstart' in window) && document.pointerLockElement !== document.body) {
                 document.body.requestPointerLock();
             }
+
+            // Check if player clicked a car to enter/exit when close
+            if (!currentVehicle) {
+                for (let car of drivableVehicles) {
+                    if (camera.position.distanceTo(car.mesh.position) < 4.5) {
+                        currentVehicle = car;
+                        document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages} | MODE: DRIVING`;
+                        break;
+                    }
+                }
+            } else {
+                // Exit car
+                playerPos.copy(currentVehicle.mesh.position);
+                playerPos.x += 2.5;
+                currentVehicle = null;
+                document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages} | MODE: ON FOOT`;
+            }
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -608,7 +567,9 @@
             yaw -= e.movementX * 0.002;
             pitch -= e.movementY * 0.002;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-            camera.rotation.set(pitch, yaw, 0, 'YXZ');
+            if (!currentVehicle) {
+                camera.rotation.set(pitch, yaw, 0, 'YXZ');
+            }
         });
 
         document.addEventListener('keydown', (e) => {
@@ -686,33 +647,56 @@
             prevTime = time;
 
             if (!gameWon) {
-                let speed = 8.5 * delta;
-                let dir = new THREE.Vector3();
-                if (moveForward) dir.z -= 1;
-                if (moveBackward) dir.z += 1;
-                if (moveLeft) dir.x -= 1;
-                if (moveRight) dir.x += 1;
+                if (!currentVehicle) {
+                    // On foot movement
+                    let speed = 9.0 * delta;
+                    let dir = new THREE.Vector3();
+                    if (moveForward) dir.z -= 1;
+                    if (moveBackward) dir.z += 1;
+                    if (moveLeft) dir.x -= 1;
+                    if (moveRight) dir.x += 1;
 
-                if (isTouchDevice) {
-                    if (Math.abs(joystickX) > 0.1) yaw -= joystickX * 2.2 * delta;
-                    if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
+                    if (isTouchDevice) {
+                        if (Math.abs(joystickX) > 0.1) yaw -= joystickX * 2.2 * delta;
+                        if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
+                    }
+
+                    if (dir.lengthSq() > 0) {
+                        dir.normalize();
+                        dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                        let nextX = playerPos.x + dir.x * speed;
+                        let nextZ = playerPos.z + dir.z * speed;
+                        if (!checkCollision(nextX, playerPos.z)) playerPos.x = nextX;
+                        if (!checkCollision(playerPos.x, nextZ)) playerPos.z = nextZ;
+                    }
+
+                    camera.rotation.set(pitch, yaw, 0, 'YXZ');
+                    camera.position.copy(playerPos);
+                    camera.position.y = 0;
+                } else {
+                    // Driving current vehicle
+                    if (moveForward || joystickY < -0.1) currentVehicle.speed += 12 * delta;
+                    else if (moveBackward || joystickY > 0.1) currentVehicle.speed -= 10 * delta;
+                    else currentVehicle.speed *= 0.95; // friction
+
+                    currentVehicle.speed = Math.max(-10, Math.min(25, currentVehicle.speed));
+
+                    if (moveLeft || joystickX < -0.1) currentVehicle.rotationY += 2.0 * delta * (currentVehicle.speed / 10);
+                    if (moveRight || joystickX > 0.1) currentVehicle.rotationY -= 2.0 * delta * (currentVehicle.speed / 10);
+
+                    let moveDir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentVehicle.rotationY);
+                    currentVehicle.x += moveDir.x * currentVehicle.speed * delta;
+                    currentVehicle.z += moveDir.z * currentVehicle.speed * delta;
+
+                    currentVehicle.mesh.position.set(currentVehicle.x, 0, currentVehicle.z);
+                    currentVehicle.mesh.rotation.y = currentVehicle.rotationY;
+
+                    // Chase camera position behind car
+                    let camOffset = new THREE.Vector3(0, 3.5, 7).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentVehicle.rotationY);
+                    camera.position.copy(currentVehicle.mesh.position).add(camOffset);
+                    camera.lookAt(currentVehicle.mesh.position.clone().add(new THREE.Vector3(0, 1, 0)));
+                    playerPos.copy(currentVehicle.mesh.position);
                 }
-
-                if (dir.lengthSq() > 0) {
-                    dir.normalize();
-                    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                    let nextX = camera.position.x + dir.x * speed;
-                    let nextZ = camera.position.z + dir.z * speed;
-                    if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
-                    if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
-                }
-
-                camera.rotation.set(pitch, yaw, 0, 'YXZ');
-                camera.position.y = 0;
-
-                timeOfDay += delta * 0.05;
-                let cycle = Math.sin(timeOfDay);
-                sunLight.intensity = Math.max(0.3, cycle * 2.2);
 
                 rugPullTimer += delta;
                 if (rugPullTimer > 25 && !rugPullActive) {
@@ -725,14 +709,6 @@
                         rugPullTimer = 0;
                     }, 6000);
                 }
-
-                activeVehicles.forEach(v => {
-                    v.pos += v.speed * delta;
-                    if (v.pos > v.max) v.pos = v.min;
-                    if (v.pos < v.min) v.pos = v.max;
-                    if (v.axis === 'z') v.mesh.position.z = v.pos;
-                    else v.mesh.position.x = v.pos;
-                });
 
                 activeCitizens.forEach(c => {
                     let moveMultiplier = c.isPolice ? 1.2 : 1.0;
@@ -779,17 +755,18 @@
                 });
 
                 interactiveObjects.forEach((obj, index) => {
-                    if (Math.hypot(camera.position.x - obj.userData.x, camera.position.z - obj.userData.z) < 1.8) {
+                    if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 2.2) {
                         scene.remove(obj);
                         interactiveObjects.splice(index, 1);
                         score += obj.userData.isDip ? 1500 : 500;
                         if (!obj.userData.isDip) packagesCollected++;
+                        let modeText = currentVehicle ? "DRIVING" : "ON FOOT";
                         document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
-                        document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
+                        document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages} | MODE: ${modeText}`;
                     }
                 });
 
-                if (Math.hypot(camera.position.x - exitZone.position.x, camera.position.z - exitZone.position.z) < 4 && packagesCollected >= totalPackages) {
+                if (Math.hypot(playerPos.x - exitZone.position.x, playerPos.z - exitZone.position.z) < 4 && packagesCollected >= totalPackages) {
                     gameWon = true;
                     if (document.pointerLockElement) document.exitPointerLock();
                     document.getElementById("win-screen").style.display = "block";
