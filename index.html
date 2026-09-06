@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Maze with Crates and Toxic Barrels</title>
+    <title>True 3D Complex - Easy on Eyes</title>
     <style>
         body {
             margin: 0;
@@ -20,7 +20,7 @@
             transform: translateX(-50%);
             display: flex;
             gap: 20px;
-            background: rgba(15, 12, 10, 0.9);
+            background: rgba(15, 12, 10, 0.85);
             padding: 10px 20px;
             border: 2px solid #5a4939;
             border-radius: 8px;
@@ -28,11 +28,6 @@
             font-size: 15px;
             color: #f4d35e;
             z-index: 10;
-        }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
         }
         #controls {
             position: absolute;
@@ -96,17 +91,17 @@
             cursor: pointer;
         }
     </style>
+    <!-- Load Three.js Library for True, Stable 3D Acceleration -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="loading-screen">Loading Environment & Props...</div>
+    <div id="loading-screen">Loading 3D Environment...</div>
 
     <div id="ui">
         <span id="score-text">SCORE: 0</span>
         <span id="diamond-text">DIAMONDS: 0/3</span>
     </div>
-
-    <canvas id="raycastCanvas"></canvas>
 
     <div id="controls">
         <button class="ctrl-btn" id="btn-left">Turn Left ⬅️</button>
@@ -116,53 +111,56 @@
 
     <div id="win-screen">
         <h1>COMPLEX CLEARED!</h1>
-        <p>All diamonds collected and exit reached!</p>
+        <p>All items collected and exit reached!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
-        const canvas = document.getElementById("raycastCanvas");
-        const ctx = canvas.getContext("2d");
+        const textureLoader = new THREE.TextureLoader();
+        let loadedAssets = 0;
+        const totalAssets = 5;
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        // Load Wall, Floor, and Ceiling Textures
-        const wallBrick = new Image();
-        wallBrick.src = "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80";
-
-        const wallWood = new Image();
-        wallWood.src = "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80";
-
-        const wallStone = new Image();
-        wallStone.src = "https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80";
-
-        const floorTex = new Image();
-        floorTex.src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80";
-
-        const ceilingTex = new Image();
-        ceilingTex.src = "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80";
-
-        let loadedCount = 0;
-        function checkAllLoaded() {
-            loadedCount++;
-            if (loadedCount >= 5) {
+        function assetLoaded() {
+            loadedAssets++;
+            if (loadedAssets >= totalAssets) {
                 document.getElementById("loading-screen").style.display = "none";
-                renderScene();
             }
         }
 
-        // Attach fallback handlers so a slow/failed image never locks the loading screen
-        [wallBrick, wallWood, wallStone, floorTex, ceilingTex].forEach(img => {
-            img.onload = checkAllLoaded;
-            img.onerror = () => {
-                console.warn("Asset load skipped, using fallback.");
-                checkAllLoaded();
-            };
+        // Load smooth photo textures with proper filtering to eliminate visual grain/strain
+        const brickTex = textureLoader.load("https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=256&auto=format&fit=crop&q=80", assetLoaded);
+        const woodTex = textureLoader.load("https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=256&auto=format&fit=crop&q=80", assetLoaded);
+        const stoneTex = textureLoader.load("https://images.unsplash.com/photo-1598880940371-c756e0154eb9?w=256&auto=format&fit=crop&q=80", assetLoaded);
+        const floorTex = textureLoader.load("https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80", assetLoaded);
+        const ceilingTex = textureLoader.load("https://images.unsplash.com/photo-1513694203232-719a280e022f?w=256&auto=format&fit=crop&q=80", assetLoaded);
+
+        [brickTex, woodTex, stoneTex, floorTex, ceilingTex].forEach(tex => {
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(1, 1);
         });
 
-        // Map Grid: 1=Brick, 2=Wood, 3=Stone, 5=Diamond, 6=Wooden Crate, 7=Toxic Barrel, 9=Exit Portal
-        let map = [
+        // Setup Three.js Scene, Camera, and Renderer
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0b0b0e, 0.15); // Smooth distance fog for mood and clarity
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // Add soft ambient and directional lighting so textures look natural
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xfff3d1, 1, 10);
+        pointLight.position.set(0, 1, 0);
+        camera.add(pointLight);
+        scene.add(camera);
+
+        // Map Layout: 1=Brick Wall, 2=Wood Room, 3=Stone Chamber, 5=Diamond, 6=Crate, 7=Barrel, 9=Exit
+        const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 5, 0, 1, 2, 2, 6, 2, 2, 0, 1],
             [1, 0, 1, 0, 1, 2, 0, 0, 0, 2, 0, 1],
@@ -174,193 +172,123 @@
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
 
-        let player = { x: 1.5, y: 1.5, angle: 0 };
         let score = 0;
         let diamondsCollected = 0;
         let totalDiamonds = 3;
         let gameWon = false;
+        let interactiveObjects = [];
 
-        function renderScene() {
-            if (loadedCount < 5) return;
+        // Build 3D World Geometry from Map
+        const wallSize = 2;
+        const wallMaterials = {
+            1: new THREE.MeshStandardMaterial({ map: brickTex }),
+            2: new THREE.MeshStandardMaterial({ map: woodTex }),
+            3: new THREE.MeshStandardMaterial({ map: stoneTex })
+        };
 
-            let halfH = canvas.height / 2;
+        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex });
+        const ceilingMat = new THREE.MeshStandardMaterial({ map: ceilingTex });
 
-            // 1. Render Floor and Ceiling
-            for (let y = 0; y < canvas.height; y++) {
-                let isFloor = y > halfH;
-                let row = isFloor ? y - halfH : halfH - y;
-                if (row === 0) continue;
+        for (let r = 0; r < map.length; r++) {
+            for (let c = 0; c < map[r].length; c++) {
+                let tile = map[r][c];
+                let posX = (c - map[0].length / 2) * wallSize;
+                let posZ = (r - map.length / 2) * wallSize;
 
-                let dist = (canvas.height / 2) / row;
-                let textureYIndex = Math.floor((dist * 15) % floorTex.height);
+                // Create Floor and Ceiling for every valid tile
+                if (tile !== 1 && tile !== 2 && tile !== 3) {
+                    let floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
+                    floorMesh.rotation.x = -Math.PI / 2;
+                    floorMesh.position.set(posX, -wallSize / 2, posZ);
+                    scene.add(floorMesh);
 
-                ctx.drawImage(isFloor ? floorTex : ceilingTex, 0, textureYIndex, floorTex.width, 1, 0, y, canvas.width, 1);
-                
-                let dim = Math.min(0.85, dist / 8);
-                ctx.fillStyle = `rgba(0, 0, 0, ${dim})`;
-                ctx.fillRect(0, y, canvas.width, 1);
-            }
-
-            let numRays = canvas.width;
-            let fov = Math.PI / 3;
-            let zBuffer = new Array(canvas.width);
-
-            // 2. Raycasting Loop for Walls
-            for (let i = 0; i < numRays; i++) {
-                let rayAngle = player.angle - fov / 2 + (i / numRays) * fov;
-                
-                let distanceToWall = 0;
-                let hitWall = false;
-                let hitXCoord = 0;
-                let hitYCoord = 0;
-                let isVerticalHit = false;
-                let wallType = 1;
-
-                let eyeX = Math.cos(rayAngle);
-                let eyeY = Math.sin(rayAngle);
-
-                while (!hitWall && distanceToWall < 16) {
-                    distanceToWall += 0.03;
-                    let testX = player.x + eyeX * distanceToWall;
-                    let testY = player.y + eyeY * distanceToWall;
-
-                    let mapX = Math.floor(testX);
-                    let mapY = Math.floor(testY);
-
-                    if (mapX < 0 || mapX >= map[0].length || mapY < 0 || mapY >= map.length) {
-                        hitWall = true;
-                        distanceToWall = 16;
-                    } else {
-                        let tile = map[mapY][mapX];
-                        if (tile > 0 && tile < 5) {
-                            hitWall = true;
-                            hitXCoord = testX;
-                            hitYCoord = testY;
-                            wallType = tile;
-                            if (Math.abs(testX - mapX) < 0.05 || Math.abs(testX - (mapX + 1)) < 0.05) {
-                                isVerticalHit = true;
-                            }
-                        }
-                    }
+                    let ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), ceilingMat);
+                    ceilingMesh.rotation.x = Math.PI / 2;
+                    ceilingMesh.position.set(posX, wallSize / 2, posZ);
+                    scene.add(ceilingMesh);
                 }
 
-                let correctedDistance = distanceToWall * Math.cos(rayAngle - player.angle);
-                zBuffer[i] = correctedDistance;
-
-                let wallHeight = Math.min(canvas.height * 2, (canvas.height / correctedDistance));
-                let ceilingPos = (canvas.height - wallHeight) / 2;
-
-                let activeTexture = wallBrick;
-                if (wallType === 2) activeTexture = wallWood;
-                if (wallType === 3) activeTexture = wallStone;
-
-                let textureX = isVerticalHit ? (hitYCoord % 1) : (hitXCoord % 1);
-                textureX = Math.floor(textureX * activeTexture.width);
-
-                let sourceX = Math.max(0, Math.min(activeTexture.width - 1, textureX));
-                ctx.drawImage(activeTexture, sourceX, 0, 1, activeTexture.height, i, ceilingPos, 1, wallHeight);
-
-                let shade = Math.min(0.8, correctedDistance / 10);
-                ctx.fillStyle = `rgba(0, 0, 0, ${shade})`;
-                ctx.fillRect(i, ceilingPos, 1, wallHeight);
-            }
-
-            // 3. Render Sprites (Diamonds=5, Crates=6, Toxic Barrels=7)
-            let sprites = [];
-            for (let r = 0; r < map.length; r++) {
-                for (let c = 0; c < map[r].length; c++) {
-                    if (map[r][c] >= 5 && map[r][c] <= 7) {
-                        let spriteX = (c + 0.5) - player.x;
-                        let spriteY = (r + 0.5) - player.y;
-                        let distance = Math.sqrt(spriteX * spriteX + spriteY * spriteY);
-                        sprites.push({ x: spriteX, y: spriteY, type: map[r][c], dist: distance });
-                    }
+                // Create Walls
+                if (tile >= 1 && tile <= 3) {
+                    let wallMesh = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, wallSize), wallMaterials[tile]);
+                    wallMesh.position.set(posX, 0, posZ);
+                    scene.add(wallMesh);
                 }
-            }
-
-            sprites.sort((a, b) => b.dist - a.dist);
-
-            for (let s of sprites) {
-                let cosA = Math.cos(-player.angle);
-                let sinA = Math.sin(-player.angle);
-                
-                let transX = s.x * cosA - s.y * sinA;
-                let transY = s.x * sinA + s.y * cosA;
-
-                if (transY > 0.2) {
-                    let screenX = Math.floor((canvas.width / 2) * (1 + transX / transY));
-                    let spriteHeight = Math.abs(Math.floor(canvas.height / transY));
-                    let spriteWidth = spriteHeight;
-                    let drawStartY = Math.floor((canvas.height - spriteHeight) / 2);
-                    let drawStartX = Math.floor(screenX - spriteWidth / 2);
-                    let drawEndX = Math.floor(screenX + spriteWidth / 2);
-
-                    for (let stripe = drawStartX; stripe < drawEndX; stripe++) {
-                        if (stripe >= 0 && stripe < canvas.width && transY < zBuffer[stripe]) {
-                            let distShade = Math.min(1, transY / 8);
-                            let relX = (stripe - drawStartX) / spriteWidth;
-
-                            if (s.type === 5) {
-                                ctx.fillStyle = `rgb(${Math.floor(0 + distShade*50)}, ${Math.floor(180 - distShade*50)}, ${Math.floor(255 - distShade*50)})`;
-                                let hOffset = spriteHeight * 0.3 * (1 - Math.abs(stripe - screenX) / (spriteWidth / 2));
-                                if (hOffset > 0) ctx.fillRect(stripe, canvas.height/2 - hOffset/2, 1, hOffset);
-                            } 
-                            else if (s.type === 6) {
-                                let boxTop = canvas.height/2 - spriteHeight/2;
-                                let boxHeight = spriteHeight;
-                                ctx.fillStyle = `rgb(${Math.floor(139 - distShade*40)}, ${Math.floor(90 - distShade*30)}, ${Math.floor(43 - distShade*20)})`;
-                                ctx.fillRect(stripe, boxTop, 1, boxHeight);
-                                if (relX < 0.05 || relX > 0.95 || Math.abs(relX - 0.5) < 0.05) {
-                                    ctx.fillStyle = `rgb(40, 25, 10)`;
-                                    ctx.fillRect(stripe, boxTop, 1, boxHeight);
-                                }
-                            } 
-                            else if (s.type === 7) {
-                                let barrelTop = canvas.height/2 - spriteHeight/2;
-                                let barrelHeight = spriteHeight;
-                                ctx.fillStyle = `rgb(${Math.floor(34 - distShade*20)}, ${Math.floor(139 - distShade*50)}, ${Math.floor(34 - distShade*20)})`;
-                                ctx.fillRect(stripe, barrelTop, 1, barrelHeight);
-                                let relY = (canvas.height/2 - barrelTop) / barrelHeight;
-                                if (Math.abs(relY - 0.4) < 0.1) {
-                                    ctx.fillStyle = `rgb(${Math.floor(255 - distShade*50)}, ${Math.floor(215 - distShade*50)}, 0)`;
-                                    ctx.fillRect(stripe, barrelTop + barrelHeight * 0.35, 1, barrelHeight * 0.1);
-                                }
-                            }
-                        }
-                    }
+                // Create Diamond Collectibles (5)
+                else if (tile === 5) {
+                    let diamondGeo = new THREE.OctahedronGeometry(0.3);
+                    let diamondMat = new THREE.MeshStandardMaterial({ color: 0x00bfff, emissive: 0x0044aa, roughness: 0.2 });
+                    let diamondMesh = new THREE.Mesh(diamondGeo, diamondMat);
+                    diamondMesh.position.set(posX, 0, posZ);
+                    diamondMesh.userData = { type: 'diamond', r: r, c: c };
+                    scene.add(diamondMesh);
+                    interactiveObjects.push(diamondMesh);
+                }
+                // Create Wooden Crates (6)
+                else if (tile === 6) {
+                    let crateMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), wallWood);
+                    crateMesh.position.set(posX, -0.6, posZ);
+                    scene.add(crateMesh);
+                }
+                // Create Toxic Barrels (7)
+                else if (tile === 7) {
+                    let barrelMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1, 16), new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.3 }));
+                    barrelMesh.position.set(posX, -0.5, posZ);
+                    scene.add(barrelMesh);
+                }
+                // Exit Portal (9)
+                else if (tile === 9) {
+                    let exitMesh = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, 0.1), new THREE.MeshStandardMaterial({ color: 0x57cc99, emissive: 0x2a9d8f }));
+                    exitMesh.position.set(posX, 0, posZ);
+                    exitMesh.userData = { type: 'exit', r: r, c: c };
+                    scene.add(exitMesh);
+                    interactiveObjects.push(exitMesh);
                 }
             }
         }
 
-        function move(forwardBack, turnAngle) {
+        // Initialize Player Starting Position
+        let playerGridX = 1;
+        let playerGridY = 1;
+        camera.position.set((playerGridX - map[0].length / 2) * wallSize, 0, (playerGridY - map.length / 2) * wallSize);
+        let playerDirection = 0; // Angle in radians
+
+        function updatePlayerPosition(forward, turn) {
             if (gameWon) return;
 
-            player.angle += turnAngle;
-            
-            let moveStep = forwardBack * 0.18;
-            let newX = player.x + Math.cos(player.angle) * moveStep;
-            let newY = player.y + Math.sin(player.angle) * moveStep;
+            playerDirection += turn;
+            let moveStep = forward * 0.4;
 
-            let mapX = Math.floor(newX);
-            let mapY = Math.floor(newY);
+            let newX = camera.position.x + Math.sin(playerDirection) * moveStep;
+            let newZ = camera.position.z + Math.cos(playerDirection) * moveStep;
 
-            if (mapX >= 0 && mapX < map[0].length && mapY >= 0 && mapY < map.length) {
-                let targetTile = map[mapY][mapX];
-                
-                if (targetTile === 0) {
-                    player.x = newX;
-                    player.y = newY;
-                } else if (targetTile === 5) {
-                    map[mapY][mapX] = 0;
-                    score += 150;
-                    diamondsCollected++;
-                    document.getElementById("score-text").innerText = `SCORE: ${score}`;
-                    document.getElementById("diamond-text").innerText = `DIAMONDS: ${diamondsCollected}/${totalDiamonds}`;
-                    player.x = newX;
-                    player.y = newY;
-                } else if (targetTile === 6 || targetTile === 7) {
-                    return;
-                } else if (targetTile === 9) {
+            // Convert back to grid coordinates to check collisions
+            let targetC = Math.floor(newX / wallSize + map[0].length / 2);
+            let targetR = Math.floor(newZ / wallSize + map.length / 2);
+
+            if (targetR >= 0 && targetR < map.length && targetC >= 0 && targetC < map[0].length) {
+                let tile = map[targetR][targetC];
+
+                if (tile === 0 || tile === 5) {
+                    camera.position.x = newX;
+                    camera.position.z = newZ;
+
+                    // Check item collection
+                    if (tile === 5) {
+                        map[targetR][targetC] = 0;
+                        score += 150;
+                        diamondsCollected++;
+                        document.getElementById("score-text").innerText = `SCORE: ${score}`;
+                        document.getElementById("diamond-text").innerText = `DIAMONDS: ${diamondsCollected}/${totalDiamonds}`;
+
+                        // Remove diamond mesh from scene
+                        let objIndex = interactiveObjects.findIndex(o => o.userData.r === targetR && o.userData.c === targetC);
+                        if (objIndex > -1) {
+                            scene.remove(interactiveObjects[objIndex]);
+                            interactiveObjects.splice(objIndex, 1);
+                        }
+                    }
+                } else if (tile === 9) {
                     if (diamondsCollected >= totalDiamonds) {
                         gameWon = true;
                         document.getElementById("win-screen").style.display = "block";
@@ -370,24 +298,41 @@
                 }
             }
 
-            renderScene();
+            // Update camera rotation smoothly
+            camera.rotation.y = playerDirection;
         }
 
-        document.getElementById("btn-left").addEventListener("click", () => move(0, -0.3));
-        document.getElementById("btn-right").addEventListener("click", () => move(0, 0.3));
-        document.getElementById("btn-forward").addEventListener("click", () => move(1, 0));
+        // Controls binding
+        document.getElementById("btn-left").addEventListener("click", () => updatePlayerPosition(0, 0.4));
+        document.getElementById("btn-right").addEventListener("click", () => updatePlayerPosition(0, -0.4));
+        document.getElementById("btn-forward").addEventListener("click", () => updatePlayerPosition(1, 0));
 
         window.addEventListener("keydown", e => {
-            if (e.key === "ArrowLeft" || e.key === "a") move(0, -0.3);
-            if (e.key === "ArrowRight" || e.key === "d") move(0, 0.3);
-            if (e.key === "ArrowUp" || e.key === "w") move(1, 0);
+            if (e.key === "ArrowLeft" || e.key === "a") updatePlayerPosition(0, 0.4);
+            if (e.key === "ArrowRight" || e.key === "d") updatePlayerPosition(0, -0.4);
+            if (e.key === "ArrowUp" || e.key === "w") updatePlayerPosition(1, 0);
         });
 
         window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            renderScene();
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        // Animation loop for smooth rendering & glowing spinning diamonds
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Spin diamonds gently
+            interactiveObjects.forEach(obj => {
+                if (obj.userData.type === 'diamond') {
+                    obj.rotation.y += 0.03;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
     </script>
 </body>
 </html>
