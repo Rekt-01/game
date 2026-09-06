@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open World - GTA Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Open World - Cross-Platform GTA Style</title>
     <style>
         body {
             margin: 0;
@@ -12,6 +12,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             user-select: none;
+            -webkit-user-select: none;
         }
         #ui {
             position: absolute;
@@ -19,33 +20,35 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 30px;
+            gap: 20px;
             background: rgba(255, 255, 255, 0.9);
-            padding: 12px 28px;
+            padding: 10px 24px;
             border: 2px solid #2563eb;
             border-radius: 30px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
             letter-spacing: 1px;
             color: #1d4ed8;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 10;
+            pointer-events: none;
         }
         #instructions {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.9);
-            padding: 12px 24px;
-            border-radius: 12px;
+            padding: 8px 16px;
+            border-radius: 10px;
             border: 2px solid #2563eb;
-            font-size: 13px;
+            font-size: 12px;
             color: #334155;
             text-align: center;
             pointer-events: none;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 10;
+            white-space: nowrap;
         }
         #crosshair {
             position: absolute;
@@ -60,6 +63,31 @@
             pointer-events: none;
             z-index: 10;
         }
+        /* Mobile Virtual Controls UI */
+        #joystick-zone {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            z-index: 15;
+            touch-action: none;
+            display: none; /* Enabled via script if touch is detected */
+        }
+        #joystick-handle {
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            width: 50px;
+            height: 50px;
+            background: rgba(37, 99, 235, 0.8);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
         #win-screen {
             position: absolute;
             top: 50%;
@@ -71,7 +99,7 @@
             text-align: center;
             border-radius: 20px;
             display: none;
-            z-index: 20;
+            z-index: 25;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
         #win-screen h1 { color: #16a34a; margin-top: 0; }
@@ -86,7 +114,6 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-            transition: background 0.2s;
         }
         #win-screen button:hover { background: #16a34a; }
     </style>
@@ -99,7 +126,12 @@
         <span id="score-text">CASH: $0</span>
         <span id="package-text">PACKAGES: 0/4</span>
     </div>
-    <div id="instructions">Click to explore open world &bull; Use <b>W, A, S, D</b> to walk anywhere</div>
+    <div id="instructions">PC: Click to look &amp; WASD | Mobile: Use Joystick &amp; Swipe Screen</div>
+    
+    <div id="joystick-zone">
+        <div id="joystick-handle"></div>
+    </div>
+
     <div id="win-screen">
         <h1>MISSION PASSED!</h1>
         <p>All packages secured across the district!</p>
@@ -123,7 +155,7 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Bright Daytime Environment Lighting
+        // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
         scene.add(ambientLight);
 
@@ -141,7 +173,7 @@
         sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Infinite Grass Terrain Ground Plane
+        // Ground Plane
         const groundGeo = new THREE.PlaneGeometry(800, 800);
         const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
@@ -150,7 +182,7 @@
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // --- GENERATE ROADS ---
+        // Roads
         const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
         const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
 
@@ -161,7 +193,6 @@
             road.receiveShadow = true;
             roadGroup.add(road);
 
-            // Yellow center dashes
             for (let i = -length / 2 + 3; i < length / 2; i += 6) {
                 let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2), lineMat);
                 line.rotation.x = -Math.PI / 2;
@@ -170,25 +201,21 @@
                 else line.position.x = i;
                 roadGroup.add(line);
             }
-
             roadGroup.position.set(x, -1.18, z);
             roadGroup.rotation.y = rotation;
             scene.add(roadGroup);
         }
 
-        // Main Grid Roads
         createRoad(0, 0, 14, 300, 0);
         createRoad(0, 0, 300, 14, Math.PI / 2);
         createRoad(0, -90, 14, 300, 0);
         createRoad(-90, 0, 300, 14, Math.PI / 2);
 
-        // --- GENERATE REALISTIC HOUSES / BUILDINGS ---
+        // Houses & Colliders
         const solidColliders = [];
 
         function createHouse(x, z, width, height, depth, wallColor, roofColor) {
             let houseGroup = new THREE.Group();
-
-            // Main Walls
             let walls = new THREE.Mesh(
                 new THREE.BoxGeometry(width, height, depth),
                 new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.6 })
@@ -198,7 +225,6 @@
             walls.receiveShadow = true;
             houseGroup.add(walls);
 
-            // Roof
             let roof = new THREE.Mesh(
                 new THREE.ConeGeometry(Math.max(width, depth) * 0.75, 3, 4),
                 new THREE.MeshStandardMaterial({ color: roofColor, roughness: 0.5 })
@@ -208,7 +234,6 @@
             roof.castShadow = true;
             houseGroup.add(roof);
 
-            // Door
             let door = new THREE.Mesh(
                 new THREE.BoxGeometry(1.2, 2.2, 0.2),
                 new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.4 })
@@ -218,11 +243,9 @@
 
             houseGroup.position.set(x, 0, z);
             scene.add(houseGroup);
-
             solidColliders.push({ x: x, z: z, sizeX: width + 0.6, sizeZ: depth + 0.6 });
         }
 
-        // Neighborhood layout (placing houses safely away from road bounds)
         const houseColors = [0xf8fafc, 0xf1f5f9, 0xe2e8f0, 0xdcbdab, 0xc27803];
         const roofColors = [0x991b1b, 0x1e3a8a, 0x14532d, 0x334155, 0x78350f];
 
@@ -234,10 +257,9 @@
             }
         }
 
-        // --- GENERATE TREES ---
+        // Trees
         function createTree(x, z) {
             let treeGroup = new THREE.Group();
-
             let trunk = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.5, 0.7, 4, 8),
                 new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 })
@@ -259,7 +281,6 @@
             solidColliders.push({ x: x, z: z, sizeX: 1.2, sizeZ: 1.2 });
         }
 
-        // Scatter trees along blocks
         for (let i = -120; i <= 120; i += 30) {
             if (Math.abs(i) > 15) {
                 createTree(i, -18);
@@ -269,7 +290,7 @@
             }
         }
 
-        // --- COLLECTIBLES & OBJECTS ---
+        // Collectibles
         let score = 0;
         let packagesCollected = 0;
         const totalPackages = 4;
@@ -293,7 +314,6 @@
         createPackage(-40, 40);
         createPackage(50, 50);
 
-        // Delivery / Exit Zone
         let exitZone = new THREE.Mesh(
             new THREE.BoxGeometry(6, 0.1, 6),
             new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 })
@@ -301,17 +321,20 @@
         exitZone.position.set(0, -1.15, -70);
         scene.add(exitZone);
 
-        // Start Position (Middle of road intersection, safe area)
         camera.position.set(0, 0, 70);
 
-        // Controls State
+        // Control Inputs State
         let yaw = 0;
         let pitch = 0;
         const playerRadius = 0.5;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let joystickX = 0, joystickY = 0;
 
-        document.body.addEventListener('click', () => {
-            document.body.requestPointerLock();
+        // Desktop Pointer Lock Setup
+        renderer.domElement.addEventListener('click', () => {
+            if (!('ontouchstart' in window) && document.pointerLockElement !== document.body) {
+                document.body.requestPointerLock();
+            }
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -322,6 +345,7 @@
             camera.rotation.set(pitch, yaw, 0, 'YXZ');
         });
 
+        // Keyboard Event Listeners
         document.addEventListener('keydown', (e) => {
             if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
             if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
@@ -335,6 +359,103 @@
             if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
             if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
         });
+
+        // Mobile Touch & Virtual Joystick Setup
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (isTouchDevice) {
+            document.getElementById('joystick-zone').style.display = 'block';
+            document.getElementById('instructions').innerText = 'Use left joystick to move & right screen to look';
+
+            let joystickZone = document.getElementById('joystick-zone');
+            let joystickHandle = document.getElementById('joystick-handle');
+            let touchId = null;
+            let centerPos = { x: 0, y: 0 };
+
+            joystickZone.addEventListener('touchstart', (e) => {
+                if (touchId !== null) return;
+                let touch = e.changedTouches[0];
+                touchId = touch.identifier;
+                let rect = joystickZone.getBoundingClientRect();
+                centerPos.x = rect.left + rect.width / 2;
+                centerPos.y = rect.top + rect.height / 2;
+            });
+
+            joystickZone.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let touch = e.changedTouches[i];
+                    if (touch.identifier === touchId) {
+                        let dx = touch.clientX - centerPos.x;
+                        let dy = touch.clientY - centerPos.y;
+                        let dist = Math.hypot(dx, dy);
+                        let maxDist = 40;
+
+                        if (dist > maxDist) {
+                            dx = (dx / dist) * maxDist;
+                            dy = (dy / dist) * maxDist;
+                        }
+
+                        joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
+                        joystickX = dx / maxDist;
+                        joystickY = dy / maxDist;
+                    }
+                }
+            });
+
+            let endTouch = (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === touchId) {
+                        touchId = null;
+                        joystickX = 0;
+                        joystickY = 0;
+                        joystickHandle.style.transform = `translate(0px, 0px)`;
+                    }
+                }
+            };
+            joystickZone.addEventListener('touchend', endTouch);
+            joystickZone.addEventListener('touchcancel', endTouch);
+
+            // Right side screen swipe for camera look on mobile
+            let lookTouchId = null;
+            let lastX = 0, lastY = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let touch = e.changedTouches[i];
+                    if (touch.clientX > window.innerWidth / 2 && lookTouchId === null) {
+                        lookTouchId = touch.identifier;
+                        lastX = touch.clientX;
+                        lastY = touch.clientY;
+                    }
+                }
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let touch = e.changedTouches[i];
+                    if (touch.identifier === lookTouchId) {
+                        let movementX = touch.clientX - lastX;
+                        let movementY = touch.clientY - lastY;
+                        lastX = touch.clientX;
+                        lastY = touch.clientY;
+
+                        yaw -= movementX * 0.005;
+                        pitch -= movementY * 0.005;
+                        pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+                        camera.rotation.set(pitch, yaw, 0, 'YXZ');
+                    }
+                }
+            });
+
+            let endLookTouch = (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === lookTouchId) {
+                        lookTouchId = null;
+                    }
+                }
+            };
+            document.addEventListener('touchend', endLookTouch);
+            document.addEventListener('touchcancel', endLookTouch);
+        }
 
         function checkCollision(x, z) {
             for (let obj of solidColliders) {
@@ -369,17 +490,26 @@
                 if (moveBackward) dir.z += 1;
                 if (moveLeft) dir.x -= 1;
                 if (moveRight) dir.x += 1;
-                dir.normalize();
-                dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
 
-                let nextX = camera.position.x + dir.x * speed;
-                let nextZ = camera.position.z + dir.z * speed;
+                // Add mobile joystick influence
+                if (isTouchDevice) {
+                    dir.x += joystickX;
+                    dir.z += joystickY;
+                }
 
-                if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
-                if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
-                camera.position.y = 0; // Fixed eye level height above ground
+                if (dir.lengthSq() > 0) {
+                    dir.normalize();
+                    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
 
-                // Check Pickups
+                    let nextX = camera.position.x + dir.x * speed;
+                    let nextZ = camera.position.z + dir.z * speed;
+
+                    if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
+                    if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
+                }
+                camera.position.y = 0;
+
+                // Pickups check
                 interactiveObjects.forEach((obj, index) => {
                     let dist = Math.hypot(camera.position.x - obj.userData.x, camera.position.z - obj.userData.z);
                     if (dist < 1.8) {
@@ -392,11 +522,11 @@
                     }
                 });
 
-                // Check Win Condition at Delivery Zone
+                // Win check
                 let distToExit = Math.hypot(camera.position.x - exitZone.position.x, camera.position.z - exitZone.position.z);
                 if (distToExit < 4 && packagesCollected >= totalPackages) {
                     gameWon = true;
-                    document.exitPointerLock();
+                    if (document.pointerLockElement) document.exitPointerLock();
                     document.getElementById("win-screen").style.display = "block";
                 }
             }
