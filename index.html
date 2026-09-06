@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - 007 N64 Retro Edition with Custom GLB</title>
+    <title>Rug Ville - 3D Third-Person Degen Edition</title>
     <style>
         body {
             margin: 0;
@@ -431,8 +431,7 @@
         scene.add(exitZone);
 
         let playerPos = new THREE.Vector3(0, 0, 50);
-        camera.position.copy(playerPos);
-        let yaw = 0, pitch = 0;
+        let yaw = 0, pitch = 0.3;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         let joystickX = 0, joystickY = 0;
         let nearbyCar = null, nearGarage = false;
@@ -505,10 +504,7 @@
 
         document.addEventListener('mousemove', (e) => {
             if (document.pointerLockElement !== document.body || gameWon || currentVehicle) return;
-            yaw -= e.movementX * 0.002;
-            pitch -= e.movementY * 0.002;
-            pitch = Math.max(-1.4, Math.min(1.4, pitch));
-            camera.rotation.set(pitch, yaw, 0, 'YXZ');
+            yaw -= e.movementX * 0.003;
         });
 
         document.addEventListener('keydown', (e) => {
@@ -603,14 +599,20 @@
                         if (cz === true) nearGarage = true; else if (!cz) playerPos.z = nz;
                     }
 
-                    camera.rotation.set(pitch, yaw, 0, 'YXZ');
-                    camera.position.copy(playerPos);
-                    camera.position.y = 0;
+                    // --- THIRD-PERSON CAMERA LOGIC ---
+                    let cameraOffset = new THREE.Vector3(0, 3, 6).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                    camera.position.copy(playerPos).add(cameraOffset);
+                    let lookTarget = playerPos.clone().add(new THREE.Vector3(0, 1, 0));
+                    camera.lookAt(lookTarget);
 
-                    // Sync custom character position/rotation with player walk movement
+                    // Sync custom character position/rotation with movement
                     if (customCharacter) {
                         customCharacter.position.set(playerPos.x, -1.2, playerPos.z);
-                        customCharacter.rotation.y = yaw + Math.PI;
+                        if (dir.lengthSq() > 0) {
+                            let moveAngle = Math.atan2(dir.x, dir.z);
+                            customCharacter.rotation.y = moveAngle;
+                        }
+                        customCharacter.visible = true;
                     }
 
                     nearbyCar = null;
