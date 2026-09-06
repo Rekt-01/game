@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bright Complex - GTA Style</title>
+    <title>Open World - GTA Style</title>
     <style>
         body {
             margin: 0;
-            background-color: #87ceeb;
+            background-color: #78b1f5;
             color: #111;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
@@ -22,12 +22,12 @@
             gap: 30px;
             background: rgba(255, 255, 255, 0.9);
             padding: 12px 28px;
-            border: 2px solid #0284c7;
+            border: 2px solid #2563eb;
             border-radius: 30px;
             font-weight: bold;
             font-size: 14px;
             letter-spacing: 1px;
-            color: #0369a1;
+            color: #1d4ed8;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 10;
         }
@@ -39,7 +39,7 @@
             background: rgba(255, 255, 255, 0.9);
             padding: 12px 24px;
             border-radius: 12px;
-            border: 2px solid #0284c7;
+            border: 2px solid #2563eb;
             font-size: 13px;
             color: #334155;
             text-align: center;
@@ -54,7 +54,7 @@
             transform: translate(-50%, -50%);
             width: 8px;
             height: 8px;
-            background-color: #ff5722;
+            background-color: #ef4444;
             border: 2px solid #fff;
             border-radius: 50%;
             pointer-events: none;
@@ -96,13 +96,13 @@
 
     <div id="crosshair"></div>
     <div id="ui">
-        <span id="score-text">SCORE: 0</span>
-        <span id="diamond-text">PACKAGES: 0/3</span>
+        <span id="score-text">CASH: $0</span>
+        <span id="package-text">PACKAGES: 0/4</span>
     </div>
-    <div id="instructions">Click anywhere to lock mouse &bull; Use <b>W, A, S, D</b> to explore</div>
+    <div id="instructions">Click to explore open world &bull; Use <b>W, A, S, D</b> to walk anywhere</div>
     <div id="win-screen">
-        <h1>MISSION PASSED</h1>
-        <p>All packages secured and delivery zone reached!</p>
+        <h1>MISSION PASSED!</h1>
+        <p>All packages secured across the district!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
@@ -112,8 +112,8 @@
         }
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb); // Sunny sky blue
-        scene.fog = new THREE.FogExp2(0x87ceeb, 0.03); // Light, distant outdoor fog
+        scene.background = new THREE.Color(0x87ceeb);
+        scene.fog = new THREE.FogExp2(0x87ceeb, 0.015);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -123,118 +123,191 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Bright Daytime GTA-style Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9); // Strong fill light so nothing is in shadow
+        // Bright Daytime Environment Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.2); // Warm sunlight
-        sunLight.position.set(20, 40, 20);
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.3);
+        sunLight.position.set(50, 100, 50);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 300;
+        let d = 80;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Map Layout: 1=Stucco Wall, 2=Wood Siding, 3=Concrete, 5=Package, 6=Crate, 7=Barrel, 9=Delivery Zone
-        const map = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 5, 0, 1, 2, 2, 6, 2, 2, 0, 1],
-            [1, 0, 1, 0, 1, 2, 0, 0, 0, 2, 0, 1],
-            [1, 0, 1, 0, 6, 0, 0, 3, 0, 2, 7, 1],
-            [1, 1, 1, 1, 1, 0, 3, 3, 3, 3, 0, 1],
-            [1, 0, 5, 0, 0, 0, 3, 7, 0, 3, 0, 1],
-            [1, 0, 1, 1, 1, 1, 3, 0, 5, 3, 9, 1],
-            [1, 0, 6, 0, 0, 0, 0, 0, 0, 3, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        ];
+        // Infinite Grass Terrain Ground Plane
+        const groundGeo = new THREE.PlaneGeometry(800, 800);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -1.2;
+        ground.receiveShadow = true;
+        scene.add(ground);
 
-        let score = 0;
-        let packagesCollected = 0;
-        const totalPackages = 3;
-        let gameWon = false;
-        const interactiveObjects = [];
+        // --- GENERATE ROADS ---
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+
+        function createRoad(x, z, width, length, rotation = 0) {
+            let roadGroup = new THREE.Group();
+            let road = new THREE.Mesh(new THREE.PlaneGeometry(width, length), roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.receiveShadow = true;
+            roadGroup.add(road);
+
+            // Yellow center dashes
+            for (let i = -length / 2 + 3; i < length / 2; i += 6) {
+                let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2), lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.y = 0.01;
+                if (rotation === 0) line.position.z = i;
+                else line.position.x = i;
+                roadGroup.add(line);
+            }
+
+            roadGroup.position.set(x, -1.18, z);
+            roadGroup.rotation.y = rotation;
+            scene.add(roadGroup);
+        }
+
+        // Main Grid Roads
+        createRoad(0, 0, 14, 300, 0);
+        createRoad(0, 0, 300, 14, Math.PI / 2);
+        createRoad(0, -90, 14, 300, 0);
+        createRoad(-90, 0, 300, 14, Math.PI / 2);
+
+        // --- GENERATE REALISTIC HOUSES / BUILDINGS ---
         const solidColliders = [];
 
-        const wallSize = 2;
-        const materials = {
-            1: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.5 }), // Clean white stucco
-            2: new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.6 }), // Rich wood trim
-            3: new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 })  // Modern concrete
-        };
+        function createHouse(x, z, width, height, depth, wallColor, roofColor) {
+            let houseGroup = new THREE.Group();
 
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 }); // Asphalt road/pavement
-        const ceilingMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 }); // Bright ceiling
+            // Main Walls
+            let walls = new THREE.Mesh(
+                new THREE.BoxGeometry(width, height, depth),
+                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.6 })
+            );
+            walls.position.y = height / 2 - 1.18;
+            walls.castShadow = true;
+            walls.receiveShadow = true;
+            houseGroup.add(walls);
 
-        // Build Environment
-        for (let r = 0; r < map.length; r++) {
-            for (let c = 0; c < map[r].length; c++) {
-                let tile = map[r][c];
-                let posX = (c - map[0].length / 2) * wallSize;
-                let posZ = (r - map.length / 2) * wallSize;
+            // Roof
+            let roof = new THREE.Mesh(
+                new THREE.ConeGeometry(Math.max(width, depth) * 0.75, 3, 4),
+                new THREE.MeshStandardMaterial({ color: roofColor, roughness: 0.5 })
+            );
+            roof.position.y = height + 0.35;
+            roof.rotation.y = Math.PI / 4;
+            roof.castShadow = true;
+            houseGroup.add(roof);
 
-                // Floor & Ceiling
-                let floor = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
-                floor.rotation.x = -Math.PI / 2;
-                floor.position.set(posX, -wallSize / 2, posZ);
-                floor.receiveShadow = true;
-                scene.add(floor);
+            // Door
+            let door = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 2.2, 0.2),
+                new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.4 })
+            );
+            door.position.set(0, 0, depth / 2 + 0.05);
+            houseGroup.add(door);
 
-                let ceiling = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), ceilingMat);
-                ceiling.rotation.x = Math.PI / 2;
-                ceiling.position.set(posX, wallSize / 2, posZ);
-                scene.add(ceiling);
+            houseGroup.position.set(x, 0, z);
+            scene.add(houseGroup);
 
-                if (tile >= 1 && tile <= 3) {
-                    let wall = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, wallSize), materials[tile]);
-                    wall.position.set(posX, 0, posZ);
-                    wall.castShadow = true;
-                    wall.receiveShadow = true;
-                    scene.add(wall);
-                    solidColliders.push({ x: posX, z: posZ, size: wallSize });
-                } else if (tile === 5) {
-                    let packageObj = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.5, 0.5, 0.5),
-                        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.2 }) // Bright red package
-                    );
-                    packageObj.position.set(posX, -0.5, posZ);
-                    packageObj.castShadow = true;
-                    packageObj.userData = { type: 'package', r: r, c: c };
-                    scene.add(packageObj);
-                    interactiveObjects.push(packageObj);
-                } else if (tile === 6) {
-                    let crate = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), materials[2]);
-                    crate.position.set(posX, -0.55, posZ);
-                    crate.castShadow = true;
-                    scene.add(crate);
-                    solidColliders.push({ x: posX, z: posZ, size: 0.9 });
-                } else if (tile === 7) {
-                    let barrel = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.4, 0.4, 1.1, 16),
-                        new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3 }) // Blue barrel
-                    );
-                    barrel.position.set(posX, -0.45, posZ);
-                    barrel.castShadow = true;
-                    scene.add(barrel);
-                    solidColliders.push({ x: posX, z: posZ, size: 0.8 });
-                } else if (tile === 9) {
-                    let deliveryZone = new THREE.Mesh(
-                        new THREE.BoxGeometry(wallSize, wallSize, 0.1),
-                        new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 }) // Bright green target door
-                    );
-                    deliveryZone.position.set(posX, 0, posZ);
-                    deliveryZone.userData = { type: 'exit', r: r, c: c };
-                    scene.add(deliveryZone);
-                    solidColliders.push({ x: posX, z: posZ, size: wallSize });
-                }
+            solidColliders.push({ x: x, z: z, sizeX: width + 0.6, sizeZ: depth + 0.6 });
+        }
+
+        // Neighborhood layout (placing houses safely away from road bounds)
+        const houseColors = [0xf8fafc, 0xf1f5f9, 0xe2e8f0, 0xdcbdab, 0xc27803];
+        const roofColors = [0x991b1b, 0x1e3a8a, 0x14532d, 0x334155, 0x78350f];
+
+        for (let xPos of [-55, -25, 25, 55]) {
+            for (let zPos of [-55, -25, 25, 55]) {
+                let wColor = houseColors[Math.floor(Math.random() * houseColors.length)];
+                let rColor = roofColors[Math.floor(Math.random() * roofColors.length)];
+                createHouse(xPos, zPos, 12, 7, 12, wColor, rColor);
             }
         }
 
-        // Start Position
-        camera.position.set((1 - map[0].length / 2) * wallSize, 0, (1 - map.length / 2) * wallSize);
+        // --- GENERATE TREES ---
+        function createTree(x, z) {
+            let treeGroup = new THREE.Group();
+
+            let trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.5, 0.7, 4, 8),
+                new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 })
+            );
+            trunk.position.y = 1;
+            trunk.castShadow = true;
+            treeGroup.add(trunk);
+
+            let leaves = new THREE.Mesh(
+                new THREE.DodecahedronGeometry(3),
+                new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 })
+            );
+            leaves.position.y = 4.5;
+            leaves.castShadow = true;
+            treeGroup.add(leaves);
+
+            treeGroup.position.set(x, -1.18, z);
+            scene.add(treeGroup);
+            solidColliders.push({ x: x, z: z, sizeX: 1.2, sizeZ: 1.2 });
+        }
+
+        // Scatter trees along blocks
+        for (let i = -120; i <= 120; i += 30) {
+            if (Math.abs(i) > 15) {
+                createTree(i, -18);
+                createTree(i, 18);
+                createTree(-18, i);
+                createTree(18, i);
+            }
+        }
+
+        // --- COLLECTIBLES & OBJECTS ---
+        let score = 0;
+        let packagesCollected = 0;
+        const totalPackages = 4;
+        let gameWon = false;
+        const interactiveObjects = [];
+
+        function createPackage(x, z) {
+            let pkg = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.2, 1.2),
+                new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.2 })
+            );
+            pkg.position.set(x, -0.5, z);
+            pkg.castShadow = true;
+            pkg.userData = { type: 'package', x: x, z: z };
+            scene.add(pkg);
+            interactiveObjects.push(pkg);
+        }
+
+        createPackage(-40, -40);
+        createPackage(40, -40);
+        createPackage(-40, 40);
+        createPackage(50, 50);
+
+        // Delivery / Exit Zone
+        let exitZone = new THREE.Mesh(
+            new THREE.BoxGeometry(6, 0.1, 6),
+            new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 })
+        );
+        exitZone.position.set(0, -1.15, -70);
+        scene.add(exitZone);
+
+        // Start Position (Middle of road intersection, safe area)
+        camera.position.set(0, 0, 70);
 
         // Controls State
         let yaw = 0;
         let pitch = 0;
-        const playerRadius = 0.3;
+        const playerRadius = 0.5;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
 
         document.body.addEventListener('click', () => {
@@ -265,12 +338,13 @@
 
         function checkCollision(x, z) {
             for (let obj of solidColliders) {
-                let half = obj.size / 2;
+                let halfX = obj.sizeX / 2;
+                let halfZ = obj.sizeZ / 2;
                 if (
-                    x + playerRadius > obj.x - half &&
-                    x - playerRadius < obj.x + half &&
-                    z + playerRadius > obj.z - half &&
-                    z - playerRadius < obj.z + half
+                    x + playerRadius > obj.x - halfX &&
+                    x - playerRadius < obj.x + halfX &&
+                    z + playerRadius > obj.z - halfZ &&
+                    z - playerRadius < obj.z + halfZ
                 ) {
                     return true;
                 }
@@ -288,7 +362,7 @@
             prevTime = time;
 
             if (!gameWon) {
-                let speed = 4.5 * delta;
+                let speed = 8.0 * delta;
                 let dir = new THREE.Vector3();
 
                 if (moveForward) dir.z -= 1;
@@ -303,38 +377,32 @@
 
                 if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
                 if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
-                camera.position.y = 0; // Strict level floor lock
+                camera.position.y = 0; // Fixed eye level height above ground
 
                 // Check Pickups
-                let curC = Math.floor(camera.position.x / wallSize + map[0].length / 2);
-                let curR = Math.floor(camera.position.z / wallSize + map.length / 2);
-
-                if (curR >= 0 && curR < map.length && curC >= 0 && curC < map[0].length) {
-                    let tile = map[curR][curC];
-                    if (tile === 5) {
-                        map[curR][curC] = 0;
-                        score += 250;
+                interactiveObjects.forEach((obj, index) => {
+                    let dist = Math.hypot(camera.position.x - obj.userData.x, camera.position.z - obj.userData.z);
+                    if (dist < 1.8) {
+                        scene.remove(obj);
+                        interactiveObjects.splice(index, 1);
+                        score += 500;
                         packagesCollected++;
-                        document.getElementById("score-text").innerText = `SCORE: ${score}`;
-                        document.getElementById("diamond-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
-
-                        let idx = interactiveObjects.findIndex(o => o.userData.r === curR && o.userData.c === curC);
-                        if (idx > -1) {
-                            scene.remove(interactiveObjects[idx]);
-                            interactiveObjects.splice(idx, 1);
-                        }
-                    } else if (tile === 9 && packagesCollected >= totalPackages) {
-                        gameWon = true;
-                        document.exitPointerLock();
-                        document.getElementById("win-screen").style.display = "block";
+                        document.getElementById("score-text").innerText = `CASH: $${score}`;
+                        document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
                     }
+                });
+
+                // Check Win Condition at Delivery Zone
+                let distToExit = Math.hypot(camera.position.x - exitZone.position.x, camera.position.z - exitZone.position.z);
+                if (distToExit < 4 && packagesCollected >= totalPackages) {
+                    gameWon = true;
+                    document.exitPointerLock();
+                    document.getElementById("win-screen").style.display = "block";
                 }
             }
 
             interactiveObjects.forEach(obj => {
-                if (obj.userData.type === 'package') {
-                    obj.rotation.y += 0.02;
-                }
+                obj.rotation.y += 0.02;
             });
 
             renderer.render(scene, camera);
