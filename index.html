@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Textured First Person Maze</title>
+    <title>Diamond Rush - Photo Textured Maze</title>
     <style>
         body {
             margin: 0;
@@ -56,6 +56,18 @@
         .ctrl-btn:active {
             background-color: #5a4939;
         }
+        #loading-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #111;
+            color: #f4d35e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 50;
+        }
         #win-screen {
             position: absolute;
             top: 50%;
@@ -85,8 +97,10 @@
 </head>
 <body>
 
+    <div id="loading-screen">Loading Textures...</div>
+
     <div id="ui">
-        <span id="level-text">LEVEL 1 - TEXTURED MAZE</span>
+        <span id="level-text">LEVEL 1 - REAL PHOTO MAZE</span>
     </div>
 
     <canvas id="raycastCanvas"></canvas>
@@ -110,74 +124,27 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Procedurally generate textures using hidden offscreen canvases
-        function createLeafTexture() {
-            let c = document.createElement('canvas');
-            c.width = 64; c.height = 64;
-            let cx = c.getContext('2d');
-            cx.fillStyle = '#1e3f20'; // Deep dark leaf green base
-            cx.fillRect(0, 0, 64, 64);
-            // Draw leaf vein patterns / cluster pixels
-            cx.fillStyle = '#2d6a4f';
-            for(let i=0; i<30; i++) {
-                let x = (i * 17) % 64, y = (i * 23) % 64;
-                cx.fillRect(x, y, 12, 12);
+        // Load Real Photographic Textures from reliable online sources
+        const wallImage = new Image();
+        wallImage.crossOrigin = "anonymous";
+        wallImage.src = "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=256&auto=format&fit=crop&q=80"; // Dense green jungle leaves
+
+        const floorImage = new Image();
+        floorImage.crossOrigin = "anonymous";
+        floorImage.src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=256&auto=format&fit=crop&q=80"; // Tarmac pavement road surface
+
+        let texturesLoaded = 0;
+        function checkImagesLoaded() {
+            texturesLoaded++;
+            if (texturesLoaded >= 2) {
+                document.getElementById("loading-screen").style.display = "none";
+                renderScene();
             }
-            cx.fillStyle = '#52b788'; // Bright leaf highlights
-            for(let i=0; i<20; i++) {
-                let x = (i * 13) % 64, y = (i * 29) % 64;
-                cx.fillRect(x, y, 6, 6);
-            }
-            return c;
         }
+        wallImage.onload = checkImagesLoaded;
+        floorImage.onload = checkImagesLoaded;
 
-        function createTarmacTexture() {
-            let c = document.createElement('canvas');
-            c.width = 64; c.height = 64;
-            let cx = c.getContext('2d');
-            cx.fillStyle = '#212529'; // Dark tarmac grey
-            cx.fillRect(0, 0, 64, 64);
-            cx.fillStyle = '#343a40'; // Road grit speckles
-            for(let i=0; i<50; i++) {
-                let x = (i * 19) % 64, y = (i * 31) % 64;
-                cx.fillRect(x, y, 3, 3);
-            }
-            // Dashed white road center line marker
-            cx.fillStyle = '#f8f9fa';
-            cx.fillRect(28, 0, 8, 20);
-            cx.fillRect(28, 32, 8, 20);
-            return c;
-        }
-
-        function createSkyTexture() {
-            let c = document.createElement('canvas');
-            c.width = 256; c.height = 128;
-            let cx = c.getContext('2d');
-            // Gradient sky background
-            let grad = cx.createLinearGradient(0, 0, 0, 128);
-            grad.addColorStop(0, '#1d3557');
-            grad.addColorStop(1, '#457b9d');
-            cx.fillStyle = grad;
-            cx.fillRect(0, 0, 256, 128);
-            // Fluffy white clouds
-            cx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            cx.beginPath();
-            cx.arc(60, 40, 25, 0, Math.PI * 2);
-            cx.arc(80, 35, 30, 0, Math.PI * 2);
-            cx.arc(100, 40, 20, 0, Math.PI * 2);
-            cx.fill();
-            cx.beginPath();
-            cx.arc(180, 60, 20, 0, Math.PI * 2);
-            cx.arc(200, 55, 25, 0, Math.PI * 2);
-            cx.fill();
-            return c;
-        }
-
-        const leafTex = createLeafTexture();
-        const tarmacTex = createTarmacTexture();
-        const skyTex = createSkyTexture();
-
-        // Maze Grid (1 = Leaf Wall, 9 = Exit Portal)
+        // Maze Grid Configuration
         let map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 0, 0, 1, 0, 0, 0, 9, 1],
@@ -194,20 +161,27 @@
         let gameWon = false;
 
         function renderScene() {
-            // Draw Sky with Clouds (shifted horizontally depending on player viewing angle)
-            let skyWidth = canvas.width * 2;
-            let skyOffset = (player.angle / (Math.PI * 2)) * skyWidth;
-            ctx.drawImage(skyTex, -skyOffset % skyWidth, 0, skyWidth, canvas.height / 2);
-            ctx.drawImage(skyTex, (-skyOffset % skyWidth) + skyWidth, 0, skyWidth, canvas.height / 2);
+            if (texturesLoaded < 2) return;
 
-            // Draw Tarmac Road Floor
-            ctx.fillStyle = "#1b1a18";
-            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+            // Simple soft gradient sky for background comfort
+            let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height / 2);
+            skyGrad.addColorStop(0, '#1a2530');
+            skyGrad.addColorStop(1, '#3a506b');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+
+            // Floor rendering using real tarmac photo texture strip stamping
+            let halfH = canvas.height / 2;
+            for (let y = halfH; y < canvas.height; y += 4) {
+                let dist = (canvas.height / 2) / (y - halfH);
+                let tarmacYIndex = Math.floor((dist * 20) % floorImage.height);
+                ctx.drawImage(floorImage, 0, tarmacYIndex, floorImage.width, 1, 0, y, canvas.width, 4);
+            }
 
             let numRays = canvas.width;
             let fov = Math.PI / 3;
 
-            // Raycasting Loop for Textured Walls
+            // Raycasting Loop for Photographic Wall Slices
             for (let i = 0; i < numRays; i++) {
                 let rayAngle = player.angle - fov / 2 + (i / numRays) * fov;
                 
@@ -235,7 +209,6 @@
                         hitWall = true;
                         hitXCoord = testX;
                         hitYCoord = testY;
-                        // Determine if it was a vertical or horizontal wall hit for texture coordinate mapping
                         if (Math.abs(testX - mapX) < 0.05 || Math.abs(testX - (mapX + 1)) < 0.05) {
                             isVerticalHit = true;
                         }
@@ -246,16 +219,15 @@
                 let wallHeight = Math.min(canvas.height * 2, (canvas.height / correctedDistance));
                 let ceiling = (canvas.height - wallHeight) / 2;
 
-                // Calculate texture column coordinate (X)
+                // Map exact column coordinate onto the leaf photograph
                 let textureX = isVerticalHit ? (hitYCoord % 1) : (hitXCoord % 1);
-                textureX = Math.floor(textureX * 64);
+                textureX = Math.floor(textureX * wallImage.width);
 
-                // Draw textured wall slice column from offscreen canvas
-                let sourceX = Math.max(0, Math.min(63, textureX));
-                ctx.drawImage(leafTex, sourceX, 0, 1, 64, i, ceiling, 1, wallHeight);
+                let sourceX = Math.max(0, Math.min(wallImage.width - 1, textureX));
+                ctx.drawImage(wallImage, sourceX, 0, 1, wallImage.height, i, ceiling, 1, wallHeight);
 
-                // Distance shading overlay (darkens walls as they get farther away)
-                let shade = Math.min(0.85, correctedDistance / 12);
+                // Natural atmospheric darkness shadow overlay based on distance
+                let shade = Math.min(0.8, correctedDistance / 10);
                 ctx.fillStyle = `rgba(0, 0, 0, ${shade})`;
                 ctx.fillRect(i, ceiling, 1, wallHeight);
             }
@@ -315,9 +287,6 @@
             if (e.key === "ArrowRight" || e.key === "d") move(0, 0.3);
             if (e.key === "ArrowUp" || e.key === "w") move(1, 0);
         });
-
-        // Initial render frame
-        renderScene();
 
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
