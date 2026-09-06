@@ -395,7 +395,7 @@
         createVehicle(150, 4, 0xf59e0b, true, 'x', -160, 160, 10);
         createVehicle(-150, -4, 0xf8fafc, true, 'x', -160, 160, -11);
 
-        // --- CITIZENS ---
+        // --- CITIZENS (Upgraded with Cyber Aesthetic) ---
         const activeCitizens = [];
         const degenQuotes = [
             "Dev dumped the floor! Rugged again!",
@@ -411,20 +411,57 @@
             let personGroup = new THREE.Group();
 
             let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 });
+            let cyberSkinMat = new THREE.MeshStandardMaterial({ 
+                color: 0x38bdf8, 
+                roughness: 0.2, 
+                metalness: 0.8, 
+                emissive: 0x0284c7, 
+                emissiveIntensity: 0.5 
+            });
+            
             let outfitColor = isPolice ? 0x1e3a8a : shirtColor;
             let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.7 });
             let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e3a8a, roughness: 0.8 });
 
+            // Torso
             let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), outfitMat);
             torso.position.y = -0.2;
             torso.castShadow = true;
             personGroup.add(torso);
 
+            // Head & Cyber Jaw Implant
             let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), skinMat);
             head.position.y = 0.35;
             head.castShadow = true;
             personGroup.add(head);
 
+            let cyberJaw = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.18, 0.25), cyberSkinMat);
+            cyberJaw.position.set(0.12, 0.28, 0.05);
+            personGroup.add(cyberJaw);
+
+            // Glowing Cyber Goggles / Visor
+            let visorMat = new THREE.MeshStandardMaterial({ 
+                color: 0x10b981, 
+                roughness: 0.1, 
+                metalness: 0.9, 
+                emissive: 0x059669, 
+                emissiveIntensity: 0.8 
+            });
+            let visor = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, 0.28), visorMat);
+            visor.position.set(0, 0.38, 0.1);
+            personGroup.add(visor);
+
+            // Backward Green Cap
+            let capMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.5 });
+            let capDome = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2), capMat);
+            capDome.position.y = 0.45;
+            personGroup.add(capDome);
+
+            let capBill = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.04, 0.2), capMat);
+            capBill.position.set(0, 0.48, -0.15);
+            personGroup.add(capBill);
+
+            // Arms & Legs
             let armGeo = new THREE.BoxGeometry(0.16, 0.7, 0.18);
             let leftArm = new THREE.Mesh(armGeo, outfitMat);
             leftArm.position.set(-0.38, -0.2, 0);
