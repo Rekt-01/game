@@ -3,27 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - 3D Third-Person Degen Edition</title>
+    <title>Rug Ville - Cyber Degen Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #000;
+            background-color: #05050a;
             color: #fff;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
-        }
-        /* N64 Scanline & CRT Filter Overlay */
-        body::after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 100;
-            background-size: 100% 3px, 3px 100%;
-            pointer-events: none;
         }
         #ui {
             position: absolute;
@@ -32,92 +21,82 @@
             transform: translateX(-50%);
             display: flex;
             gap: 25px;
-            background: #111;
-            padding: 8px 20px;
-            border: 2px solid #33ff33;
+            background: rgba(15, 15, 25, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 10px 24px;
+            border: 1px solid #00ffff;
             font-weight: bold;
             font-size: 14px;
             letter-spacing: 2px;
-            color: #33ff33;
-            box-shadow: 0 0 10px rgba(51, 255, 51, 0.4);
+            color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
             z-index: 10;
             pointer-events: none;
             text-transform: uppercase;
+            border-radius: 8px;
         }
         #instructions {
             position: absolute;
-            bottom: 15px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #111;
-            padding: 6px 12px;
-            border: 1px solid #33ff33;
-            font-size: 11px;
-            color: #33ff33;
+            background: rgba(15, 15, 25, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+            color: #a5b4fc;
             text-align: center;
             pointer-events: none;
             z-index: 10;
             white-space: nowrap;
+            border-radius: 6px;
         }
         #alert-banner {
             position: absolute;
-            top: 75px;
+            top: 85px;
             left: 50%;
             transform: translateX(-50%);
-            background: #990000;
+            background: rgba(220, 38, 38, 0.9);
             color: #fff;
-            padding: 6px 15px;
-            border: 2px solid #ff0000;
+            padding: 8px 20px;
+            border: 1px solid #ef4444;
             font-weight: bold;
             font-size: 12px;
             letter-spacing: 2px;
             display: none;
             z-index: 15;
-        }
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 14px;
-            height: 14px;
-            border: 2px solid #33ff33;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10;
-        }
-        #crosshair::after {
-            content: '';
-            position: absolute;
-            top: 5px; left: 5px;
-            width: 4px; height: 4px;
-            background: #33ff33;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         }
         #action-btn {
             position: absolute;
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: #222;
-            color: #33ff33;
-            padding: 10px 24px;
-            border: 2px solid #33ff33;
-            font-family: 'Courier New', Courier, monospace;
+            background: linear-gradient(135deg, #00ffff, #0088ff);
+            color: #000;
+            padding: 12px 28px;
+            border: none;
+            font-family: inherit;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
             display: none;
             z-index: 20;
             text-transform: uppercase;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            transition: transform 0.1s ease;
         }
-        #action-btn:hover { background: #33ff33; color: #000; }
+        #action-btn:hover { transform: scale(1.05); }
         
         #cockpit-dash {
             position: absolute;
             bottom: 0; left: 0; width: 100%; height: 180px;
             pointer-events: none; display: none; z-index: 25;
-            background: linear-gradient(to top, #090d09 70%, transparent 100%);
-            border-top: 3px solid #33ff33;
+            background: linear-gradient(to top, rgba(5,5,10,0.95) 70%, transparent 100%);
+            border-top: 2px solid #00ffff;
         }
         .dashboard-podium {
             position: absolute; bottom: 0; left: 50%;
@@ -127,66 +106,66 @@
             padding: 0 20px 10px 20px;
         }
         .gauge-cluster {
-            background: #000; border: 2px solid #33ff33;
-            padding: 8px 14px; text-align: center; color: #33ff33; font-size: 10px;
+            background: rgba(0,0,0,0.8); border: 1px solid #00ffff;
+            padding: 8px 14px; text-align: center; color: #00ffff; font-size: 10px; border-radius: 6px;
         }
-        .gauge-val { font-size: 20px; color: #fff; margin-top: 2px; }
+        .gauge-val { font-size: 20px; color: #fff; margin-top: 2px; font-weight: bold; }
         
         #steering-wheel {
             width: 180px; height: 110px;
-            border: 12px solid #1a2e1a; border-bottom: none;
+            border: 12px solid #0e7490; border-bottom: none;
             border-radius: 90px 90px 0 0; position: relative;
             transition: transform 0.05s linear; transform-origin: bottom center;
         }
         .radio-panel {
-            background: #000; border: 2px solid #eab308;
+            background: rgba(0,0,0,0.8); border: 1px solid #f59e0b;
             padding: 6px 10px; text-align: center; pointer-events: auto;
-            cursor: pointer; color: #eab308; font-size: 10px;
+            cursor: pointer; color: #f59e0b; font-size: 10px; border-radius: 6px;
         }
-        .radio-panel:hover { background: #111; }
+        .radio-panel:hover { background: rgba(245, 158, 11, 0.1); }
 
         #garage-modal {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background: #050805; border: 3px solid #eab308;
+            background: rgba(10, 10, 20, 0.95); border: 2px solid #f59e0b;
             padding: 30px; text-align: center; display: none; z-index: 30;
-            color: #fff; font-family: 'Courier New', Courier, monospace;
+            color: #fff; border-radius: 12px; box-shadow: 0 0 40px rgba(245, 158, 11, 0.3);
         }
-        #garage-modal h2 { color: #eab308; margin-top: 0; }
+        #garage-modal h2 { color: #f59e0b; margin-top: 0; }
         .upgrade-btn {
-            margin: 8px; padding: 10px 20px; background: #111;
-            color: #eab308; border: 2px solid #eab308; font-weight: bold; cursor: pointer;
+            margin: 8px; padding: 10px 20px; background: rgba(0,0,0,0.6);
+            color: #f59e0b; border: 1px solid #f59e0b; font-weight: bold; cursor: pointer; border-radius: 6px;
         }
-        .upgrade-btn:hover { background: #eab308; color: #000; }
+        .upgrade-btn:hover { background: #f59e0b; color: #000; }
 
         #speech-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 12; overflow: hidden; }
         .speech-bubble {
-            position: absolute; background: #000; border: 1px solid #33ff33;
-            padding: 4px 8px; font-size: 10px; color: #33ff33;
-            white-space: nowrap; transform: translate(-50%, -100%); display: none;
+            position: absolute; background: rgba(0,0,0,0.85); border: 1px solid #00ffff;
+            padding: 4px 10px; font-size: 11px; color: #00ffff;
+            white-space: nowrap; transform: translate(-50%, -100%); display: none; border-radius: 4px;
         }
         .building-sign {
-            position: absolute; background: #000; color: #eab308;
-            border: 1px solid #eab308; padding: 3px 6px; font-size: 9px;
-            font-weight: bold; white-space: nowrap; transform: translate(-50%, -100%); display: none;
+            position: absolute; background: rgba(0,0,0,0.85); color: #f59e0b;
+            border: 1px solid #f59e0b; padding: 4px 8px; font-size: 10px;
+            font-weight: bold; white-space: nowrap; transform: translate(-50%, -100%); display: none; border-radius: 4px;
         }
         #joystick-zone {
             position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 120px; background: rgba(51, 255, 51, 0.1);
-            border: 2px solid #33ff33; border-radius: 50%; z-index: 15; touch-action: none; display: none;
+            width: 120px; height: 120px; background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff; border-radius: 50%; z-index: 15; touch-action: none; display: none;
         }
         #joystick-handle {
             position: absolute; top: 35px; left: 35px; width: 50px; height: 50px;
-            background: #33ff33; border-radius: 50%; pointer-events: none;
+            background: #00ffff; border-radius: 50%; pointer-events: none; box-shadow: 0 0 10px #00ffff;
         }
         #win-screen {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #000; border: 3px solid #33ff33; padding: 40px; text-align: center;
-            display: none; z-index: 35; color: #33ff33;
+            background: rgba(10, 10, 20, 0.95); border: 2px solid #00ffff; padding: 40px; text-align: center;
+            display: none; z-index: 35; color: #00ffff; border-radius: 12px; box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
         }
         #win-screen button {
-            margin-top: 15px; padding: 10px 25px; background: #33ff33; color: #000;
-            border: none; font-weight: bold; cursor: pointer;
+            margin-top: 15px; padding: 10px 25px; background: #00ffff; color: #000;
+            border: none; font-weight: bold; cursor: pointer; border-radius: 6px;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -194,13 +173,12 @@
 </head>
 <body>
 
-    <div id="crosshair"></div>
     <div id="ui">
-        <span id="score-text">MISSION SCORE: $0</span>
-        <span id="package-text">DOSSIERS: 0/4</span>
+        <span id="score-text">VAULT: $0</span>
+        <span id="package-text">CHIPS: 0/4</span>
     </div>
     <button id="action-btn" onclick="handleActionClick()">ACQUIRE VEHICLE</button>
-    <div id="alert-banner">⚠️ MI6 ALERT: ENEMY AGENTS DISPATCHED ⚠️</div>
+    <div id="alert-banner">⚠️ WHALE ALERT: SECURITY PROTOCOL ENGAGED ⚠️</div>
     <div id="speech-overlay"></div>
     
     <div id="cockpit-dash">
@@ -213,108 +191,90 @@
                 <div id="steering-wheel"></div>
             </div>
             <div class="radio-panel" onclick="toggleRadio()">
-                ENCRYPTED AUDIO<br>
+                CYBER BEATS<br>
                 <span id="radio-status" style="color: #fff;">[ MUTED ]</span>
             </div>
         </div>
     </div>
 
     <div id="garage-modal">
-        <h2>Q-BRANCH WORKSHOP</h2>
-        <p>Upgrade your vehicle specs with mission funds:</p>
-        <button class="upgrade-btn" onclick="upgradeCar('speed')">Engine Overclock ($500)</button><br>
-        <button class="upgrade-btn" onclick="upgradeCar('handling')">Tire Traction ($400)</button><br>
-        <button class="upgrade-btn" onclick="upgradeCar('paint')">Stealth Camouflage Paint ($300)</button><br>
-        <button class="upgrade-btn" style="border-color:#ff0000; color:#ff0000;" onclick="closeGarage()">Return to Field</button>
+        <h2>DEGEN GARAGE</h2>
+        <p>Upgrade your ride with liquid capital:</p>
+        <button class="upgrade-btn" onclick="upgradeCar('speed')">Nitro Overclock ($500)</button><br>
+        <button class="upgrade-btn" onclick="upgradeCar('handling')">Cyber Grip ($400)</button><br>
+        <button class="upgrade-btn" onclick="upgradeCar('paint')">Neon RGB Wrap ($300)</button><br>
+        <button class="upgrade-btn" style="border-color:#ef4444; color:#ef4444;" onclick="closeGarage()">Exit Garage</button>
     </div>
 
-    <div id="instructions">WASD: Move / Steer | Approach car to drive or bunker to upgrade | E: Action</div>
+    <div id="instructions">WASD / Arrow Keys: Move & Drive | Approach Vehicle or Garage | E: Interact</div>
     
     <div id="joystick-zone">
         <div id="joystick-handle"></div>
     </div>
 
     <div id="win-screen">
-        <h2>MISSION COMPLETED</h2>
-        <p>All objectives secured successfully agent.</p>
-        <button onclick="location.reload()">REPLAY MISSION</button>
+        <h2>TO THE MOON 🚀</h2>
+        <p>All protocol assets secured successfully.</p>
+        <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x334155);
-        scene.fog = new THREE.FogExp2(0x334155, 0.008);
+        scene.background = new THREE.Color(0x0a0a16);
+        scene.fog = new THREE.FogExp2(0x0a0a16, 0.005);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: false });
-        renderer.setSize(window.innerWidth / 1.5, window.innerHeight / 1.5);
-        renderer.domElement.style.width = '100%';
-        renderer.domElement.style.height = '100%';
-        renderer.domElement.style.imageRendering = 'pixelated';
+        
+        // Crisp, high-end WebGL settings (No more pixelated look)
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        const sunLight = new THREE.DirectionalLight(0x00ffff, 1.5);
         sunLight.position.set(50, 150, 50);
         scene.add(sunLight);
 
-        function createN64GrassTexture() {
-            let canvas = document.createElement('canvas');
-            canvas.width = 64; canvas.height = 64;
-            let ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#2d4a2d';
-            ctx.fillRect(0, 0, 64, 64);
-            for(let i=0; i<150; i++) {
-                ctx.fillStyle = '#1e331e';
-                ctx.fillRect(Math.random()*64, Math.random()*64, 4, 4);
-            }
-            let texture = new THREE.CanvasTexture(canvas);
-            texture.magFilter = THREE.NearestFilter;
-            texture.minFilter = THREE.NearestFilter;
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(60, 60);
-            return texture;
-        }
+        const neonLight = new THREE.DirectionalLight(0xff00ff, 1.0);
+        neonLight.position.set(-50, 100, -50);
+        scene.add(neonLight);
 
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(800, 800),
-            new THREE.MeshBasicMaterial({ map: createN64GrassTexture() })
-        );
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -1.2;
-        scene.add(ground);
+        // Modern Cyber Grid Floor
+        const gridHelper = new THREE.GridHelper(800, 80, 0x00ffff, 0x1e1e3f);
+        gridHelper.position.y = -1.2;
+        scene.add(gridHelper);
 
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        const roadMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.2, metalness: 0.8 });
 
         function createRoad(x, z, w, l, rot = 0) {
             let group = new THREE.Group();
             let road = new THREE.Mesh(new THREE.PlaneGeometry(w, l), roadMat);
             road.rotation.x = -Math.PI / 2;
             group.add(road);
-            group.position.set(x, -1.17, z);
+            group.position.set(x, -1.18, z);
             group.rotation.y = rot;
             scene.add(group);
         }
 
         const mapSize = 120;
-        createRoad(0, -mapSize, 16, mapSize * 2, 0);
-        createRoad(0, mapSize, 16, mapSize * 2, 0);
-        createRoad(-mapSize, 0, 16, mapSize * 2, Math.PI / 2);
-        createRoad(mapSize, 0, 16, mapSize * 2, Math.PI / 2);
+        createRoad(0, -mapSize, 18, mapSize * 2, 0);
+        createRoad(0, mapSize, 18, mapSize * 2, 0);
+        createRoad(-mapSize, 0, 18, mapSize * 2, Math.PI / 2);
+        createRoad(mapSize, 0, 18, mapSize * 2, Math.PI / 2);
 
-        function createBlockBuilding(x, z, sx, sz, h, color, signText, isGarage = false) {
+        function createCyberBuilding(x, z, sx, sz, h, color, signText, isGarage = false) {
             let mesh = new THREE.Mesh(
                 new THREE.BoxGeometry(sx, h, sz),
-                new THREE.MeshLambertMaterial({ color: color })
+                new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.7 })
             );
-            mesh.position.set(x, h/2 - 1.18, z);
+            mesh.position.set(x, h/2 - 1.19, z);
             scene.add(mesh);
             solidColliders.push({ x: x, z: z, sizeX: sx, sizeZ: sz, isGarage: isGarage });
 
@@ -322,33 +282,43 @@
             signEl.className = 'building-sign';
             signEl.innerText = signText;
             speechOverlay.appendChild(signEl);
-            buildingSignsData.push({ mesh: mesh, signElement: signEl, offsetY: h + 0.5 });
+            buildingSignsData.push({ mesh: mesh, signElement: signEl, offsetY: h + 0.6 });
         }
 
-        createBlockBuilding(-60, -60, 12, 12, 14, 0x475569, "FACILITY SECTOR A");
-        createBlockBuilding(60, -60, 14, 14, 18, 0x334155, "ARCHIVES");
-        createBlockBuilding(-60, 60, 15, 12, 12, 0x64748b, "CONTROL");
-        createBlockBuilding(0, -100, 14, 10, 8, 0x854d0e, "Q-BRANCH WORKSHOP", true);
+        createCyberBuilding(-60, -60, 14, 14, 16, 0x1e1b4b, "LIQUIDITY POOL A");
+        createCyberBuilding(60, -60, 16, 16, 20, 0x0f172a, "NODE STAKING");
+        createCyberBuilding(-60, 60, 16, 14, 14, 172554, "GOVERNANCE");
+        createCyberBuilding(0, -100, 16, 12, 10, 0x78350f, "DEGEN GARAGE", true);
 
-        // Load Custom User .glb Model
+        // Load Custom User .glb Model & Handle Animation Mixer
         const gltfLoader = new THREE.GLTFLoader();
         let customCharacter = null;
         let mixer = null;
+        let idleAction = null, walkAction = null, activeAction = null;
 
         gltfLoader.load(
             './9aeae37947f49e83f8cb3513c9a23826.glb',
             function (gltf) {
                 customCharacter = gltf.scene;
                 customCharacter.scale.set(1, 1, 1);
-                customCharacter.position.set(0, -1.2, 40); // Placed right near spawn
+                customCharacter.position.set(0, -1.2, 40);
                 scene.add(customCharacter);
 
                 if (gltf.animations && gltf.animations.length > 0) {
                     mixer = new THREE.AnimationMixer(customCharacter);
-                    let action = mixer.clipAction(gltf.animations[0]);
-                    action.play();
+                    
+                    // Assign animations safely (Index 0 usually idle, Index 1/next usually walk/run if available)
+                    idleAction = mixer.clipAction(gltf.animations[0]);
+                    idleAction.play();
+                    activeAction = idleAction;
+
+                    if (gltf.animations.length > 1) {
+                        walkAction = mixer.clipAction(gltf.animations[1]);
+                    } else {
+                        walkAction = idleAction; // Fallback if only 1 animation exists
+                    }
                 }
-                console.log("Custom GLB Model loaded successfully!");
+                console.log("Custom GLB Character loaded with animations!");
             },
             undefined,
             function (error) {
@@ -359,13 +329,13 @@
         const drivableVehicles = [];
         let currentVehicle = null;
 
-        function createBlockCar(x, z, color) {
+        function createCyberCar(x, z, color) {
             let carGroup = new THREE.Group();
-            let body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 4), new THREE.MeshLambertMaterial({ color: color }));
+            let body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 4), new THREE.MeshStandardMaterial({ color: color, metalness: 0.9, roughness: 0.1 }));
             body.position.y = -0.6;
             carGroup.add(body);
 
-            let roof = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 2), new THREE.MeshLambertMaterial({ color: 0x111 }));
+            let roof = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.5, roughness: 0.2 }));
             roof.position.set(0, -0.1, -0.2);
             carGroup.add(roof);
 
@@ -380,18 +350,18 @@
             return carObj;
         }
 
-        createBlockCar(-20, -40, 0x990000);
+        createCyberCar(-20, -40, 0xff00ff);
 
         const activeCitizens = [];
-        const n64Quotes = ["Stop right there!", "For England, James?", "Alarm triggered!", "Security alert!"];
+        const degenQuotes = ["WAGMI!", "Pump it!", "Buy the dip!", "Rug pulled!"];
 
-        function createGuard(x, z, isGuard = true) {
+        function createNPC(x, z, isGuarding = true) {
             let group = new THREE.Group();
-            let body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshLambertMaterial({ color: isGuard ? 0x1e3a8a : 0x334155 }));
+            let body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: isGuarding ? 0xef4444 : 0x00ffff, roughness: 0.4 }));
             body.position.y = -0.3;
             group.add(body);
 
-            let head = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), new THREE.MeshLambertMaterial({ color: 0xfde047 }));
+            let head = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), new THREE.MeshStandardMaterial({ color: 0xfff }));
             head.position.y = 0.4;
             group.add(head);
 
@@ -400,14 +370,14 @@
 
             let bubble = document.createElement('div');
             bubble.className = 'speech-bubble';
-            bubble.innerText = isGuard ? "Guard: Halt!" : n64Quotes[Math.floor(Math.random() * n64Quotes.length)];
+            bubble.innerText = isGuarding ? "Whale: Stay out!" : degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
             speechOverlay.appendChild(bubble);
 
             activeCitizens.push({ mesh: group, x: x, z: z, originX: x, originZ: z, angle: Math.random() * 6, bubble: bubble });
         }
 
-        for(let i=0; i<5; i++) createGuard((Math.random()-0.5)*90, (Math.random()-0.5)*90, false);
-        createGuard(15, -90, true);
+        for(let i=0; i<5; i++) createNPC((Math.random()-0.5)*90, (Math.random()-0.5)*90, false);
+        createNPC(15, -90, true);
 
         let score = 0;
         let packagesCollected = 0;
@@ -415,23 +385,23 @@
         let gameWon = false;
         const interactiveObjects = [];
 
-        function createDossier(x, z) {
-            let obj = new THREE.Mesh(new THREE.BoxGeometry(1, 0.2, 1), new THREE.MeshBasicMaterial({ color: 0xeab308 }));
+        function createChip(x, z) {
+            let obj = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16), new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 }));
             obj.position.set(x, -0.8, z);
             obj.userData = { x: x, z: z };
             scene.add(obj);
             interactiveObjects.push(obj);
         }
 
-        createDossier(-45, -45); createDossier(45, -45);
-        createDossier(-45, 45); createDossier(45, 45);
+        createChip(-45, -45); createChip(45, -45);
+        createChip(-45, 45); createChip(45, 45);
 
-        let exitZone = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.1, 12), new THREE.MeshBasicMaterial({ color: 0x33ff33 }));
+        let exitZone = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 0.1, 16), new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.8 }));
         exitZone.position.set(0, -1.15, -110);
         scene.add(exitZone);
 
         let playerPos = new THREE.Vector3(0, 0, 50);
-        let yaw = 0, pitch = 0.3;
+        let yaw = 0;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         let joystickX = 0, joystickY = 0;
         let nearbyCar = null, nearGarage = false;
@@ -442,19 +412,19 @@
             radioPlaying = !radioPlaying;
             let statusEl = document.getElementById("radio-status");
             if (radioPlaying) {
-                statusEl.innerText = "[ THEME PLAYING ]";
-                statusEl.style.color = "#33ff33";
+                statusEl.innerText = "[ PLAYING ]";
+                statusEl.style.color = "#00ffff";
                 musicInterval = setInterval(() => {
                     if (!radioPlaying || !audioCtx) return;
                     let osc = audioCtx.createOscillator();
                     let gain = audioCtx.createGain();
-                    osc.type = 'sawtooth';
-                    osc.frequency.value = [110, 116, 123, 130][Math.floor(Math.random()*4)];
-                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                    osc.type = 'sine';
+                    osc.frequency.value = [220, 247, 261, 293, 329][Math.floor(Math.random()*5)];
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
                     osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-                }, 400);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                }, 250);
             } else {
                 statusEl.innerText = "[ MUTED ]";
                 statusEl.style.color = "#fff";
@@ -468,15 +438,15 @@
             } else if (!currentVehicle && nearbyCar) {
                 currentVehicle = nearbyCar;
                 document.getElementById("action-btn").innerText = "EXIT VEHICLE";
-                document.getElementById("package-text").innerText = `DOSSIERS: ${packagesCollected}/${totalPackages} | DRIVING`;
+                document.getElementById("package-text").innerText = `CHIPS: ${packagesCollected}/${totalPackages} | DRIVING`;
                 document.getElementById("cockpit-dash").style.display = "block";
-                if (customCharacter) customCharacter.visible = false; // Hide custom character when driving
+                if (customCharacter) customCharacter.visible = false;
             } else if (currentVehicle) {
                 playerPos.copy(currentVehicle.mesh.position); playerPos.x += 2;
                 currentVehicle = null;
                 document.getElementById("action-btn").style.display = "none";
                 document.getElementById("action-btn").innerText = "ACQUIRE VEHICLE";
-                document.getElementById("package-text").innerText = `DOSSIERS: ${packagesCollected}/${totalPackages} | ON FOOT`;
+                document.getElementById("package-text").innerText = `CHIPS: ${packagesCollected}/${totalPackages} | ON FOOT`;
                 document.getElementById("cockpit-dash").style.display = "none";
                 if (customCharacter) {
                     customCharacter.position.copy(playerPos);
@@ -492,18 +462,12 @@
             if (type === 'speed' && score >= 500) { score -= 500; currentVehicle.maxSpeedMultiplier += 0.3; }
             else if (type === 'handling' && score >= 400) { score -= 400; currentVehicle.handlingMultiplier += 0.4; }
             else if (type === 'paint' && score >= 300) { score -= 300; currentVehicle.bodyMesh.material.color.setHex(Math.random()*0xffffff); }
-            document.getElementById("score-text").innerText = `MISSION SCORE: $${score}`;
+            document.getElementById("score-text").innerText = `VAULT: $${score}`;
         }
         function closeGarage() { document.getElementById("garage-modal").style.display = "none"; }
 
-        renderer.domElement.addEventListener('click', () => {
-            if (!('ontouchstart' in window) && document.pointerLockElement !== document.body && !currentVehicle) {
-                document.body.requestPointerLock();
-            }
-        });
-
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== document.body || gameWon || currentVehicle) return;
+            if (gameWon || currentVehicle) return;
             yaw -= e.movementX * 0.003;
         });
 
@@ -556,7 +520,7 @@
         function checkCollision(x, z) {
             for (let obj of solidColliders) {
                 let hx = obj.sizeX / 2, hz = obj.sizeZ / 2;
-                if (x + 0.4 > obj.x - hx && x - 0.4 < obj.x + hx && z + 0.4 > obj.z - hz && z - 0.4 < obj.z + hz) {
+                if (x + 0.5 > obj.x - hx && x - 0.5 < obj.x + hx && z + 0.5 > obj.z - hz && z - 0.5 < obj.z + hz) {
                     return obj.isGarage;
                 }
             }
@@ -577,7 +541,7 @@
 
             if (!gameWon) {
                 if (!currentVehicle) {
-                    let speed = 9.0 * delta;
+                    let speed = 10.0 * delta;
                     let dir = new THREE.Vector3();
                     if (moveForward) dir.z -= 1;
                     if (moveBackward) dir.z += 1;
@@ -589,7 +553,19 @@
                         if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
                     }
 
-                    if (dir.lengthSq() > 0) {
+                    let isMoving = (dir.lengthSq() > 0);
+
+                    // Update Animation State (Idle vs Walk)
+                    if (walkAction && idleAction && activeAction) {
+                        let targetAction = isMoving ? walkAction : idleAction;
+                        if (targetAction !== activeAction) {
+                            activeAction.fadeOut(0.2);
+                            targetAction.reset().fadeIn(0.2).play();
+                            activeAction = targetAction;
+                        }
+                    }
+
+                    if (isMoving) {
                         dir.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
                         let nx = playerPos.x + dir.x * speed;
                         let nz = playerPos.z + dir.z * speed;
@@ -599,16 +575,15 @@
                         if (cz === true) nearGarage = true; else if (!cz) playerPos.z = nz;
                     }
 
-                    // --- THIRD-PERSON CAMERA LOGIC ---
-                    let cameraOffset = new THREE.Vector3(0, 3, 6).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                    // Smooth Third-Person Camera Tracking
+                    let cameraOffset = new THREE.Vector3(0, 3.5, 7).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
                     camera.position.copy(playerPos).add(cameraOffset);
                     let lookTarget = playerPos.clone().add(new THREE.Vector3(0, 1, 0));
                     camera.lookAt(lookTarget);
 
-                    // Sync custom character position/rotation with movement
                     if (customCharacter) {
                         customCharacter.position.set(playerPos.x, -1.2, playerPos.z);
-                        if (dir.lengthSq() > 0) {
+                        if (isMoving) {
                             let moveAngle = Math.atan2(dir.x, dir.z);
                             customCharacter.rotation.y = moveAngle;
                         }
@@ -623,23 +598,23 @@
                     let btn = document.getElementById("action-btn");
                     if (nearbyCar || nearGarage) {
                         btn.style.display = "block";
-                        btn.innerText = nearGarage ? "ENTER WORKSHOP" : "ACQUIRE VEHICLE";
+                        btn.innerText = nearGarage ? "ENTER GARAGE" : "ACQUIRE VEHICLE";
                     } else {
                         btn.style.display = "none";
                     }
                 } else {
-                    let maxSpeed = 30 * currentVehicle.maxSpeedMultiplier;
-                    if (moveForward || joystickY < -0.1) currentVehicle.speed += 14 * delta;
-                    else if (moveBackward || joystickY > 0.1) currentVehicle.speed -= 12 * delta;
+                    let maxSpeed = 35 * currentVehicle.maxSpeedMultiplier;
+                    if (moveForward || joystickY < -0.1) currentVehicle.speed += 15 * delta;
+                    else if (moveBackward || joystickY > 0.1) currentVehicle.speed -= 15 * delta;
                     else currentVehicle.speed *= 0.94;
 
-                    currentVehicle.speed = Math.max(-10, Math.min(maxSpeed, currentVehicle.speed));
+                    currentVehicle.speed = Math.max(-12, Math.min(maxSpeed, currentVehicle.speed));
 
                     let turnInput = 0;
                     if (moveLeft || joystickX < -0.1) turnInput = 1;
                     if (moveRight || joystickX > 0.1) turnInput = -1;
 
-                    currentVehicle.rotationY += (2.8 * currentVehicle.handlingMultiplier) * delta * turnInput * Math.sign(currentVehicle.speed || 1);
+                    currentVehicle.rotationY += (3.0 * currentVehicle.handlingMultiplier) * delta * turnInput * Math.sign(currentVehicle.speed || 1);
 
                     let moveDir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentVehicle.rotationY);
                     currentVehicle.x += moveDir.x * currentVehicle.speed * delta;
@@ -654,24 +629,24 @@
                     camera.lookAt(target);
                     playerPos.copy(currentVehicle.mesh.position);
 
-                    document.getElementById("dash-speed").innerText = Math.round(Math.abs(currentVehicle.speed) * 4);
+                    document.getElementById("dash-speed").innerText = Math.round(Math.abs(currentVehicle.speed) * 3.6);
                     let wheel = document.getElementById("steering-wheel");
                     if(wheel) wheel.style.transform = `rotate(${-turnInput * 35}deg)`;
 
-                    if (Math.abs(currentVehicle.speed) > 22) {
+                    if (Math.abs(currentVehicle.speed) > 25) {
                         document.getElementById("alert-banner").style.display = "block";
                     }
                 }
 
                 activeCitizens.forEach(c => {
                     c.angle += delta * 0.8;
-                    c.x = c.originX + Math.sin(c.angle) * 5;
-                    c.z = c.originZ + Math.cos(c.angle) * 5;
+                    c.x = c.originX + Math.sin(c.angle) * 6;
+                    c.z = c.originZ + Math.cos(c.angle) * 6;
                     c.mesh.position.set(c.x, 0, c.z);
 
                     let vector = new THREE.Vector3(c.x, 1, c.z).project(camera);
                     let dist = camera.position.distanceTo(c.mesh.position);
-                    if (vector.z < 1 && dist < 30) {
+                    if (vector.z < 1 && dist < 35) {
                         c.bubble.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         c.bubble.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         c.bubble.style.display = 'block';
@@ -681,7 +656,7 @@
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
-                    if (vector.z < 1 && dist < 60) {
+                    if (vector.z < 1 && dist < 70) {
                         b.signElement.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         b.signElement.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         b.signElement.style.display = 'block';
@@ -693,14 +668,13 @@
                         scene.remove(obj); interactiveObjects.splice(index, 1);
                         score += 500; packagesCollected++;
                         let modeStr = currentVehicle ? "DRIVING" : "ON FOOT";
-                        document.getElementById("score-text").innerText = `MISSION SCORE: $${score}`;
-                        document.getElementById("package-text").innerText = `DOSSIERS: ${packagesCollected}/${totalPackages} | ${modeStr}`;
+                        document.getElementById("score-text").innerText = `VAULT: $${score}`;
+                        document.getElementById("package-text").innerText = `CHIPS: ${packagesCollected}/${totalPackages} | ${modeStr}`;
                     }
                 });
 
                 if (Math.hypot(playerPos.x - exitZone.position.x, playerPos.z - exitZone.position.z) < 4 && packagesCollected >= totalPackages) {
                     gameWon = true;
-                    if (document.pointerLockElement) document.exitPointerLock();
                     document.getElementById("win-screen").style.display = "block";
                 }
             }
@@ -712,9 +686,7 @@
         window.addEventListener("resize", () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth / 1.5, window.innerHeight / 1.5);
-            renderer.domElement.style.width = '100%';
-            renderer.domElement.style.height = '100%';
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
