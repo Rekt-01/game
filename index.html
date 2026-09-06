@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Realistic 3D Complex</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bright Complex - GTA Style</title>
     <style>
         body {
             margin: 0;
-            background-color: #020205;
-            color: #fff;
+            background-color: #87ceeb;
+            color: #111;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             user-select: none;
@@ -20,15 +20,15 @@
             transform: translateX(-50%);
             display: flex;
             gap: 30px;
-            background: rgba(10, 10, 15, 0.9);
-            padding: 12px 24px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 28px;
+            border: 2px solid #0284c7;
             border-radius: 30px;
-            font-weight: 600;
+            font-weight: bold;
             font-size: 14px;
             letter-spacing: 1px;
-            color: #38bdf8;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            color: #0369a1;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 10;
         }
         #instructions {
@@ -36,14 +36,15 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(10, 10, 15, 0.9);
+            background: rgba(255, 255, 255, 0.9);
             padding: 12px 24px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 2px solid #0284c7;
             font-size: 13px;
-            color: #94a3b8;
+            color: #334155;
             text-align: center;
             pointer-events: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             z-index: 10;
         }
         #crosshair {
@@ -51,9 +52,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 6px;
-            height: 6px;
-            background-color: rgba(255, 255, 255, 0.8);
+            width: 8px;
+            height: 8px;
+            background-color: #ff5722;
+            border: 2px solid #fff;
             border-radius: 50%;
             pointer-events: none;
             z-index: 10;
@@ -63,106 +65,57 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(12, 12, 18, 0.98);
-            border: 2px solid #38bdf8;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #22c55e;
             padding: 40px;
             text-align: center;
             border-radius: 20px;
             display: none;
             z-index: 20;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        #win-screen h1 { color: #38bdf8; margin-top: 0; font-size: 28px; }
+        #win-screen h1 { color: #16a34a; margin-top: 0; }
         #win-screen button {
             margin-top: 20px;
             padding: 12px 30px;
-            background: #0284c7;
+            background: #22c55e;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
             transition: background 0.2s;
         }
-        #win-screen button:hover { background: #0369a1; }
+        #win-screen button:hover { background: #16a34a; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
     <div id="crosshair"></div>
-
     <div id="ui">
         <span id="score-text">SCORE: 0</span>
-        <span id="diamond-text">DIAMONDS: 0/3</span>
+        <span id="diamond-text">PACKAGES: 0/3</span>
     </div>
-
-    <div id="instructions">
-        Click screen to lock mouse &bull; Use <b>W, A, S, D</b> to navigate
-    </div>
-
+    <div id="instructions">Click anywhere to lock mouse &bull; Use <b>W, A, S, D</b> to explore</div>
     <div id="win-screen">
-        <h1>COMPLEX CLEARED</h1>
-        <p>All structural items secured and exit point reached.</p>
+        <h1>MISSION PASSED</h1>
+        <p>All packages secured and delivery zone reached!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
-        // High-fidelity procedural texture generator with depth shading
-        function makeTexture(baseColor, lineCol, type) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            
-            ctx.fillStyle = baseColor;
-            ctx.fillRect(0, 0, 512, 512);
-
-            if (type === 'brick') {
-                ctx.fillStyle = lineCol;
-                let rowH = 64;
-                for (let y = 0; y < 512; y += rowH) {
-                    ctx.fillRect(0, y, 512, 4);
-                    let offset = (y / rowH) % 2 === 0 ? 0 : 64;
-                    for (let x = 0; x < 512; x += 128) {
-                        ctx.fillRect(x + offset, y, 4, rowH);
-                    }
-                }
-            } else if (type === 'wood') {
-                ctx.fillStyle = lineCol;
-                for (let i = 0; i < 512; i += 32) {
-                    ctx.fillRect(0, i, 512, 8);
-                }
-            } else if (type === 'stone') {
-                for (let i = 0; i < 2000; i++) {
-                    ctx.fillStyle = Math.random() > 0.5 ? lineCol : '#000000';
-                    ctx.fillRect(Math.random() * 512, Math.random() * 512, 3, 3);
-                }
-            } else if (type === 'grid') {
-                ctx.strokeStyle = lineCol;
-                ctx.lineWidth = 6;
-                ctx.strokeRect(0, 0, 512, 512);
-            }
-
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            return texture;
+        if (typeof THREE === 'undefined') {
+            alert('Failed to load Three.js library.');
         }
 
-        const brickTex = makeTexture('#2a1a0e', '#110a05', 'brick');
-        const woodTex = makeTexture('#4a2e18', '#23150a', 'wood');
-        const stoneTex = makeTexture('#1f242d', '#0d1015', 'stone');
-        const floorTex = makeTexture('#111318', '#1e2430', 'grid');
-        const ceilingTex = makeTexture('#08090d', '#15171e', 'grid');
-
-        // Setup Scene & High-Precision Renderer
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x020205);
-        scene.fog = new THREE.FogExp2(0x020205, 0.10);
+        scene.background = new THREE.Color(0x87ceeb); // Sunny sky blue
+        scene.fog = new THREE.FogExp2(0x87ceeb, 0.03); // Light, distant outdoor fog
 
-        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -170,16 +123,18 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Realistic Lighting Setup
-        const ambientLight = new THREE.AmbientLight(0x1e293b, 0.7);
+        // Bright Daytime GTA-style Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9); // Strong fill light so nothing is in shadow
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0x38bdf8, 0.8);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.2); // Warm sunlight
+        sunLight.position.set(20, 40, 20);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        scene.add(sunLight);
 
-        // Map Layout: 1=Brick, 2=Wood, 3=Stone, 5=Diamond, 6=Crate, 7=Barrel, 9=Exit
+        // Map Layout: 1=Stucco Wall, 2=Wood Siding, 3=Concrete, 5=Package, 6=Crate, 7=Barrel, 9=Delivery Zone
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 0, 5, 0, 1, 2, 2, 6, 2, 2, 0, 1],
@@ -193,21 +148,21 @@
         ];
 
         let score = 0;
-        let diamondsCollected = 0;
-        let totalDiamonds = 3;
+        let packagesCollected = 0;
+        const totalPackages = 3;
         let gameWon = false;
-        let interactiveObjects = [];
-        const solidColliders = []; // Stores precise bounding metadata for obstacles
+        const interactiveObjects = [];
+        const solidColliders = [];
 
         const wallSize = 2;
-        const wallMaterials = {
-            1: new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.8 }),
-            2: new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.7 }),
-            3: new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9 })
+        const materials = {
+            1: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.5 }), // Clean white stucco
+            2: new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.6 }), // Rich wood trim
+            3: new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 })  // Modern concrete
         };
 
-        const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.4 });
-        const ceilingMat = new THREE.MeshStandardMaterial({ map: ceilingTex, roughness: 0.9 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 }); // Asphalt road/pavement
+        const ceilingMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 }); // Bright ceiling
 
         // Build Environment
         for (let r = 0; r < map.length; r++) {
@@ -217,83 +172,80 @@
                 let posZ = (r - map.length / 2) * wallSize;
 
                 // Floor & Ceiling
-                let floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
-                floorMesh.rotation.x = -Math.PI / 2;
-                floorMesh.position.set(posX, -wallSize / 2, posZ);
-                floorMesh.receiveShadow = true;
-                scene.add(floorMesh);
+                let floor = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), floorMat);
+                floor.rotation.x = -Math.PI / 2;
+                floor.position.set(posX, -wallSize / 2, posZ);
+                floor.receiveShadow = true;
+                scene.add(floor);
 
-                let ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), ceilingMat);
-                ceilingMesh.rotation.x = Math.PI / 2;
-                ceilingMesh.position.set(posX, wallSize / 2, posZ);
-                scene.add(ceilingMesh);
+                let ceiling = new THREE.Mesh(new THREE.PlaneGeometry(wallSize, wallSize), ceilingMat);
+                ceiling.rotation.x = Math.PI / 2;
+                ceiling.position.set(posX, wallSize / 2, posZ);
+                scene.add(ceiling);
 
                 if (tile >= 1 && tile <= 3) {
-                    let wallMesh = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, wallSize), wallMaterials[tile]);
-                    wallMesh.position.set(posX, 0, posZ);
-                    wallMesh.castShadow = true;
-                    wallMesh.receiveShadow = true;
-                    scene.add(wallMesh);
-                    solidColliders.push({ x: posX, z:PosZ, size: wallSize });
+                    let wall = new THREE.Mesh(new THREE.BoxGeometry(wallSize, wallSize, wallSize), materials[tile]);
+                    wall.position.set(posX, 0, posZ);
+                    wall.castShadow = true;
+                    wall.receiveShadow = true;
+                    scene.add(wall);
+                    solidColliders.push({ x: posX, z: posZ, size: wallSize });
                 } else if (tile === 5) {
-                    let diamondMesh = new THREE.Mesh(
-                        new THREE.OctahedronGeometry(0.3),
-                        new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, roughness: 0.1, metalness: 0.9 })
+                    let packageObj = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.2 }) // Bright red package
                     );
-                    diamondMesh.position.set(posX, 0, posZ);
-                    diamondMesh.userData = { type: 'diamond', r: r, c: c };
-                    scene.add(diamondMesh);
-                    interactiveObjects.push(diamondMesh);
+                    packageObj.position.set(posX, -0.5, posZ);
+                    packageObj.castShadow = true;
+                    packageObj.userData = { type: 'package', r: r, c: c };
+                    scene.add(packageObj);
+                    interactiveObjects.push(packageObj);
                 } else if (tile === 6) {
-                    let crateMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), wallMaterials[2]);
-                    crateMesh.position.set(posX, -0.55, posZ);
-                    crateMesh.castShadow = true;
-                    scene.add(crateMesh);
+                    let crate = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), materials[2]);
+                    crate.position.set(posX, -0.55, posZ);
+                    crate.castShadow = true;
+                    scene.add(crate);
                     solidColliders.push({ x: posX, z: posZ, size: 0.9 });
                 } else if (tile === 7) {
-                    let barrelMesh = new THREE.Mesh(
+                    let barrel = new THREE.Mesh(
                         new THREE.CylinderGeometry(0.4, 0.4, 1.1, 16),
-                        new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.3, metalness: 0.4 })
+                        new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3 }) // Blue barrel
                     );
-                    barrelMesh.position.set(posX, -0.45, posZ);
-                    barrelMesh.castShadow = true;
-                    scene.add(barrelMesh);
+                    barrel.position.set(posX, -0.45, posZ);
+                    barrel.castShadow = true;
+                    scene.add(barrel);
                     solidColliders.push({ x: posX, z: posZ, size: 0.8 });
                 } else if (tile === 9) {
-                    let exitMesh = new THREE.Mesh(
+                    let deliveryZone = new THREE.Mesh(
                         new THREE.BoxGeometry(wallSize, wallSize, 0.1),
-                        new THREE.MeshStandardMaterial({ color: 0x34d399, emissive: 0x059669, roughness: 0.2 })
+                        new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 }) // Bright green target door
                     );
-                    exitMesh.position.set(posX, 0, posZ);
-                    exitMesh.userData = { type: 'exit', r: r, c: c };
-                    scene.add(exitMesh);
+                    deliveryZone.position.set(posX, 0, posZ);
+                    deliveryZone.userData = { type: 'exit', r: r, c: c };
+                    scene.add(deliveryZone);
                     solidColliders.push({ x: posX, z: posZ, size: wallSize });
                 }
             }
         }
 
-        // Initialize Camera Location at Player Start Point
+        // Start Position
         camera.position.set((1 - map[0].length / 2) * wallSize, 0, (1 - map.length / 2) * wallSize);
 
-        // Pointer Lock & Orientation Setup
+        // Controls State
         let yaw = 0;
         let pitch = 0;
-        const playerRadius = 0.3; // Solid collision footprint buffer
+        const playerRadius = 0.3;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
 
         document.body.addEventListener('click', () => {
             document.body.requestPointerLock();
         });
 
-        document.addEventListener('mousemove', (event) => {
+        document.addEventListener('mousemove', (e) => {
             if (document.pointerLockElement !== document.body || gameWon) return;
-            
-            yaw -= event.movementX * 0.0022;
-            pitch -= event.movementY * 0.0022;
-            
-            // Limit vertical vision angle so you cannot flip upside down
+            yaw -= e.movementX * 0.002;
+            pitch -= e.movementY * 0.002;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-
             camera.rotation.set(pitch, yaw, 0, 'YXZ');
         });
 
@@ -311,15 +263,14 @@
             if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
         });
 
-        // Precise Bounding Box Collision Check
-        function checkCollision(posX, posZ) {
+        function checkCollision(x, z) {
             for (let obj of solidColliders) {
-                let halfSize = obj.size / 2;
+                let half = obj.size / 2;
                 if (
-                    posX + playerRadius > obj.x - halfSize &&
-                    posX - playerRadius < obj.x + halfSize &&
-                    posZ + playerRadius > obj.z - halfSize &&
-                    posZ - playerRadius < obj.z + halfSize
+                    x + playerRadius > obj.x - half &&
+                    x - playerRadius < obj.x + half &&
+                    z + playerRadius > obj.z - half &&
+                    z - playerRadius < obj.z + half
                 ) {
                     return true;
                 }
@@ -332,72 +283,57 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            const time = performance.now();
-            const delta = Math.min((time - prevTime) / 1000, 0.1);
+            let time = performance.now();
+            let delta = Math.min((time - prevTime) / 1000, 0.1);
             prevTime = time;
 
             if (!gameWon) {
-                let moveSpeed = 4.2 * delta;
-                let dirVector = new THREE.Vector3();
+                let speed = 4.5 * delta;
+                let dir = new THREE.Vector3();
 
-                if (moveForward) dirVector.z -= 1;
-                if (moveBackward) dirVector.z += 1;
-                if (moveLeft) dirVector.x -= 1;
-                if (moveRight) dirVector.x += 1;
-                dirVector.normalize();
+                if (moveForward) dir.z -= 1;
+                if (moveBackward) dir.z += 1;
+                if (moveLeft) dir.x -= 1;
+                if (moveRight) dir.x += 1;
+                dir.normalize();
+                dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
 
-                // Rotate movement relative to camera look direction, locking Y movement entirely
-                dirVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                let nextX = camera.position.x + dir.x * speed;
+                let nextZ = camera.position.z + dir.z * speed;
 
-                // Axis-separated collision sliding checks for fluid movement
-                let nextX = camera.position.x + dirVector.x * moveSpeed;
-                let nextZ = camera.position.z + dirVector.z * moveSpeed;
+                if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
+                if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
+                camera.position.y = 0; // Strict level floor lock
 
-                // Test X axis movement independently
-                if (!checkCollision(nextX, camera.position.z)) {
-                    camera.position.x = nextX;
-                }
-                // Test Z axis movement independently
-                if (!checkCollision(camera.position.x, nextZ)) {
-                    camera.position.z = nextZ;
-                }
+                // Check Pickups
+                let curC = Math.floor(camera.position.x / wallSize + map[0].length / 2);
+                let curR = Math.floor(camera.position.z / wallSize + map.length / 2);
 
-                // Force camera Y strictly fixed to floor eye level
-                camera.position.y = 0;
-
-                // Check item pickups based on grid coordinates
-                let currentC = Math.floor(camera.position.x / wallSize + map[0].length / 2);
-                let currentR = Math.floor(camera.position.z / wallSize + map.length / 2);
-
-                if (currentR >= 0 && currentR < map.length && currentC >= 0 && currentC < map[0].length) {
-                    let tile = map[currentR][currentC];
-
+                if (curR >= 0 && curR < map.length && curC >= 0 && curC < map[0].length) {
+                    let tile = map[curR][curC];
                     if (tile === 5) {
-                        map[currentR][currentC] = 0;
-                        score += 150;
-                        diamondsCollected++;
+                        map[curR][curC] = 0;
+                        score += 250;
+                        packagesCollected++;
                         document.getElementById("score-text").innerText = `SCORE: ${score}`;
-                        document.getElementById("diamond-text").innerText = `DIAMONDS: ${diamondsCollected}/${totalDiamonds}`;
+                        document.getElementById("diamond-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
 
-                        let objIndex = interactiveObjects.findIndex(o => o.userData.r === currentR && o.userData.c === currentC);
-                        if (objIndex > -1) {
-                            scene.remove(interactiveObjects[objIndex]);
-                            interactiveObjects.splice(objIndex, 1);
+                        let idx = interactiveObjects.findIndex(o => o.userData.r === curR && o.userData.c === curC);
+                        if (idx > -1) {
+                            scene.remove(interactiveObjects[idx]);
+                            interactiveObjects.splice(idx, 1);
                         }
-                    } else if (tile === 9) {
-                        if (diamondsCollected >= totalDiamonds) {
-                            gameWon = true;
-                            document.exitPointerLock();
-                            document.getElementById("win-screen").style.display = "block";
-                        }
+                    } else if (tile === 9 && packagesCollected >= totalPackages) {
+                        gameWon = true;
+                        document.exitPointerLock();
+                        document.getElementById("win-screen").style.display = "block";
                     }
                 }
             }
 
-            // Spin diamonds smoothly
             interactiveObjects.forEach(obj => {
-                if (obj.userData.type === 'diamond') {
-                    obj.rotation.y += 0.03;
+                if (obj.userData.type === 'package') {
+                    obj.rotation.y += 0.02;
                 }
             });
 
