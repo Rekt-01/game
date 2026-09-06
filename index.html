@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Bloom & Post-Processing Edition</title>
+    <title>Rug Ville - Complete Working Edition</title>
     <style>
         body {
             margin: 0;
@@ -51,6 +51,22 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             z-index: 10;
             white-space: nowrap;
+        }
+        #alert-banner {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(220, 38, 38, 0.95);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            display: none;
+            z-index: 15;
+            box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
         }
         #crosshair {
             position: absolute;
@@ -100,11 +116,36 @@
             font-size: 10px;
             font-weight: 900;
             letter-spacing: 1px;
-            box-shadow: 0 0 15px rgba(250, 204, 21, 0.8); /* Glow effect */
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.8);
             white-space: nowrap;
             transform: translate(-50%, -100%);
             display: none;
             text-transform: uppercase;
+        }
+        #joystick-zone {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            z-index: 15;
+            touch-action: none;
+            display: none;
+        }
+        #joystick-handle {
+            position: absolute;
+            top: 42px;
+            left: 42px;
+            width: 50px;
+            height: 50px;
+            background: rgba(56, 189, 248, 0.85);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            pointer-events: none;
         }
         #win-screen {
             position: absolute;
@@ -151,11 +192,17 @@
         <span id="score-text">RUG VILLE CASH: $0</span>
         <span id="package-text">PACKAGES: 0/4</span>
     </div>
+    <div id="alert-banner">🚨 MARKET CRASH: RUG PULL IMMINENT! 🚨</div>
     <div id="speech-overlay"></div>
-    <div id="instructions">Click to look &amp; WASD to move</div>
+    <div id="instructions">PC: Click to look &amp; WASD | Mobile: Drag Joystick to Move</div>
+    
+    <div id="joystick-zone">
+        <div id="joystick-handle"></div>
+    </div>
 
     <div id="win-screen">
         <h1>RUG VILLE SAVED!</h1>
+        <p>You survived the crash and delivered everything!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
@@ -180,9 +227,7 @@
 
         const bloomPass = new THREE.UnrealBloomPass(
             new THREE.Vector2(window.innerWidth, window.innerHeight),
-            0.65,  // Bloom Strength (Makes emissive materials glow)
-            0.4,   // Radius
-            0.8    // Threshold
+            0.6, 0.4, 0.85
         );
         composer.addPass(bloomPass);
 
@@ -205,10 +250,38 @@
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Basic Building with Glowing Emissive Windows
+        // Roads
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.6 });
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+
+        function createRoad(x, z, width, length, rotation = 0) {
+            let roadGroup = new THREE.Group();
+            let road = new THREE.Mesh(new THREE.PlaneGeometry(width, length), roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.receiveShadow = true;
+            roadGroup.add(road);
+
+            for (let i = -length / 2 + 3; i < length / 2; i += 6) {
+                let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2), lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.y = 0.01;
+                if (rotation === 0) line.position.z = i;
+                else line.position.x = i;
+                roadGroup.add(line);
+            }
+            roadGroup.position.set(x, -1.18, z);
+            roadGroup.rotation.y = rotation;
+            scene.add(roadGroup);
+        }
+
+        createRoad(0, 0, 16, 400, 0);
+        createRoad(0, 0, 400, 16, Math.PI / 2);
+
+        // Buildings & Signs
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
+        const buildingNames = ["Rug Casino", "Rug Shop", "Rug Hotel", "Rug Bank", "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"];
 
         function createBuilding(x, z, width, height, depth, signText) {
             let group = new THREE.Group();
@@ -221,7 +294,6 @@
             walls.receiveShadow = true;
             group.add(walls);
 
-            // Emissive window layer that catches the Bloom effect
             let glowWindow = new THREE.Mesh(
                 new THREE.BoxGeometry(width + 0.1, height * 0.6, depth + 0.1),
                 new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.6, roughness: 0.2 })
@@ -241,21 +313,98 @@
             buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: height + 0.8 });
         }
 
-        createBuilding(-35, -35, 14, 11, 14, "Rug Casino");
-        createBuilding(35, -35, 14, 11, 14, "Scam Exchange");
+        let nameIdx = 0;
+        for (let xPos of [-50, 50]) {
+            for (let zPos of [-50, 50]) {
+                createBuilding(xPos, zPos, 14, 11, 14, buildingNames[nameIdx % buildingNames.length]);
+                nameIdx++;
+            }
+        }
 
-        // Player Controls state
+        // Vehicles
+        const activeVehicles = [];
+        function createVehicle(x, z, color, speed = 12) {
+            let carGroup = new THREE.Group();
+            let body = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 1.4, 3.8),
+                new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.6 })
+            );
+            body.position.y = 0;
+            body.castShadow = true;
+            carGroup.add(body);
+            carGroup.position.set(x, 0, z);
+            scene.add(carGroup);
+            activeVehicles.push({ mesh: carGroup, z: z, min: -150, max: 150, speed: speed });
+        }
+        createVehicle(4, -50, 0xdc2626, 12);
+        createVehicle(-4, 50, 0x2563eb, -14);
+
+        // Citizens
+        const activeCitizens = [];
+        const degenQuotes = ["Dev dumped the floor!", "Bro I'm down 90%", "Wen moon ser?", "Touching grass is bullish"];
+
+        function createPerson(x, z, isPolice = false) {
+            let personGroup = new THREE.Group();
+            let outfitMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x1e3a8a : 0x3b82f6 });
+            let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), outfitMat);
+            torso.position.y = -0.2;
+            personGroup.add(torso);
+            personGroup.position.set(x, 0, z);
+            scene.add(personGroup);
+
+            let bubble = document.createElement('div');
+            bubble.className = 'speech-bubble';
+            bubble.innerText = isPolice ? "SEC Agent: License?" : degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
+            speechOverlay.appendChild(bubble);
+
+            activeCitizens.push({ mesh: personGroup, x: x, z: z, originX: x, originZ: z, angle: Math.random() * 6, speed: 0.5, bubble: bubble, isPolice: isPolice });
+        }
+        createPerson(15, 15);
+        createPerson(-20, -20, true);
+
+        // Collectibles
+        let score = 0;
+        let packagesCollected = 0;
+        const totalPackages = 4;
+        let gameWon = false;
+        const interactiveObjects = [];
+
+        function createPackage(x, z) {
+            let pkg = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.2, 1.2),
+                new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x991b1b, emissiveIntensity: 0.3 })
+            );
+            pkg.position.set(x, -0.5, z);
+            pkg.userData = { x: x, z: z };
+            scene.add(pkg);
+            interactiveObjects.push(pkg);
+        }
+        createPackage(-30, -30);
+        createPackage(30, -30);
+        createPackage(-30, 30);
+        createPackage(30, 30);
+
+        let exitZone = new THREE.Mesh(
+            new THREE.BoxGeometry(6, 0.1, 6),
+            new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d })
+        );
+        exitZone.position.set(0, -1.15, -70);
+        scene.add(exitZone);
+
+        // Controls
+        camera.position.set(0, 0, 40);
         let yaw = 0, pitch = 0;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let joystickX = 0, joystickY = 0;
 
         renderer.domElement.addEventListener('click', () => {
-            if (document.pointerLockElement !== document.body) {
+            if (!('ontouchstart' in window) && document.pointerLockElement !== document.body) {
                 document.body.requestPointerLock();
             }
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== document.body) return;
+            if (document.pointerLockElement !== document.body || gameWon) return;
             yaw -= e.movementX * 0.002;
             pitch -= e.movementY * 0.002;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
@@ -276,48 +425,147 @@
             if (e.code === 'KeyD') moveRight = false;
         });
 
-        camera.position.set(0, 0, 40);
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (isTouchDevice) {
+            document.getElementById('joystick-zone').style.display = 'block';
+            let joystickZone = document.getElementById('joystick-zone');
+            let joystickHandle = document.getElementById('joystick-handle');
+            let touchId = null, centerPos = { x: 0, y: 0 };
+
+            joystickZone.addEventListener('touchstart', (e) => {
+                if (touchId !== null) return;
+                let touch = e.changedTouches[0];
+                touchId = touch.identifier;
+                let rect = joystickZone.getBoundingClientRect();
+                centerPos.x = rect.left + rect.width / 2;
+                centerPos.y = rect.top + rect.height / 2;
+            });
+
+            joystickZone.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let touch = e.changedTouches[i];
+                    if (touch.identifier === touchId) {
+                        let dx = touch.clientX - centerPos.x;
+                        let dy = touch.clientY - centerPos.y;
+                        let dist = Math.hypot(dx, dy), maxDist = 45;
+                        if (dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
+                        joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
+                        joystickX = dx / maxDist;
+                        joystickY = dy / maxDist;
+                    }
+                }
+            });
+
+            let endTouch = (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === touchId) {
+                        touchId = null; joystickX = 0; joystickY = 0;
+                        joystickHandle.style.transform = `translate(0px, 0px)`;
+                    }
+                }
+            };
+            joystickZone.addEventListener('touchend', endTouch);
+        }
+
+        function checkCollision(x, z) {
+            for (let obj of solidColliders) {
+                let half = 7;
+                if (x + 0.5 > obj.x - half && x - 0.5 < obj.x + half && z + 0.5 > obj.z - half && z - 0.5 < obj.z + half) return true;
+            }
+            return false;
+        }
+
         let prevTime = performance.now();
 
         function animate() {
             requestAnimationFrame(animate);
-
             let time = performance.now();
             let delta = Math.min((time - prevTime) / 1000, 0.1);
             prevTime = time;
 
-            let speed = 8.5 * delta;
-            let dir = new THREE.Vector3();
-            if (moveForward) dir.z -= 1;
-            if (moveBackward) dir.z += 1;
-            if (moveLeft) dir.x -= 1;
-            if (moveRight) dir.x += 1;
+            if (!gameWon) {
+                let speed = 8.5 * delta;
+                let dir = new THREE.Vector3();
+                if (moveForward) dir.z -= 1;
+                if (moveBackward) dir.z += 1;
+                if (moveLeft) dir.x -= 1;
+                if (moveRight) dir.x += 1;
 
-            if (dir.lengthSq() > 0) {
-                dir.normalize();
-                dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                camera.position.x += dir.x * speed;
-                camera.position.z += dir.z * speed;
-            }
-            camera.position.y = 0;
-
-            // Project building sign markers to DOM overlay
-            buildingSignsData.forEach(b => {
-                let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z);
-                vector.project(camera);
-                let distance = camera.position.distanceTo(b.mesh.position);
-                if (vector.z < 1 && distance < 60) {
-                    let xCoord = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                    let yCoord = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-                    b.signElement.style.left = `${xCoord}px`;
-                    b.signElement.style.top = `${yCoord}px`;
-                    b.signElement.style.display = 'block';
-                } else {
-                    b.signElement.style.display = 'none';
+                if (isTouchDevice) {
+                    if (Math.abs(joystickX) > 0.1) yaw -= joystickX * 2.2 * delta;
+                    if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
                 }
-            });
 
-            // Render through Post-Processing Composer instead of standard renderer
+                if (dir.lengthSq() > 0) {
+                    dir.normalize();
+                    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                    let nx = camera.position.x + dir.x * speed;
+                    let nz = camera.position.z + dir.z * speed;
+                    if (!checkCollision(nx, camera.position.z)) camera.position.x = nx;
+                    if (!checkCollision(camera.position.x, nz)) camera.position.z = nz;
+                }
+                camera.rotation.set(pitch, yaw, 0, 'YXZ');
+                camera.position.y = 0;
+
+                // Traffic loop
+                activeVehicles.forEach(v => {
+                    v.z += v.speed * delta;
+                    if (v.z > v.max) v.z = v.min;
+                    if (v.z < v.min) v.z = v.max;
+                    v.mesh.position.z = v.z;
+                });
+
+                // Citizens loop
+                activeCitizens.forEach(c => {
+                    c.angle += delta * c.speed;
+                    c.x = c.originX + Math.sin(c.angle) * 5;
+                    c.z = c.originZ + Math.cos(c.angle) * 5;
+                    c.mesh.position.set(c.x, 0, c.z);
+
+                    let vector = new THREE.Vector3(c.x, 1.2, c.z).project(camera);
+                    let dist = camera.position.distanceTo(c.mesh.position);
+                    if (vector.z < 1 && dist < 30) {
+                        c.bubble.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
+                        c.bubble.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
+                        c.bubble.style.display = 'block';
+                    } else {
+                        c.bubble.style.display = 'none';
+                    }
+                });
+
+                // Signs loop
+                buildingSignsData.forEach(b => {
+                    let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
+                    let dist = camera.position.distanceTo(b.mesh.position);
+                    if (vector.z < 1 && dist < 60) {
+                        b.signElement.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
+                        b.signElement.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
+                        b.signElement.style.display = 'block';
+                    } else {
+                        b.signElement.style.display = 'none';
+                    }
+                });
+
+                // Package collection loop
+                interactiveObjects.forEach((obj, index) => {
+                    if (Math.hypot(camera.position.x - obj.userData.x, camera.position.z - obj.userData.z) < 1.8) {
+                        scene.remove(obj);
+                        interactiveObjects.splice(index, 1);
+                        score += 500;
+                        packagesCollected++;
+                        document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
+                        document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
+                    }
+                });
+
+                if (Math.hypot(camera.position.x - exitZone.position.x, camera.position.z - exitZone.position.z) < 4 && packagesCollected >= totalPackages) {
+                    gameWon = true;
+                    if (document.pointerLockElement) document.exitPointerLock();
+                    document.getElementById("win-screen").style.display = "block";
+                }
+            }
+
+            interactiveObjects.forEach(obj => obj.rotation.y += 0.02);
             composer.render();
         }
         animate();
