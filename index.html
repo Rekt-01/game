@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Complete Working Edition</title>
+    <title>Rug Ville - Next-Gen Enhanced Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #050b14;
+            background-color: #0f172a;
             color: #111;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
+            transition: background-color 2s;
         }
         #ui {
             position: absolute;
@@ -67,6 +68,11 @@
             display: none;
             z-index: 15;
             box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.05); }
         }
         #crosshair {
             position: absolute;
@@ -116,7 +122,7 @@
             font-size: 10px;
             font-weight: 900;
             letter-spacing: 1px;
-            box-shadow: 0 0 15px rgba(250, 204, 21, 0.8);
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
             white-space: nowrap;
             transform: translate(-50%, -100%);
             display: none;
@@ -135,6 +141,7 @@
             z-index: 15;
             touch-action: none;
             display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         #joystick-handle {
             position: absolute;
@@ -146,6 +153,7 @@
             border: 2px solid #fff;
             border-radius: 50%;
             pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         #win-screen {
             position: absolute;
@@ -173,17 +181,11 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
         }
+        #win-screen button:hover { background: #16a34a; }
     </style>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 </head>
 <body>
 
@@ -194,7 +196,7 @@
     </div>
     <div id="alert-banner">🚨 MARKET CRASH: RUG PULL IMMINENT! 🚨</div>
     <div id="speech-overlay"></div>
-    <div id="instructions">PC: Click to look &amp; WASD | Mobile: Drag Joystick to Move</div>
+    <div id="instructions">PC: Click to look &amp; WASD | Mobile: Drag Joystick to Move &amp; Turn</div>
     
     <div id="joystick-zone">
         <div id="joystick-handle"></div>
@@ -207,52 +209,56 @@
     </div>
 
     <script>
+        if (typeof THREE === 'undefined') {
+            alert('Failed to load Three.js library.');
+        }
+
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050b14);
-        scene.fog = new THREE.FogExp2(0x050b14, 0.012);
+        scene.background = new THREE.Color(0x0f172a);
+        scene.fog = new THREE.FogExp2(0x0f172a, 0.012);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.2;
         document.body.appendChild(renderer.domElement);
 
-        // --- POST PROCESSING & BLOOM SETUP ---
-        const composer = new THREE.EffectComposer(renderer);
-        const renderPass = new THREE.RenderPass(scene, camera);
-        composer.addPass(renderPass);
-
-        const bloomPass = new THREE.UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
-            0.6, 0.4, 0.85
-        );
-        composer.addPass(bloomPass);
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x38bdf8, 0.5);
+        // Enhanced Cinematic Lighting Setup
+        const ambientLight = new THREE.AmbientLight(0x38bdf8, 0.4);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffedd5, 1.5);
-        sunLight.position.set(50, 100, 50);
+        const sunLight = new THREE.DirectionalLight(0xffedd5, 1.8);
+        sunLight.position.set(60, 120, 60);
         sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        let d = 120;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.bias = -0.0005;
         scene.add(sunLight);
 
+        let timeOfDay = 0;
+
         // Ground Plane
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(1000, 1000),
-            new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 })
-        );
+        const groundGeo = new THREE.PlaneGeometry(1000, 1000);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8, metalness: 0.1 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -1.2;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Roads
+        // Enhanced Roads with Curbs & Markings
         const roadMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.6 });
         const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+        const curbMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.5 });
 
         function createRoad(x, z, width, length, rotation = 0) {
             let roadGroup = new THREE.Group();
@@ -260,6 +266,18 @@
             road.rotation.x = -Math.PI / 2;
             road.receiveShadow = true;
             roadGroup.add(road);
+
+            let curbLeft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, length), curbMat);
+            curbLeft.position.set(-width/2 - 0.2, -1.13, 0);
+            curbLeft.castShadow = true;
+            curbLeft.receiveShadow = true;
+            roadGroup.add(curbLeft);
+
+            let curbRight = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, length), curbMat);
+            curbRight.position.set(width/2 + 0.2, -1.13, 0);
+            curbRight.castShadow = true;
+            curbRight.receiveShadow = true;
+            roadGroup.add(curbRight);
 
             for (let i = -length / 2 + 3; i < length / 2; i += 6) {
                 let line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 2), lineMat);
@@ -276,30 +294,43 @@
 
         createRoad(0, 0, 16, 400, 0);
         createRoad(0, 0, 400, 16, Math.PI / 2);
+        createRoad(0, -120, 16, 400, 0);
+        createRoad(-120, 0, 400, 16, Math.PI / 2);
 
-        // Buildings & Signs
+        // Modern Glass & Concrete Buildings
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
-        const buildingNames = ["Rug Casino", "Rug Shop", "Rug Hotel", "Rug Bank", "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"];
 
-        function createBuilding(x, z, width, height, depth, signText) {
+        const buildingNames = [
+            "Rug Casino", "Rug Shop", "Rug Hotel", "Rug Bank", 
+            "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"
+        ];
+
+        function createBuilding(x, z, width, height, depth, wallColor, signText) {
             let group = new THREE.Group();
+            
             let walls = new THREE.Mesh(
                 new THREE.BoxGeometry(width, height, depth),
-                new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 })
+                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.4, metalness: 0.2 })
             );
             walls.position.y = height / 2 - 1.18;
             walls.castShadow = true;
             walls.receiveShadow = true;
             group.add(walls);
 
-            let glowWindow = new THREE.Mesh(
-                new THREE.BoxGeometry(width + 0.1, height * 0.6, depth + 0.1),
-                new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.6, roughness: 0.2 })
+            let glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, metalness: 0.8, emissive: 0x0369a1, emissiveIntensity: 0.2 });
+            let windowPanel = new THREE.Mesh(new THREE.BoxGeometry(width + 0.1, height * 0.7, depth + 0.1), glassMat);
+            windowPanel.position.y = height / 2 - 1.18;
+            group.add(windowPanel);
+
+            let roof = new THREE.Mesh(
+                new THREE.BoxGeometry(width + 0.6, 0.8, depth + 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 })
             );
-            glowWindow.position.y = height / 2 - 1.18;
-            group.add(glowWindow);
+            roof.position.y = height - 0.7;
+            roof.castShadow = true;
+            group.add(roof);
 
             group.position.set(x, 0, z);
             scene.add(group);
@@ -310,90 +341,200 @@
             signEl.innerText = signText;
             speechOverlay.appendChild(signEl);
 
-            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: height + 0.8 });
+            buildingSignsData.push({
+                mesh: group,
+                signElement: signEl,
+                offsetY: height + 0.8
+            });
         }
 
+        const bColors = [0x334155, 0x475569, 0x1e293b, 0x334155];
         let nameIdx = 0;
-        for (let xPos of [-50, 50]) {
-            for (let zPos of [-50, 50]) {
-                createBuilding(xPos, zPos, 14, 11, 14, buildingNames[nameIdx % buildingNames.length]);
+        for (let xPos of [-70, -35, 35, 70]) {
+            for (let zPos of [-70, -35, 35, 70]) {
+                createBuilding(xPos, zPos, 14, 11, 14, bColors[Math.floor(Math.random()*bColors.length)], buildingNames[nameIdx % buildingNames.length]);
                 nameIdx++;
             }
         }
 
-        // Vehicles
+        // --- TRAFFIC SYSTEM ---
         const activeVehicles = [];
-        function createVehicle(x, z, color, speed = 12) {
+
+        function createVehicle(x, z, color, isBus = false, axis = 'z', minBound = -150, maxBound = 150, speed = 12) {
             let carGroup = new THREE.Group();
+            let w = isBus ? 2.4 : 1.8;
+            let l = isBus ? 6.5 : 3.8;
+            let h = isBus ? 2.6 : 1.4;
+
             let body = new THREE.Mesh(
-                new THREE.BoxGeometry(1.8, 1.4, 3.8),
+                new THREE.BoxGeometry(w, h, l),
                 new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.6 })
             );
-            body.position.y = 0;
+            body.position.y = h / 2 - 0.7;
             body.castShadow = true;
             carGroup.add(body);
+
             carGroup.position.set(x, 0, z);
+            if (axis === 'x') carGroup.rotation.y = (speed > 0) ? Math.PI / 2 : -Math.PI / 2;
+            else carGroup.rotation.y = (speed > 0) ? 0 : Math.PI;
+
             scene.add(carGroup);
-            activeVehicles.push({ mesh: carGroup, z: z, min: -150, max: 150, speed: speed });
+
+            activeVehicles.push({
+                mesh: carGroup,
+                axis: axis,
+                pos: (axis === 'z') ? z : x,
+                min: minBound,
+                max: maxBound,
+                speed: speed
+            });
         }
-        createVehicle(4, -50, 0xdc2626, 12);
-        createVehicle(-4, 50, 0x2563eb, -14);
 
-        // Citizens
+        createVehicle(4, -150, 0xdc2626, false, 'z', -160, 160, 12);
+        createVehicle(-4, 150, 0x2563eb, false, 'z', -160, 160, -14);
+        createVehicle(150, 4, 0xf59e0b, true, 'x', -160, 160, 10);
+        createVehicle(-150, -4, 0xf8fafc, true, 'x', -160, 160, -11);
+
+        // --- CITIZENS ---
         const activeCitizens = [];
-        const degenQuotes = ["Dev dumped the floor!", "Bro I'm down 90%", "Wen moon ser?", "Touching grass is bullish"];
+        const degenQuotes = [
+            "Dev dumped the floor! Rugged again!",
+            "Bro I'm down 90% on memecoins",
+            "Wen moon ser? This project is cooked",
+            "Working overtime just to buy the dip",
+            "Touching grass is bullish",
+            "Paper hands everywhere in Rug Ville",
+            "SEC is auditing the liquidity pool!"
+        ];
 
-        function createPerson(x, z, isPolice = false) {
+        function createRealisticPerson(x, z, shirtColor, isWorker = false, isPolice = false) {
             let personGroup = new THREE.Group();
-            let outfitMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x1e3a8a : 0x3b82f6 });
+
+            let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 });
+            let outfitColor = isPolice ? 0x1e3a8a : shirtColor;
+            let outfitMat = new THREE.MeshStandardMaterial({ color: outfitColor, roughness: 0.7 });
+            let pantsMat = new THREE.MeshStandardMaterial({ color: isPolice ? 0x0f172a : 0x1e3a8a, roughness: 0.8 });
+
             let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), outfitMat);
             torso.position.y = -0.2;
+            torso.castShadow = true;
             personGroup.add(torso);
+
+            let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), skinMat);
+            head.position.y = 0.35;
+            head.castShadow = true;
+            personGroup.add(head);
+
+            let armGeo = new THREE.BoxGeometry(0.16, 0.7, 0.18);
+            let leftArm = new THREE.Mesh(armGeo, outfitMat);
+            leftArm.position.set(-0.38, -0.2, 0);
+            let rightArm = new THREE.Mesh(armGeo, outfitMat);
+            rightArm.position.set(0.38, -0.2, 0);
+            personGroup.add(leftArm);
+            personGroup.add(rightArm);
+
+            let legGeo = new THREE.BoxGeometry(0.2, 0.75, 0.2);
+            let leftLeg = new THREE.Mesh(legGeo, pantsMat);
+            leftLeg.position.set(-0.15, -0.85, 0);
+            let rightLeg = new THREE.Mesh(legGeo, pantsMat);
+            rightLeg.position.set(0.15, -0.85, 0);
+            personGroup.add(leftLeg);
+            personGroup.add(rightLeg);
+
             personGroup.position.set(x, 0, z);
             scene.add(personGroup);
 
             let bubble = document.createElement('div');
             bubble.className = 'speech-bubble';
-            bubble.innerText = isPolice ? "SEC Agent: License?" : degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
+            bubble.innerText = isPolice ? "SEC Agent: Show me your crypto license!" : degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
             speechOverlay.appendChild(bubble);
 
-            activeCitizens.push({ mesh: personGroup, x: x, z: z, originX: x, originZ: z, angle: Math.random() * 6, speed: 0.5, bubble: bubble, isPolice: isPolice });
+            activeCitizens.push({
+                mesh: personGroup,
+                leftArm: leftArm, rightArm: rightArm, leftLeg: leftLeg, rightLeg: rightLeg,
+                x: x, z: z, originX: x, originZ: z,
+                angle: Math.random() * Math.PI * 2,
+                speed: isPolice ? 0.8 : (0.4 + Math.random() * 0.4),
+                isPolice: isPolice,
+                bubble: bubble,
+                timer: Math.random() * 10
+            });
         }
-        createPerson(15, 15);
-        createPerson(-20, -20, true);
 
-        // Collectibles
+        const colors = [0xef4444, 0x3b82f6, 0x10b981, 0xa855f7, 0xf97316];
+        for (let i = 0; i < 10; i++) {
+            createRealisticPerson((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100, colors[Math.floor(Math.random()*colors.length)]);
+        }
+        createRealisticPerson(20, 20, 0, false, true);
+
+        // Trees
+        function createTree(x, z) {
+            let treeGroup = new THREE.Group();
+            let trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.4, 0.6, 3.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 })
+            );
+            trunk.position.y = 0.8;
+            trunk.castShadow = true;
+            treeGroup.add(trunk);
+
+            let leaves = new THREE.Mesh(
+                new THREE.DodecahedronGeometry(2.5),
+                new THREE.MeshStandardMaterial({ color: 0x065f46, roughness: 0.8 })
+            );
+            leaves.position.y = 3.5;
+            leaves.castShadow = true;
+            treeGroup.add(leaves);
+
+            treeGroup.position.set(x, -1.18, z);
+            scene.add(treeGroup);
+            solidColliders.push({ x: x, z: z, sizeX: 1.2, sizeZ: 1.2 });
+        }
+
+        for (let i = -140; i <= 140; i += 35) {
+            if (Math.abs(i) > 20) {
+                createTree(i, -22);
+                createTree(i, 22);
+            }
+        }
+
+        // Collectibles & Exit
         let score = 0;
         let packagesCollected = 0;
         const totalPackages = 4;
         let gameWon = false;
         const interactiveObjects = [];
 
-        function createPackage(x, z) {
+        function createPackage(x, z, isDip = false) {
             let pkg = new THREE.Mesh(
                 new THREE.BoxGeometry(1.2, 1.2, 1.2),
-                new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x991b1b, emissiveIntensity: 0.3 })
+                new THREE.MeshStandardMaterial({ color: isDip ? 0xfacc15 : 0xef4444, roughness: 0.2, metalness: 0.4 })
             );
             pkg.position.set(x, -0.5, z);
-            pkg.userData = { x: x, z: z };
+            pkg.castShadow = true;
+            pkg.userData = { type: 'package', x: x, z: z, isDip: isDip };
             scene.add(pkg);
             interactiveObjects.push(pkg);
         }
-        createPackage(-30, -30);
-        createPackage(30, -30);
-        createPackage(-30, 30);
-        createPackage(30, 30);
+
+        createPackage(-50, -50);
+        createPackage(50, -50);
+        createPackage(-50, 50);
+        createPackage(60, 60);
 
         let exitZone = new THREE.Mesh(
             new THREE.BoxGeometry(6, 0.1, 6),
-            new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d })
+            new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, roughness: 0.2 })
         );
-        exitZone.position.set(0, -1.15, -70);
+        exitZone.position.set(0, -1.15, -90);
         scene.add(exitZone);
 
-        // Controls
-        camera.position.set(0, 0, 40);
+        camera.position.set(0, 0, 80);
+
+        let rugPullTimer = 0;
+        let rugPullActive = false;
         let yaw = 0, pitch = 0;
+        const playerRadius = 0.5;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         let joystickX = 0, joystickY = 0;
 
@@ -412,17 +553,17 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyW') moveForward = true;
-            if (e.code === 'KeyS') moveBackward = true;
-            if (e.code === 'KeyA') moveLeft = true;
-            if (e.code === 'KeyD') moveRight = true;
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = true;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = true;
         });
 
         document.addEventListener('keyup', (e) => {
-            if (e.code === 'KeyW') moveForward = false;
-            if (e.code === 'KeyS') moveBackward = false;
-            if (e.code === 'KeyA') moveLeft = false;
-            if (e.code === 'KeyD') moveRight = false;
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = false;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = false;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
         });
 
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -448,7 +589,7 @@
                         let dx = touch.clientX - centerPos.x;
                         let dy = touch.clientY - centerPos.y;
                         let dist = Math.hypot(dx, dy), maxDist = 45;
-                        if (dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
+                        if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
                         joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
                         joystickX = dx / maxDist;
                         joystickY = dy / maxDist;
@@ -469,8 +610,10 @@
 
         function checkCollision(x, z) {
             for (let obj of solidColliders) {
-                let half = 7;
-                if (x + 0.5 > obj.x - half && x - 0.5 < obj.x + half && z + 0.5 > obj.z - half && z - 0.5 < obj.z + half) return true;
+                let halfX = obj.sizeX / 2, halfZ = obj.sizeZ / 2;
+                if (x + playerRadius > obj.x - halfX && x - playerRadius < obj.x + halfX && z + playerRadius > obj.z - halfZ && z - playerRadius < obj.z + halfZ) {
+                    return true;
+                }
             }
             return false;
         }
@@ -499,28 +642,59 @@
                 if (dir.lengthSq() > 0) {
                     dir.normalize();
                     dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                    let nx = camera.position.x + dir.x * speed;
-                    let nz = camera.position.z + dir.z * speed;
-                    if (!checkCollision(nx, camera.position.z)) camera.position.x = nx;
-                    if (!checkCollision(camera.position.x, nz)) camera.position.z = nz;
+                    let nextX = camera.position.x + dir.x * speed;
+                    let nextZ = camera.position.z + dir.z * speed;
+                    if (!checkCollision(nextX, camera.position.z)) camera.position.x = nextX;
+                    if (!checkCollision(camera.position.x, nextZ)) camera.position.z = nextZ;
                 }
+
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.y = 0;
 
-                // Traffic loop
+                timeOfDay += delta * 0.05;
+                let cycle = Math.sin(timeOfDay);
+                sunLight.intensity = Math.max(0.2, cycle * 1.8);
+
+                rugPullTimer += delta;
+                if (rugPullTimer > 25 && !rugPullActive) {
+                    rugPullActive = true;
+                    document.getElementById("alert-banner").style.display = "block";
+                    createPackage((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, true);
+                    setTimeout(() => {
+                        document.getElementById("alert-banner").style.display = "none";
+                        rugPullActive = false;
+                        rugPullTimer = 0;
+                    }, 6000);
+                }
+
                 activeVehicles.forEach(v => {
-                    v.z += v.speed * delta;
-                    if (v.z > v.max) v.z = v.min;
-                    if (v.z < v.min) v.z = v.max;
-                    v.mesh.position.z = v.z;
+                    v.pos += v.speed * delta;
+                    if (v.pos > v.max) v.pos = v.min;
+                    if (v.pos < v.min) v.pos = v.max;
+                    if (v.axis === 'z') v.mesh.position.z = v.pos;
+                    else v.mesh.position.x = v.pos;
                 });
 
-                // Citizens loop
                 activeCitizens.forEach(c => {
-                    c.angle += delta * c.speed;
-                    c.x = c.originX + Math.sin(c.angle) * 5;
-                    c.z = c.originZ + Math.cos(c.angle) * 5;
+                    let moveMultiplier = c.isPolice ? 1.2 : 1.0;
+                    c.angle += delta * c.speed * moveMultiplier;
+                    c.x = c.originX + Math.sin(c.angle) * 6;
+                    c.z = c.originZ + Math.cos(c.angle) * 6;
                     c.mesh.position.set(c.x, 0, c.z);
+
+                    let swing = Math.sin(time * 0.005 * c.speed * 10) * 0.4;
+                    c.leftLeg.rotation.x = swing;
+                    c.rightLeg.rotation.x = -swing;
+                    c.leftArm.rotation.x = -swing;
+                    c.rightArm.rotation.x = swing;
+
+                    c.timer += delta;
+                    if (c.timer > 6) {
+                        c.timer = 0;
+                        if (!c.isPolice) {
+                            c.bubble.innerText = degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
+                        }
+                    }
 
                     let vector = new THREE.Vector3(c.x, 1.2, c.z).project(camera);
                     let dist = camera.position.distanceTo(c.mesh.position);
@@ -533,7 +707,6 @@
                     }
                 });
 
-                // Signs loop
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
@@ -546,13 +719,12 @@
                     }
                 });
 
-                // Package collection loop
                 interactiveObjects.forEach((obj, index) => {
                     if (Math.hypot(camera.position.x - obj.userData.x, camera.position.z - obj.userData.z) < 1.8) {
                         scene.remove(obj);
                         interactiveObjects.splice(index, 1);
-                        score += 500;
-                        packagesCollected++;
+                        score += obj.userData.isDip ? 1500 : 500;
+                        if (!obj.userData.isDip) packagesCollected++;
                         document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
                         document.getElementById("package-text").innerText = `PACKAGES: ${packagesCollected}/${totalPackages}`;
                     }
@@ -566,7 +738,7 @@
             }
 
             interactiveObjects.forEach(obj => obj.rotation.y += 0.02);
-            composer.render();
+            renderer.render(scene, camera);
         }
         animate();
 
@@ -574,7 +746,6 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
