@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Cyber Degen Edition</title>
+    <title>Rug Ville - Cyber Daylight Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #05050a;
-            color: #fff;
+            background-color: #dbeafe;
+            color: #0f172a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             user-select: none;
@@ -21,15 +21,15 @@
             transform: translateX(-50%);
             display: flex;
             gap: 25px;
-            background: rgba(15, 15, 25, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             padding: 10px 24px;
-            border: 1px solid #00ffff;
+            border: 1px solid #0284c7;
             font-weight: bold;
             font-size: 14px;
             letter-spacing: 2px;
-            color: #00ffff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            color: #0369a1;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.2);
             z-index: 10;
             pointer-events: none;
             text-transform: uppercase;
@@ -40,12 +40,12 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 15, 25, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             padding: 8px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.1);
             font-size: 12px;
-            color: #a5b4fc;
+            color: #334155;
             text-align: center;
             pointer-events: none;
             z-index: 10;
@@ -57,7 +57,7 @@
             top: 85px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(220, 38, 38, 0.9);
+            background: rgba(220, 38, 38, 0.95);
             color: #fff;
             padding: 8px 20px;
             border: 1px solid #ef4444;
@@ -67,15 +67,15 @@
             display: none;
             z-index: 15;
             border-radius: 6px;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
         #action-btn {
             position: absolute;
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #00ffff, #0088ff);
-            color: #000;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #fff;
             padding: 12px 28px;
             border: none;
             font-family: inherit;
@@ -86,7 +86,7 @@
             z-index: 20;
             text-transform: uppercase;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
             transition: transform 0.1s ease;
         }
         #action-btn:hover { transform: scale(1.05); }
@@ -95,8 +95,8 @@
             position: absolute;
             bottom: 0; left: 0; width: 100%; height: 180px;
             pointer-events: none; display: none; z-index: 25;
-            background: linear-gradient(to top, rgba(5,5,10,0.95) 70%, transparent 100%);
-            border-top: 2px solid #00ffff;
+            background: linear-gradient(to top, rgba(255,255,255,0.95) 70%, transparent 100%);
+            border-top: 2px solid #0284c7;
         }
         .dashboard-podium {
             position: absolute; bottom: 0; left: 50%;
@@ -106,65 +106,67 @@
             padding: 0 20px 10px 20px;
         }
         .gauge-cluster {
-            background: rgba(0,0,0,0.8); border: 1px solid #00ffff;
-            padding: 8px 14px; text-align: center; color: #00ffff; font-size: 10px; border-radius: 6px;
+            background: rgba(255,255,255,0.9); border: 1px solid #0284c7;
+            padding: 8px 14px; text-align: center; color: #0369a1; font-size: 10px; border-radius: 6px;
         }
-        .gauge-val { font-size: 20px; color: #fff; margin-top: 2px; font-weight: bold; }
+        .gauge-val { font-size: 20px; color: #0f172a; margin-top: 2px; font-weight: bold; }
         
         #steering-wheel {
             width: 180px; height: 110px;
-            border: 12px solid #0e7490; border-bottom: none;
+            border: 12px solid #0284c7; border-bottom: none;
             border-radius: 90px 90px 0 0; position: relative;
             transition: transform 0.05s linear; transform-origin: bottom center;
         }
         .radio-panel {
-            background: rgba(0,0,0,0.8); border: 1px solid #f59e0b;
+            background: rgba(255,255,255,0.9); border: 1px solid #d97706;
             padding: 6px 10px; text-align: center; pointer-events: auto;
-            cursor: pointer; color: #f59e0b; font-size: 10px; border-radius: 6px;
+            cursor: pointer; color: #d97706; font-size: 10px; border-radius: 6px;
         }
-        .radio-panel:hover { background: rgba(245, 158, 11, 0.1); }
+        .radio-panel:hover { background: rgba(217, 119, 6, 0.1); }
 
         #garage-modal {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(10, 10, 20, 0.95); border: 2px solid #f59e0b;
+            background: rgba(255, 255, 255, 0.98); border: 2px solid #d97706;
             padding: 30px; text-align: center; display: none; z-index: 30;
-            color: #fff; border-radius: 12px; box-shadow: 0 0 40px rgba(245, 158, 11, 0.3);
+            color: #0f172a; border-radius: 12px; box-shadow: 0 10px 40px rgba(217, 119, 6, 0.2);
         }
-        #garage-modal h2 { color: #f59e0b; margin-top: 0; }
+        #garage-modal h2 { color: #d97706; margin-top: 0; }
         .upgrade-btn {
-            margin: 8px; padding: 10px 20px; background: rgba(0,0,0,0.6);
-            color: #f59e0b; border: 1px solid #f59e0b; font-weight: bold; cursor: pointer; border-radius: 6px;
+            margin: 8px; padding: 10px 20px; background: #f8fafc;
+            color: #d97706; border: 1px solid #d97706; font-weight: bold; cursor: pointer; border-radius: 6px;
         }
-        .upgrade-btn:hover { background: #f59e0b; color: #000; }
+        .upgrade-btn:hover { background: #d97706; color: #fff; }
 
         #speech-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 12; overflow: hidden; }
         .speech-bubble {
-            position: absolute; background: rgba(0,0,0,0.85); border: 1px solid #00ffff;
-            padding: 4px 10px; font-size: 11px; color: #00ffff;
+            position: absolute; background: rgba(255,255,255,0.95); border: 1px solid #0284c7;
+            padding: 4px 10px; font-size: 11px; color: #0369a1; font-weight: bold;
             white-space: nowrap; transform: translate(-50%, -100%); display: none; border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .building-sign {
-            position: absolute; background: rgba(0,0,0,0.85); color: #f59e0b;
-            border: 1px solid #f59e0b; padding: 4px 8px; font-size: 10px;
+            position: absolute; background: rgba(255,255,255,0.95); color: #d97706;
+            border: 1px solid #d97706; padding: 4px 8px; font-size: 10px;
             font-weight: bold; white-space: nowrap; transform: translate(-50%, -100%); display: none; border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         #joystick-zone {
             position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 120px; background: rgba(0, 255, 255, 0.1);
-            border: 2px solid #00ffff; border-radius: 50%; z-index: 15; touch-action: none; display: none;
+            width: 120px; height: 120px; background: rgba(2, 132, 199, 0.1);
+            border: 2px solid #0284c7; border-radius: 50%; z-index: 15; touch-action: none; display: none;
         }
         #joystick-handle {
             position: absolute; top: 35px; left: 35px; width: 50px; height: 50px;
-            background: #00ffff; border-radius: 50%; pointer-events: none; box-shadow: 0 0 10px #00ffff;
+            background: #0284c7; border-radius: 50%; pointer-events: none; box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
         }
         #win-screen {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(10, 10, 20, 0.95); border: 2px solid #00ffff; padding: 40px; text-align: center;
-            display: none; z-index: 35; color: #00ffff; border-radius: 12px; box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.98); border: 2px solid #0284c7; padding: 40px; text-align: center;
+            display: none; z-index: 35; color: #0369a1; border-radius: 12px; box-shadow: 0 10px 40px rgba(2, 132, 199, 0.3);
         }
         #win-screen button {
-            margin-top: 15px; padding: 10px 25px; background: #00ffff; color: #000;
+            margin-top: 15px; padding: 10px 25px; background: #0284c7; color: #fff;
             border: none; font-weight: bold; cursor: pointer; border-radius: 6px;
         }
     </style>
@@ -192,7 +194,7 @@
             </div>
             <div class="radio-panel" onclick="toggleRadio()">
                 CYBER BEATS<br>
-                <span id="radio-status" style="color: #fff;">[ MUTED ]</span>
+                <span id="radio-status" style="color: #64748b;">[ MUTED ]</span>
             </div>
         </div>
     </div>
@@ -220,30 +222,29 @@
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a16);
-        scene.fog = new THREE.FogExp2(0x0a0a16, 0.005);
+        scene.background = new THREE.Color(0xdbeafe); // Bright daylight sky blue
+        scene.fog = new THREE.FogExp2(0xdbeafe, 0.003); // Soft matching fog
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        // Crisp, high-end WebGL settings (No more pixelated look)
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        // High intensity daylight lighting setup
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0x00ffff, 1.5);
-        sunLight.position.set(50, 150, 50);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        sunLight.position.set(100, 200, 100);
         scene.add(sunLight);
 
-        const neonLight = new THREE.DirectionalLight(0xff00ff, 1.0);
-        neonLight.position.set(-50, 100, -50);
-        scene.add(neonLight);
+        const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.8);
+        fillLight.position.set(-100, 100, -100);
+        scene.add(fillLight);
 
-        // Modern Cyber Grid Floor
-        const gridHelper = new THREE.GridHelper(800, 80, 0x00ffff, 0x1e1e3f);
+        const gridHelper = new THREE.GridHelper(800, 80, 0x0284c7, 0xbfdbfe);
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
 
@@ -251,7 +252,7 @@
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.2, metalness: 0.8 });
+        const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.5 });
 
         function createRoad(x, z, w, l, rot = 0) {
             let group = new THREE.Group();
@@ -272,7 +273,7 @@
         function createCyberBuilding(x, z, sx, sz, h, color, signText, isGarage = false) {
             let mesh = new THREE.Mesh(
                 new THREE.BoxGeometry(sx, h, sz),
-                new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.7 })
+                new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.8 })
             );
             mesh.position.set(x, h/2 - 1.19, z);
             scene.add(mesh);
@@ -285,16 +286,17 @@
             buildingSignsData.push({ mesh: mesh, signElement: signEl, offsetY: h + 0.6 });
         }
 
-        createCyberBuilding(-60, -60, 14, 14, 16, 0x1e1b4b, "LIQUIDITY POOL A");
+        createCyberBuilding(-60, -60, 14, 14, 16, 0x312e81, "LIQUIDITY POOL A");
         createCyberBuilding(60, -60, 16, 16, 20, 0x0f172a, "NODE STAKING");
-        createCyberBuilding(-60, 60, 16, 14, 14, 172554, "GOVERNANCE");
-        createCyberBuilding(0, -100, 16, 12, 10, 0x78350f, "DEGEN GARAGE", true);
+        createCyberBuilding(-60, 60, 16, 14, 14, 0x1e3a8a, "GOVERNANCE");
+        createCyberBuilding(0, -100, 16, 12, 10, 0xb45309, "DEGEN GARAGE", true);
 
-        // Load Custom User .glb Model & Handle Animation Mixer
+        // --- GLB CHARACTER & ANIMATION CONTROLLER ---
         const gltfLoader = new THREE.GLTFLoader();
         let customCharacter = null;
         let mixer = null;
         let idleAction = null, walkAction = null, activeAction = null;
+        let hasSkeletalWalk = false;
 
         gltfLoader.load(
             './9aeae37947f49e83f8cb3513c9a23826.glb',
@@ -307,18 +309,23 @@
                 if (gltf.animations && gltf.animations.length > 0) {
                     mixer = new THREE.AnimationMixer(customCharacter);
                     
-                    // Assign animations safely (Index 0 usually idle, Index 1/next usually walk/run if available)
-                    idleAction = mixer.clipAction(gltf.animations[0]);
+                    let walkClip = gltf.animations.find(a => /walk|run|move|stride/i.test(a.name));
+                    let idleClip = gltf.animations.find(a => /idle|stand|wait/i.test(a.name));
+
+                    if (!idleClip) idleClip = gltf.animations[0];
+                    if (!walkClip) walkClip = gltf.animations[1] || gltf.animations[0];
+
+                    idleAction = mixer.clipAction(idleClip);
+                    walkAction = mixer.clipAction(walkClip);
+
                     idleAction.play();
                     activeAction = idleAction;
 
-                    if (gltf.animations.length > 1) {
-                        walkAction = mixer.clipAction(gltf.animations[1]);
-                    } else {
-                        walkAction = idleAction; // Fallback if only 1 animation exists
+                    if (walkClip !== idleClip) {
+                        hasSkeletalWalk = true;
                     }
                 }
-                console.log("Custom GLB Character loaded with animations!");
+                console.log("Custom GLB Character loaded successfully! Embedded Animations:", gltf.animations.length);
             },
             undefined,
             function (error) {
@@ -335,7 +342,7 @@
             body.position.y = -0.6;
             carGroup.add(body);
 
-            let roof = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x00ffff, metalness: 0.5, roughness: 0.2 }));
+            let roof = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.5, roughness: 0.2 }));
             roof.position.set(0, -0.1, -0.2);
             carGroup.add(roof);
 
@@ -350,18 +357,18 @@
             return carObj;
         }
 
-        createCyberCar(-20, -40, 0xff00ff);
+        createCyberCar(-20, -40, 0xdb2777);
 
         const activeCitizens = [];
         const degenQuotes = ["WAGMI!", "Pump it!", "Buy the dip!", "Rug pulled!"];
 
         function createNPC(x, z, isGuarding = true) {
             let group = new THREE.Group();
-            let body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: isGuarding ? 0xef4444 : 0x00ffff, roughness: 0.4 }));
+            let body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.4), new THREE.MeshStandardMaterial({ color: isGuarding ? 0xef4444 : 0x0284c7, roughness: 0.4 }));
             body.position.y = -0.3;
             group.add(body);
 
-            let head = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), new THREE.MeshStandardMaterial({ color: 0xfff }));
+            let head = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), new THREE.MeshStandardMaterial({ color: 0xffffff }));
             head.position.y = 0.4;
             group.add(head);
 
@@ -386,7 +393,7 @@
         const interactiveObjects = [];
 
         function createChip(x, z) {
-            let obj = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16), new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 }));
+            let obj = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16), new THREE.MeshStandardMaterial({ color: 0x0284c7, emissive: 0x0284c7, emissiveIntensity: 0.4 }));
             obj.position.set(x, -0.8, z);
             obj.userData = { x: x, z: z };
             scene.add(obj);
@@ -396,7 +403,7 @@
         createChip(-45, -45); createChip(45, -45);
         createChip(-45, 45); createChip(45, 45);
 
-        let exitZone = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 0.1, 16), new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.8 }));
+        let exitZone = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 0.1, 16), new THREE.MeshStandardMaterial({ color: 0x16a34a, emissive: 0x16a34a, emissiveIntensity: 0.6 }));
         exitZone.position.set(0, -1.15, -110);
         scene.add(exitZone);
 
@@ -413,7 +420,7 @@
             let statusEl = document.getElementById("radio-status");
             if (radioPlaying) {
                 statusEl.innerText = "[ PLAYING ]";
-                statusEl.style.color = "#00ffff";
+                statusEl.style.color = "#0284c7";
                 musicInterval = setInterval(() => {
                     if (!radioPlaying || !audioCtx) return;
                     let osc = audioCtx.createOscillator();
@@ -427,7 +434,7 @@
                 }, 250);
             } else {
                 statusEl.innerText = "[ MUTED ]";
-                statusEl.style.color = "#fff";
+                statusEl.style.color = "#64748b";
                 if (musicInterval) clearInterval(musicInterval);
             }
         }
@@ -555,8 +562,7 @@
 
                     let isMoving = (dir.lengthSq() > 0);
 
-                    // Update Animation State (Idle vs Walk)
-                    if (walkAction && idleAction && activeAction) {
+                    if (hasSkeletalWalk) {
                         let targetAction = isMoving ? walkAction : idleAction;
                         if (targetAction !== activeAction) {
                             activeAction.fadeOut(0.2);
@@ -573,16 +579,26 @@
                         let cz = checkCollision(playerPos.x, nz);
                         if (cx === true) nearGarage = true; else if (!cx) playerPos.x = nx;
                         if (cz === true) nearGarage = true; else if (!cz) playerPos.z = nz;
+
+                        if (!hasSkeletalWalk && customCharacter) {
+                            customCharacter.position.y = -1.2 + Math.abs(Math.sin(time * 0.015)) * 0.18;
+                            customCharacter.rotation.z = Math.sin(time * 0.015) * 0.08;
+                        }
+                    } else {
+                        if (!hasSkeletalWalk && customCharacter) {
+                            customCharacter.position.y = -1.2;
+                            customCharacter.rotation.z = 0;
+                        }
                     }
 
-                    // Smooth Third-Person Camera Tracking
                     let cameraOffset = new THREE.Vector3(0, 3.5, 7).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
                     camera.position.copy(playerPos).add(cameraOffset);
                     let lookTarget = playerPos.clone().add(new THREE.Vector3(0, 1, 0));
                     camera.lookAt(lookTarget);
 
                     if (customCharacter) {
-                        customCharacter.position.set(playerPos.x, -1.2, playerPos.z);
+                        customCharacter.position.x = playerPos.x;
+                        customCharacter.position.z = playerPos.z;
                         if (isMoving) {
                             let moveAngle = Math.atan2(dir.x, dir.z);
                             customCharacter.rotation.y = moveAngle;
