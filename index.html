@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - 007 N64 Retro Edition</title>
+    <title>Rug Ville - 007 N64 Retro Edition with Custom GLB</title>
     <style>
         body {
             margin: 0;
@@ -190,6 +190,7 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
@@ -240,14 +241,13 @@
     </div>
 
     <script>
-        // Low-resolution rendering setup to emulate N64 hardware limitations
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x334155); // Classic murky N64 fog/sky
+        scene.background = new THREE.Color(0x334155);
         scene.fog = new THREE.FogExp2(0x334155, 0.008);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: false }); // Disable antialiasing for authentic sharp pixels
-        renderer.setSize(window.innerWidth / 1.5, window.innerHeight / 1.5); // Low-res pixel scaling
+        const renderer = new THREE.WebGLRenderer({ antialias: false });
+        renderer.setSize(window.innerWidth / 1.5, window.innerHeight / 1.5);
         renderer.domElement.style.width = '100%';
         renderer.domElement.style.height = '100%';
         renderer.domElement.style.imageRendering = 'pixelated';
@@ -260,10 +260,9 @@
         sunLight.position.set(50, 150, 50);
         scene.add(sunLight);
 
-        // Low-poly blocky ground
         function createN64GrassTexture() {
             let canvas = document.createElement('canvas');
-            canvas.width = 64; canvas.height = 64; // Very low resolution texture
+            canvas.width = 64; canvas.height = 64;
             let ctx = canvas.getContext('2d');
             ctx.fillStyle = '#2d4a2d';
             ctx.fillRect(0, 0, 64, 64);
@@ -272,7 +271,7 @@
                 ctx.fillRect(Math.random()*64, Math.random()*64, 4, 4);
             }
             let texture = new THREE.CanvasTexture(canvas);
-            texture.magFilter = THREE.NearestFilter; // Nearest filter keeps textures crisp and pixelated like N64
+            texture.magFilter = THREE.NearestFilter;
             texture.minFilter = THREE.NearestFilter;
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
@@ -292,9 +291,7 @@
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        // Simple blocky N64 style roads
         const roadMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 
         function createRoad(x, z, w, l, rot = 0) {
             let group = new THREE.Group();
@@ -312,7 +309,6 @@
         createRoad(-mapSize, 0, 16, mapSize * 2, Math.PI / 2);
         createRoad(mapSize, 0, 16, mapSize * 2, Math.PI / 2);
 
-        // Low poly square buildings
         function createBlockBuilding(x, z, sx, sz, h, color, signText, isGarage = false) {
             let mesh = new THREE.Mesh(
                 new THREE.BoxGeometry(sx, h, sz),
@@ -334,7 +330,32 @@
         createBlockBuilding(-60, 60, 15, 12, 12, 0x64748b, "CONTROL");
         createBlockBuilding(0, -100, 14, 10, 8, 0x854d0e, "Q-BRANCH WORKSHOP", true);
 
-        // Low-poly blocky car model
+        // Load Custom User .glb Model
+        const gltfLoader = new THREE.GLTFLoader();
+        let customCharacter = null;
+        let mixer = null;
+
+        gltfLoader.load(
+            './9aeae37947f49e83f8cb3513c9a23826.glb',
+            function (gltf) {
+                customCharacter = gltf.scene;
+                customCharacter.scale.set(1, 1, 1);
+                customCharacter.position.set(0, -1.2, 40); // Placed right near spawn
+                scene.add(customCharacter);
+
+                if (gltf.animations && gltf.animations.length > 0) {
+                    mixer = new THREE.AnimationMixer(customCharacter);
+                    let action = mixer.clipAction(gltf.animations[0]);
+                    action.play();
+                }
+                console.log("Custom GLB Model loaded successfully!");
+            },
+            undefined,
+            function (error) {
+                console.error('Error loading custom GLB file:', error);
+            }
+        );
+
         const drivableVehicles = [];
         let currentVehicle = null;
 
@@ -361,9 +382,7 @@
 
         createBlockCar(-20, -40, 0x990000);
 
-        // Guard NPCs with goldeneye style quotes
         const activeCitizens = [];
-        const npcCars = [];
         const n64Quotes = ["Stop right there!", "For England, James?", "Alarm triggered!", "Security alert!"];
 
         function createGuard(x, z, isGuard = true) {
@@ -390,7 +409,6 @@
         for(let i=0; i<5; i++) createGuard((Math.random()-0.5)*90, (Math.random()-0.5)*90, false);
         createGuard(15, -90, true);
 
-        // Objectives (Dossiers)
         let score = 0;
         let packagesCollected = 0;
         const totalPackages = 4;
@@ -453,6 +471,7 @@
                 document.getElementById("action-btn").innerText = "EXIT VEHICLE";
                 document.getElementById("package-text").innerText = `DOSSIERS: ${packagesCollected}/${totalPackages} | DRIVING`;
                 document.getElementById("cockpit-dash").style.display = "block";
+                if (customCharacter) customCharacter.visible = false; // Hide custom character when driving
             } else if (currentVehicle) {
                 playerPos.copy(currentVehicle.mesh.position); playerPos.x += 2;
                 currentVehicle = null;
@@ -460,6 +479,11 @@
                 document.getElementById("action-btn").innerText = "ACQUIRE VEHICLE";
                 document.getElementById("package-text").innerText = `DOSSIERS: ${packagesCollected}/${totalPackages} | ON FOOT`;
                 document.getElementById("cockpit-dash").style.display = "none";
+                if (customCharacter) {
+                    customCharacter.position.copy(playerPos);
+                    customCharacter.position.y = -1.2;
+                    customCharacter.visible = true;
+                }
                 if (radioPlaying) toggleRadio();
             }
         }
@@ -544,12 +568,16 @@
         }
 
         let prevTime = performance.now();
+        const clock = new THREE.Clock();
 
         function animate() {
             requestAnimationFrame(animate);
             let time = performance.now();
             let delta = Math.min((time - prevTime) / 1000, 0.1);
             prevTime = time;
+
+            let clockDelta = clock.getDelta();
+            if (mixer) mixer.update(clockDelta);
 
             if (!gameWon) {
                 if (!currentVehicle) {
@@ -578,6 +606,12 @@
                     camera.rotation.set(pitch, yaw, 0, 'YXZ');
                     camera.position.copy(playerPos);
                     camera.position.y = 0;
+
+                    // Sync custom character position/rotation with player walk movement
+                    if (customCharacter) {
+                        customCharacter.position.set(playerPos.x, -1.2, playerPos.z);
+                        customCharacter.rotation.y = yaw + Math.PI;
+                    }
 
                     nearbyCar = null;
                     for (let car of drivableVehicles) {
