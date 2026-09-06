@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Fully Alive Open World</title>
+    <title>Rug Ville - Degen Edition</title>
     <style>
         body {
             margin: 0;
@@ -63,7 +63,6 @@
             pointer-events: none;
             z-index: 10;
         }
-        /* Speech Bubbles Overlay */
         #speech-overlay {
             position: absolute;
             top: 0;
@@ -87,9 +86,23 @@
             white-space: nowrap;
             transform: translate(-50%, -100%);
             display: none;
-            transition: opacity 0.3s;
         }
-        /* Mobile Joystick UI */
+        .building-sign {
+            position: absolute;
+            background: #0f172a;
+            color: #facc15;
+            border: 2px solid #facc15;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            white-space: nowrap;
+            transform: translate(-50%, -100%);
+            display: none;
+            text-transform: uppercase;
+        }
         #joystick-zone {
             position: absolute;
             bottom: 50px;
@@ -239,7 +252,7 @@
         createRoad(0, -120, 16, 400, 0);
         createRoad(-120, 0, 400, 16, Math.PI / 2);
 
-        // --- WELCOME TO RUG VILLE SIGN ---
+        // Welcome Sign
         function createWelcomeSign(x, z, rotation) {
             let signGroup = new THREE.Group();
             let postMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
@@ -264,10 +277,17 @@
         }
         createWelcomeSign(0, 75, 0);
 
-        // Buildings & Colliders
+        // Buildings & Degen Signs Setup
         const solidColliders = [];
+        const buildingSignsData = [];
+        const speechOverlay = document.getElementById('speech-overlay');
 
-        function createBuilding(x, z, width, height, depth, wallColor, roofColor) {
+        const buildingNames = [
+            "Rug Casino", "Rug Shop", "Rug Hotel", "Rug Bank", 
+            "Scam Exchange", "Pump & Dump HQ", "Liquidity Drain", "Zero Floor Cafe"
+        ];
+
+        function createBuilding(x, z, width, height, depth, wallColor, roofColor, signText) {
             let group = new THREE.Group();
             let walls = new THREE.Mesh(
                 new THREE.BoxGeometry(width, height, depth),
@@ -289,18 +309,32 @@
             group.position.set(x, 0, z);
             scene.add(group);
             solidColliders.push({ x: x, z: z, sizeX: width + 0.5, sizeZ: depth + 0.5 });
+
+            // DOM 3D building sign tracking
+            let signEl = document.createElement('div');
+            signEl.className = 'building-sign';
+            signEl.innerText = signText;
+            speechOverlay.appendChild(signEl);
+
+            buildingSignsData.push({
+                mesh: group,
+                signElement: signEl,
+                offsetY: height + 0.8
+            });
         }
 
         const bColors = [0xe2e8f0, 0xcbd5e1, 0x94a3b8, 0xf1f5f9, 0xdcbdab];
         const rColors = [0x334155, 0x1e293b, 0x0f172a, 0x475569];
 
+        let nameIdx = 0;
         for (let xPos of [-70, -35, 35, 70]) {
             for (let zPos of [-70, -35, 35, 70]) {
-                createBuilding(xPos, zPos, 14, 9, 14, bColors[Math.floor(Math.random()*bColors.length)], rColors[Math.floor(Math.random()*rColors.length)]);
+                createBuilding(xPos, zPos, 14, 9, 14, bColors[Math.floor(Math.random()*bColors.length)], rColors[Math.floor(Math.random()*rColors.length)], buildingNames[nameIdx % buildingNames.length]);
+                nameIdx++;
             }
         }
 
-        // --- MOVING VEHICLES SYSTEM ---
+        // --- MOVING VEHICLES SYSTEM (Strictly on Road Grid) ---
         const activeVehicles = [];
 
         function createVehicle(x, z, color, isBus = false, axis = 'z', minBound = -150, maxBound = 150, speed = 12) {
@@ -330,7 +364,9 @@
             });
 
             carGroup.position.set(x, 0, z);
-            if (axis === 'x') carGroup.rotation.y = Math.PI / 2;
+            if (axis === 'x') carGroup.rotation.y = (speed > 0) ? Math.PI / 2 : -Math.PI / 2;
+            else carGroup.rotation.y = (speed > 0) ? 0 : Math.PI;
+
             scene.add(carGroup);
 
             activeVehicles.push({
@@ -344,16 +380,14 @@
             });
         }
 
-        // Spawn moving cars and buses on roads
-        createVehicle(4, -100, 0xdc2626, false, 'z', -150, 150, 15);
-        createVehicle(-4, 80, 0x2563eb, false, 'z', -150, 150, -18);
-        createVehicle(80, 4, 0xf59e0b, true, 'x', -150, 150, 12);
-        createVehicle(-80, -4, 0xffffff, true, 'x', -150, 150, -14);
+        // Dedicated road channels (Lane locked traffic)
+        createVehicle(4, -150, 0xdc2626, false, 'z', -160, 160, 16);
+        createVehicle(-4, 150, 0x2563eb, false, 'z', -160, 160, -20);
+        createVehicle(150, 4, 0xf59e0b, true, 'x', -160, 160, 14);
+        createVehicle(-150, -4, 0xffffff, true, 'x', -160, 160, -15);
 
-        // --- MOVING PEOPLE & WORKERS WITH SPEECH BUBBLES ---
+        // --- REALISTIC PEOPLE & WORKERS WITH JOINTED LIMBS & SPEECH BUBBLES ---
         const activeCitizens = [];
-        const speechOverlay = document.getElementById('speech-overlay');
-
         const degenQuotes = [
             "Dev dumped the floor! Rugged again!",
             "Bro I'm down 90% on memecoins",
@@ -365,43 +399,50 @@
             "Who built this road? Absolute scam!"
         ];
 
-        function createWalkingCitizen(x, z, shirtColor, isWorker = false) {
+        function createRealisticPerson(x, z, shirtColor, isWorker = false) {
             let personGroup = new THREE.Group();
 
-            let legs = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 0.8, 0.4),
-                new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.9 })
-            );
-            legs.position.y = -0.8;
-            personGroup.add(legs);
+            let skinMat = new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 });
+            let shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.7 });
+            let pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.8 });
 
-            let torso = new THREE.Mesh(
-                new THREE.BoxGeometry(0.6, 0.9, 0.4),
-                new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.8 })
-            );
-            torso.position.y = -0.1;
+            // Torso
+            let torso = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.8, 0.3), shirtMat);
+            torso.position.y = -0.2;
             personGroup.add(torso);
 
+            // Head
+            let head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), skinMat);
+            head.position.y = 0.35;
+            personGroup.add(head);
+
             if (isWorker) {
-                let hat = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.6, 0.2, 0.6),
-                    new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 })
-                );
-                hat.position.y = 0.45;
+                let hat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.18, 0.5), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
+                hat.position.y = 0.52;
                 personGroup.add(hat);
             }
 
-            let head = new THREE.Mesh(
-                new THREE.SphereGeometry(0.25, 8, 8),
-                new THREE.MeshStandardMaterial({ color: 0xf5d0b1, roughness: 0.7 })
-            );
-            head.position.y = isWorker ? 0.7 : 0.55;
-            personGroup.add(head);
+            // Articulated Arms
+            let armGeo = new THREE.BoxGeometry(0.16, 0.7, 0.18);
+            let leftArm = new THREE.Mesh(armGeo, shirtMat);
+            leftArm.position.set(-0.38, -0.2, 0);
+            let rightArm = new THREE.Mesh(armGeo, shirtMat);
+            rightArm.position.set(0.38, -0.2, 0);
+            personGroup.add(leftArm);
+            personGroup.add(rightArm);
+
+            // Articulated Legs
+            let legGeo = new THREE.BoxGeometry(0.2, 0.75, 0.2);
+            let leftLeg = new THREE.Mesh(legGeo, pantsMat);
+            leftLeg.position.set(-0.15, -0.85, 0);
+            let rightLeg = new THREE.Mesh(legGeo, pantsMat);
+            rightLeg.position.set(0.15, -0.85, 0);
+            personGroup.add(leftLeg);
+            personGroup.add(rightLeg);
 
             personGroup.position.set(x, 0, z);
             scene.add(personGroup);
 
-            // Create DOM Speech Bubble
             let bubble = document.createElement('div');
             bubble.className = 'speech-bubble';
             bubble.innerText = degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
@@ -409,20 +450,24 @@
 
             activeCitizens.push({
                 mesh: personGroup,
+                leftArm: leftArm,
+                rightArm: rightArm,
+                leftLeg: leftLeg,
+                rightLeg: rightLeg,
                 x: x,
                 z: z,
                 originX: x,
                 originZ: z,
                 angle: Math.random() * Math.PI * 2,
-                speed: 1.5 + Math.random() * 1.5,
+                speed: 1.2 + Math.random() * 1.2,
                 bubble: bubble,
-                timer: Math.random() * 100
+                timer: Math.random() * 10
             });
         }
 
         const colors = [0xef4444, 0x3b82f6, 0x10b981, 0xa855f7, 0xf97316];
-        for (let i = 0; i < 12; i++) {
-            createWalkingCitizen((Math.random() - 0.5) * 120, (Math.random() - 0.5) * 120, colors[Math.floor(Math.random()*colors.length)], Math.random() > 0.4);
+        for (let i = 0; i < 14; i++) {
+            createRealisticPerson((Math.random() - 0.5) * 120, (Math.random() - 0.5) * 120, colors[Math.floor(Math.random()*colors.length)], Math.random() > 0.4);
         }
 
         // Animals
@@ -659,7 +704,7 @@
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.y = 0;
 
-                // Animate Moving Vehicles
+                // Animate Road-Locked Traffic
                 activeVehicles.forEach(v => {
                     v.pos += v.speed * delta;
                     if (v.pos > v.max) v.pos = v.min;
@@ -672,28 +717,34 @@
                     }
                 });
 
-                // Animate Citizens and Project Speech Bubbles onto Screen Coordinates
+                // Animate Citizens, Limbs Walk Cycle, and Speech Bubbles
                 activeCitizens.forEach(c => {
-                    c.angle += delta * c.speed * 0.5;
-                    c.x = c.originX + Math.sin(c.angle) * 8;
-                    c.z = c.originZ + Math.cos(c.angle) * 8;
+                    c.angle += delta * c.speed * 0.6;
+                    c.x = c.originX + Math.sin(c.angle) * 7;
+                    c.z = c.originZ + Math.cos(c.angle) * 7;
                     c.mesh.position.set(c.x, 0, c.z);
 
-                    // Random speech dialogue timing
+                    // Procedural walk limb swing
+                    let swing = Math.sin(time * 0.01 * c.speed) * 0.5;
+                    c.leftLeg.rotation.x = swing;
+                    c.rightLeg.rotation.x = -swing;
+                    c.leftArm.rotation.x = -swing;
+                    c.rightArm.rotation.x = swing;
+
+                    // Speech bubble dynamic updating
                     c.timer += delta;
-                    if (c.timer > 5) {
+                    if (c.timer > 6) {
                         c.timer = 0;
-                        if (Math.random() > 0.4) {
+                        if (Math.random() > 0.3) {
                             c.bubble.innerText = degenQuotes[Math.floor(Math.random() * degenQuotes.length)];
                         }
                     }
 
-                    // Project 3D position to 2D screen space for speech bubble
+                    // Projection of speech bubble onto screen
                     let vector = new THREE.Vector3(c.x, 1.2, c.z);
                     vector.project(camera);
-
                     let distanceToPlayer = camera.position.distanceTo(c.mesh.position);
-                    if (vector.z < 1 && distanceToPlayer < 40) {
+                    if (vector.z < 1 && distanceToPlayer < 35) {
                         let xCoord = (vector.x * 0.5 + 0.5) * window.innerWidth;
                         let yCoord = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
                         c.bubble.style.left = `${xCoord}px`;
@@ -701,6 +752,22 @@
                         c.bubble.style.display = 'block';
                     } else {
                         c.bubble.style.display = 'none';
+                    }
+                });
+
+                // Project Building Signs onto Screen Coordinates
+                buildingSignsData.forEach(b => {
+                    let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z);
+                    vector.project(camera);
+                    let distanceToPlayer = camera.position.distanceTo(b.mesh.position);
+                    if (vector.z < 1 && distanceToPlayer < 60) {
+                        let xCoord = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                        let yCoord = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
+                        b.signElement.style.left = `${xCoord}px`;
+                        b.signElement.style.top = `${yCoord}px`;
+                        b.signElement.style.display = 'block';
+                    } else {
+                        b.signElement.style.display = 'none';
                     }
                 });
 
