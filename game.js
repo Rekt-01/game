@@ -1,28 +1,34 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const tileSize = 40; // 9x9 Grid layout
+const tileSize = 40;
+const visibleWidth = 9;  // Number of tiles visible horizontally on screen
+const visibleHeight = 9; // Number of tiles visible vertically on screen
 
-// Map Legend: 0=Empty, 1=Wall, 2=Dirt, 3=Diamond(Red), 4=Boulder, 5=Player, 6=Snake
+// A much larger 20x20 underground world map
 let map = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 5, 2, 3, 4, 2, 3, 3, 1],
-    [1, 2, 1, 1, 2, 1, 1, 2, 1],
-    [1, 3, 2, 4, 6, 3, 2, 2, 1],
-    [1, 2, 1, 2, 1, 2, 1, 4, 1],
-    [1, 2, 2, 3, 2, 2, 2, 2, 1],
-    [1, 1, 2, 1, 4, 1, 2, 1, 1],
-    [1, 3, 2, 2, 2, 2, 3, 2, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1]
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,5,2,3,4,2,2,2,1,2,3,2,2,4,2,2,3,2,2,1],
+    [1,2,1,1,2,1,1,2,1,2,1,1,1,2,1,1,1,1,2,1],
+    [1,3,2,4,6,3,2,2,2,2,4,2,3,2,4,6,2,3,2,1],
+    [1,2,1,2,1,2,1,1,1,1,1,2,1,1,1,2,1,1,2,1],
+    [1,2,2,3,2,2,2,4,2,3,2,2,4,2,2,3,2,2,2,1],
+    [1,1,2,1,4,1,1,2,1,1,1,2,1,1,4,1,1,1,2,1],
+    [1,3,2,2,2,2,3,2,2,4,2,2,3,2,2,2,3,2,2,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,2,3,4,2,2,3,2,4,2,2,3,4,2,2,3,4,2,2,1],
+    [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
+    [1,3,2,2,4,2,2,3,2,2,4,2,2,3,2,2,4,2,3,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 let player = { x: 1, y: 1 };
 let score = 2150;
 let totalDiamonds = 14;
-let maxDiamonds = 30;
+let maxDiamonds = 60;
 let gameOver = false;
 
-// Extract player & snake from static template setup
+// Extract player position
 for (let r = 0; r < map.length; r++) {
     for (let c = 0; c < map[r].length; c++) {
         if (map[r][c] === 5) {
@@ -33,36 +39,36 @@ for (let r = 0; r < map.length; r++) {
     }
 }
 
-// Handle Movement & Interaction
 function movePlayer(dx, dy) {
     if (gameOver) return;
 
     let newX = player.x + dx;
     let newY = player.y + dy;
+
+    // Check boundaries of the large world
+    if (newY < 0 || newY >= map.length || newX < 0 || newX >= map[0].length) return;
+
     let targetTile = map[newY][newX];
 
-    if (targetTile === 1) return; // Wall blocking
+    if (targetTile === 1) return; // Wall
+    if (targetTile === 6) { gameOver = true; return; } // Snake
 
-    // Snake Hazard Collision
-    if (targetTile === 6) {
-        gameOver = true;
-        return;
-    }
-
-    // Pushing Boulders horizontally
+    // Pushing boulders
     if (targetTile === 4 && dy === 0) {
         let beyondX = newX + dx;
         let beyondY = newY + dy;
-        if (map[beyondY][beyondX] === 0) {
-            map[beyondY][beyondX] = 4;
-            map[newY][newX] = 0;
-            player.x = newX;
-            player.y = newY;
+        if (beyondY >= 0 && beyondY < map.length && beyondX >= 0 && beyondX < map[0].length) {
+            if (map[beyondY][beyondX] === 0) {
+                map[beyondY][beyondX] = 4;
+                map[newY][newX] = 0;
+                player.x = newX;
+                player.y = newY;
+            }
         }
         return;
     }
 
-    if (targetTile === 4 && dy !== 0) return; // Can't walk up/down into boulder
+    if (targetTile === 4 && dy !== 0) return;
 
     if (targetTile === 3) {
         score += 150;
@@ -74,10 +80,8 @@ function movePlayer(dx, dy) {
     map[newY][newX] = 0;
 }
 
-// Action Whip Mechanic (destroys adjacent dirt or snakes)
 function triggerWhip() {
     if (gameOver) return;
-    // Check tiles around the player
     let neighbors = [
         {r: player.y - 1, c: player.x},
         {r: player.y + 1, c: player.x},
@@ -87,17 +91,15 @@ function triggerWhip() {
     neighbors.forEach(n => {
         if (n.r >= 0 && n.r < map.length && n.c >= 0 && n.c < map[0].length) {
             if (map[n.r][n.c] === 2 || map[n.r][n.c] === 6) {
-                map[n.r][n.c] = 0; // Clears obstacle/snake with whip
+                map[n.r][n.c] = 0;
                 score += 50;
             }
         }
     });
 }
 
-// Physics Loop for Falling Elements
 function updatePhysics() {
     if (gameOver) return;
-
     for (let r = map.length - 2; r >= 0; r--) {
         for (let c = 0; c < map[r].length; c++) {
             let tile = map[r][c];
@@ -123,115 +125,100 @@ function updatePhysics() {
     }
 }
 
-// Pixel Art Rendering Engine
+// Camera Viewport Rendering Engine
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Header UI Display matching Nokia HUD
-    ctx.fillStyle = "#1a1612";
-    ctx.fillRect(0, 0, canvas.width, 60);
-    ctx.fillStyle = "#e0c068";
-    ctx.font = "bold 14px 'Courier New'";
-    ctx.fillText(`SCORE: ${score}`, 15, 35);
-    ctx.fillText(`DIAMONDS: ${totalDiamonds}/${maxDiamonds}`, 180, 35);
-    ctx.strokeStyle = "#5a4939";
+    ctx.fillStyle = "#0c0b0a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // UI Header
+    ctx.fillStyle = "#161310";
+    ctx.fillRect(0, 0, canvas.width, 50);
+    ctx.fillStyle = "#f4d35e";
+    ctx.font = "bold 13px 'Courier New'";
+    ctx.fillText(`SCORE: ${score}`, 15, 30);
+    ctx.fillText(`DIAMONDS: ${totalDiamonds}/${maxDiamonds}`, 165, 30);
+    ctx.strokeStyle = "#4a3b2c";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(0, 60);
-    ctx.lineTo(canvas.width, 60);
+    ctx.moveTo(0, 50);
+    ctx.lineTo(canvas.width, 50);
     ctx.stroke();
 
+    // Calculate camera offset to center view on the player
+    let cameraX = Math.max(0, Math.min(player.x - Math.floor(visibleWidth / 2), map[0].length - visibleWidth));
+    let cameraY = Math.max(0, Math.min(player.y - Math.floor(visibleHeight / 2), map.length - visibleHeight));
+
     ctx.save();
-    ctx.translate(0, 60); // Shift game grid down past HUD
+    ctx.translate(0, 50);
 
-    for (let r = 0; r < map.length; r++) {
-        for (let c = 0; c < map[r].length; c++) {
+    // Render only the visible section of the large world map
+    for (let r = cameraY; r < cameraY + visibleHeight && r < map.length; r++) {
+        for (let c = cameraX; c < cameraX + visibleWidth && c < map[r].length; c++) {
             let tile = map[r][c];
-            let x = c * tileSize;
-            let y = r * tileSize;
+            let x = (c - cameraX) * tileSize;
+            let y = (r - cameraY) * tileSize;
 
-            if (tile === 1) { // Ancient Temple Stone Wall
-                ctx.fillStyle = "#3b342b";
+            if (tile === 1) { // Wall
+                ctx.fillStyle = "#2d261e";
                 ctx.fillRect(x, y, tileSize, tileSize);
-                ctx.fillStyle = "#27221b";
-                ctx.fillRect(x + 4, y + 4, tileSize - 8, tileSize - 8);
-                ctx.fillStyle = "#52483c";
-                ctx.fillRect(x + 8, y + 8, 6, 6);
-                ctx.fillRect(x + 24, y + 24, 6, 6);
-            } else if (tile === 2) { // Textured Underground Dirt
-                ctx.fillStyle = "#6b3d1f";
+                ctx.fillStyle = "#3d3328";
+                ctx.fillRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+            } else if (tile === 2) { // Dirt
+                ctx.fillStyle = "#5c3a21";
                 ctx.fillRect(x, y, tileSize, tileSize);
-                ctx.fillStyle = "#4a2812";
-                ctx.fillRect(x + 4, y + 4, 8, 8);
-                ctx.fillRect(x + 22, y + 18, 10, 10);
-                ctx.fillRect(x + 8, y + 28, 6, 6);
-            } else if (tile === 3) { // Sparkling Ruby Diamond
-                ctx.fillStyle = "#e63946";
+                ctx.fillStyle = "#3b2413";
+                ctx.fillRect(x + 4, y + 4, 6, 6);
+            } else if (tile === 3) { // Diamond
+                ctx.fillStyle = "#00b4d8";
                 ctx.beginPath();
-                ctx.moveTo(x + tileSize/2, y + 6);
-                ctx.lineTo(x + tileSize - 8, y + tileSize/2);
-                ctx.lineTo(x + tileSize/2, y + tileSize - 6);
-                ctx.lineTo(x + 8, y + tileSize/2);
+                ctx.moveTo(x + tileSize/2, y + 4);
+                ctx.lineTo(x + tileSize - 6, y + tileSize/2);
+                ctx.lineTo(x + tileSize/2, y + tileSize - 4);
+                ctx.lineTo(x + 6, y + tileSize/2);
                 ctx.closePath();
                 ctx.fill();
-                ctx.fillStyle = "#ffffff"; // Sparkle core
-                ctx.fillRect(x + 18, y + 16, 4, 4);
-            } else if (tile === 4) { // Heavy Round Boulder
-                ctx.fillStyle = "#8d99ae";
+            } else if (tile === 4) { // Boulder
+                ctx.fillStyle = "#6c757d";
                 ctx.beginPath();
-                ctx.arc(x + tileSize/2, y + tileSize/2, tileSize/2.4, 0, Math.PI * 2);
+                ctx.arc(x + tileSize/2, y + tileSize/2, tileSize/2.2, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = "#6c757d"; // Shadow ring
-                ctx.beginPath();
-                ctx.arc(x + tileSize/2 + 2, y + tileSize/2 + 2, tileSize/3.2, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (tile === 6) { // Jungle Snake Hazard
-                ctx.fillStyle = "#2b9348";
-                ctx.fillRect(x + 8, y + 14, 24, 12);
-                ctx.fillStyle = "#55a630";
-                ctx.fillRect(x + 22, y + 8, 10, 10);
-                ctx.fillStyle = "#ffb703"; // Eyes
-                ctx.fillRect(x + 26, y + 10, 2, 2);
+            } else if (tile === 6) { // Snake
+                ctx.fillStyle = "#2a9d8f";
+                ctx.fillRect(x + 6, y + 14, 28, 10);
             }
         }
     }
 
-    // Draw Explorer Character (Explorer Hat & Outfit)
-    let px = player.x * tileSize;
-    let py = player.y * tileSize;
+    // Draw Player relative to camera position
+    let px = (player.x - cameraX) * tileSize;
+    let py = (player.y - cameraY) * tileSize;
     
-    // Body / Outfit
-    ctx.fillStyle = "#c68b59";
-    ctx.fillRect(px + 10, py + 16, 20, 18);
-    ctx.fillStyle = "#d4a373"; // Face
-    ctx.fillRect(px + 12, py + 12, 16, 10);
-    ctx.fillStyle = "#7f4f24"; // Explorer Fedora Hat
-    ctx.fillRect(px + 8, py + 6, 24, 6);
-    ctx.fillRect(px + 12, py + 2, 16, 4);
+    ctx.fillStyle = "#b07d62";
+    ctx.fillRect(px + 10, py + 18, 20, 16);
+    ctx.fillStyle = "#f4a261";
+    ctx.fillRect(px + 12, py + 10, 16, 10);
+    ctx.fillStyle = "#dda15e";
+    ctx.fillRect(px + 8, py + 4, 24, 6);
 
     ctx.restore();
 
-    // Game Over Overlay
     if (gameOver) {
-        ctx.fillStyle = "rgba(11, 11, 14, 0.85)";
+        ctx.fillStyle = "rgba(12, 11, 10, 0.9)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#e63946";
+        ctx.fillStyle = "#e76f51";
         ctx.font = "bold 24px 'Courier New'";
         ctx.fillText("CRUSHED!", 110, 200);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "14px 'Courier New'";
-        ctx.fillText("Refresh page to try again", 85, 235);
     }
 }
 
-// Game Clock Loop
 function gameLoop() {
     updatePhysics();
     draw();
 }
 setInterval(gameLoop, 300);
 
-// Key Event Listeners
 window.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") movePlayer(0, -1);
     if (e.key === "ArrowDown") movePlayer(0, 1);
@@ -240,7 +227,6 @@ window.addEventListener("keydown", e => {
     if (e.key === " " || e.key === "x") triggerWhip();
 });
 
-// Mobile Button Listeners
 document.getElementById("btn-up").addEventListener("click", () => movePlayer(0, -1));
 document.getElementById("btn-down").addEventListener("click", () => movePlayer(0, 1));
 document.getElementById("btn-left").addEventListener("click", () => movePlayer(-1, 0));
