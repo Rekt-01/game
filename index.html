@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Pixel Retro Edition</title>
+    <title>Rug Ville - Pixel Street Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #0f172a;
-            color: #111;
+            background-color: #2b1d2c;
+            color: #fff;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             user-select: none;
@@ -21,13 +21,13 @@
             transform: translateX(-50%);
             display: flex;
             gap: 20px;
-            background: #0f172a;
-            border: 4px solid #38bdf8;
+            background: #2b1d2c;
+            border: 4px solid #facc15;
             padding: 8px 20px;
             font-weight: bold;
             font-size: 13px;
             letter-spacing: 1px;
-            color: #38bdf8;
+            color: #facc15;
             box-shadow: 4px 4px 0px #000;
             z-index: 10;
             pointer-events: none;
@@ -37,32 +37,16 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #0f172a;
+            background: #2b1d2c;
             padding: 8px 16px;
-            border: 4px solid #38bdf8;
+            border: 4px solid #facc15;
             font-size: 11px;
-            color: #e2e8f0;
+            color: #fde047;
             text-align: center;
             pointer-events: none;
             box-shadow: 4px 4px 0px #000;
             z-index: 10;
             white-space: nowrap;
-        }
-        #alert-banner {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #dc2626;
-            color: #fff;
-            padding: 8px 20px;
-            border: 4px solid #000;
-            font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
-            display: none;
-            z-index: 15;
-            box-shadow: 4px 4px 0px #000;
         }
         #crosshair {
             position: absolute;
@@ -71,115 +55,17 @@
             transform: translate(-50%, -50%);
             width: 6px;
             height: 6px;
-            background-color: #38bdf8;
-            border: 2px solid #fff;
+            background-color: #facc15;
+            border: 2px solid #000;
             pointer-events: none;
             z-index: 10;
         }
-        #action-btn {
-            position: absolute;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2563eb;
-            color: #fff;
-            padding: 12px 24px;
-            border: 4px solid #60a5fa;
-            font-size: 13px;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 4px 4px 0px #000;
-            display: none;
-            z-index: 20;
-        }
-        #action-btn:hover { background: #1d4ed8; }
-        
-        #cockpit-dash {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 180px;
-            pointer-events: none;
-            display: none;
-            z-index: 25;
-            background: #090d16;
-            border-top: 4px solid #38bdf8;
-        }
-        .dashboard-podium {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 150px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 0 40px 15px 40px;
-        }
-        .gauge-cluster {
-            background: #0f172a;
-            border: 3px solid #38bdf8;
-            padding: 8px 14px;
-            text-align: center;
-            color: #38bdf8;
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .gauge-val { font-size: 20px; color: #f8fafc; margin-top: 2px; }
-        
-        #steering-wheel {
-            width: 140px;
-            height: 90px;
-            border: 12px solid #334155;
-            border-bottom: none;
-            border-radius: 70px 70px 0 0;
-            position: relative;
-            transform-origin: bottom center;
-        }
-        .radio-panel {
-            background: #0f172a;
-            border: 3px solid #facc15;
-            padding: 6px 12px;
-            text-align: center;
-            pointer-events: auto;
-            cursor: pointer;
-            color: #facc15;
-            font-weight: bold;
-            font-size: 10px;
-        }
-
-        #speech-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 12;
-            overflow: hidden;
-        }
-        .speech-bubble {
-            position: absolute;
-            background: #0f172a;
-            border: 3px solid #38bdf8;
-            padding: 4px 8px;
-            font-size: 10px;
-            font-weight: bold;
-            color: #f8fafc;
-            white-space: nowrap;
-            transform: translate(-50%, -100%);
-            display: none;
-            box-shadow: 3px 3px 0px #000;
-        }
         .building-sign {
             position: absolute;
-            background: #0f172a;
+            background: #451a03;
             color: #facc15;
             border: 3px solid #facc15;
-            padding: 2px 6px;
+            padding: 3px 8px;
             font-size: 9px;
             font-weight: 900;
             letter-spacing: 1px;
@@ -189,37 +75,12 @@
             box-shadow: 3px 3px 0px #000;
             text-transform: uppercase;
         }
-        #joystick-zone {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 3px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            z-index: 15;
-            touch-action: none;
-            display: none;
-        }
-        #joystick-handle {
-            position: absolute;
-            top: 36px;
-            left: 36px;
-            width: 40px;
-            height: 40px;
-            background: #38bdf8;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            pointer-events: none;
-        }
         #win-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #0f172a;
+            background: #2b1d2c;
             border: 6px solid #22c55e;
             padding: 30px;
             text-align: center;
@@ -247,272 +108,171 @@
 
     <div id="crosshair"></div>
     <div id="ui">
-        <span id="score-text">RUG VILLE CASH: $0</span>
-        <span id="package-text">BLOCKS: 0/4 | MODE: ON FOOT</span>
+        <span id="score-text">CASH: $0</span>
+        <span id="package-text">STORES VISITED: 0/4</span>
     </div>
-    <button id="action-btn" onclick="toggleVehicleMode()">DRIVE PIXEL CAR</button>
-    <div id="alert-banner">🚨 8-BIT RUG PULL IMMINENT! 🚨</div>
+    <div id="instructions">WASD: Walk down the pixel street | Explore shops</div>
     <div id="speech-overlay"></div>
-    
-    <div id="cockpit-dash">
-        <div class="dashboard-podium">
-            <div class="gauge-cluster">
-                VELOCITY
-                <div id="dash-speed" class="gauge-val">0</div>
-            </div>
-            <div id="steering-container">
-                <div id="steering-wheel"></div>
-            </div>
-            <div class="radio-panel" onclick="toggleRadio()">
-                RADIO CHIP<br>
-                <span id="radio-status" style="font-size: 11px; color: #fff;">[ OFF ]</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="instructions">WASD: Move/Steer | Approach block car & press 'DRIVE'</div>
-    
-    <div id="joystick-zone">
-        <div id="joystick-handle"></div>
-    </div>
 
     <div id="win-screen">
-        <h1>LEVEL CLEARED!</h1>
-        <p>You survived the pixel market crash!</p>
-        <button onclick="location.reload()">PLAY AGAIN</button>
+        <h1>STREET EXPLORED!</h1>
+        <p>You checked out all the pixel storefronts!</p>
+        <button onclick="location.reload()">EXPLORE AGAIN</button>
     </div>
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1e293b); 
+        scene.background = new THREE.Color(0x38bdf8); // Sunny daytime sky
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(1); // Enforce rigid low-res pixel sizing
+        renderer.setPixelRatio(1);
         document.body.appendChild(renderer.domElement);
 
-        // Flat retro directional lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+        const ambientLight = new THREE.AmbientLight(0xfffbeb, 1.0);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        sunLight.position.set(50, 100, 50);
+        const sunLight = new THREE.DirectionalLight(0xfef08a, 1.2);
+        sunLight.position.set(40, 100, 40);
         scene.add(sunLight);
 
-        // --- RETRO PIXEL GRID TEXTURE GENERATOR ---
-        function createPixelGridTexture() {
+        // --- PROCEDURAL PIXEL TEXTURES (Bricks, Cobblestone, Awnings) ---
+        function createPixelTexture(drawFunction, width = 32, height = 32) {
             let canvas = document.createElement('canvas');
-            canvas.width = 16; canvas.height = 16;
+            canvas.width = width; canvas.height = height;
             let ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#15803d'; // Base pixel green
-            ctx.fillRect(0, 0, 16, 16);
-            
-            // Draw pixel grid pattern
-            ctx.fillStyle = '#166534';
-            ctx.fillRect(0, 0, 8, 8);
-            ctx.fillRect(8, 8, 8, 8);
-
+            drawFunction(ctx, width, height);
             let texture = new THREE.CanvasTexture(canvas);
             texture.magFilter = THREE.NearestFilter;
             texture.minFilter = THREE.NearestFilter;
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(120, 120);
             return texture;
         }
 
-        const groundGeo = new THREE.PlaneGeometry(800, 800);
-        const groundMat = new THREE.MeshBasicMaterial({ map: createPixelGridTexture() });
+        // Cobblestone Street Texture
+        const streetTexture = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#475569';
+            for (let y = 0; y < h; y += 4) {
+                for (let x = (y/4)%2 === 0 ? 0 : 4; x < w; x += 8) {
+                    ctx.fillRect(x, y, 7, 3);
+                }
+            }
+        }, 32, 32);
+        streetTexture.repeat.set(40, 40);
+
+        // Red Brick Building Texture
+        const brickTexture = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#7f1d1d'; // Deep red brick base
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#450a0a'; // Mortar lines
+            for (let y = 0; y < h; y += 8) {
+                ctx.fillRect(0, y, w, 2);
+                let offset = (y / 8) % 2 === 0 ? 0 : 8;
+                for (let x = offset; x < w; x += 16) {
+                    ctx.fillRect(x, y, 2, 8);
+                }
+            }
+        }, 32, 32);
+        brickTexture.repeat.set(4, 4);
+
+        // Ground/Sidewalk plane
+        const groundGeo = new THREE.PlaneGeometry(500, 500);
+        const groundMat = new THREE.MeshBasicMaterial({ map: streetTexture });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.position.y = -1.0;
         scene.add(ground);
 
-        // --- BLOCKY ROAD SYSTEM ---
+        // --- STREET BUILDINGS & SHOPS ---
         const solidColliders = [];
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        const roadMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-
-        function createPixelRoad(x, z, width, length, rotation = 0) {
+        function createStorefront(x, z, rotY, storeName, awningColor) {
             let group = new THREE.Group();
-            let road = new THREE.Mesh(new THREE.PlaneGeometry(width, length), roadMat);
-            road.rotation.x = -Math.PI / 2;
-            group.add(road);
 
-            for (let i = -length / 2 + 2; i < length / 2; i += 4) {
-                let line = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 1.5), lineMat);
-                line.rotation.x = -Math.PI / 2;
-                line.position.y = 0.01;
-                if (rotation === 0) line.position.z = i;
-                else line.position.x = i;
-                group.add(line);
-            }
-            group.position.set(x, -0.98, z);
-            group.rotation.y = rotation;
-            scene.add(group);
-        }
+            // Main Building Facade
+            let facadeMat = new THREE.MeshBasicMaterial({ map: brickTexture });
+            let facade = new THREE.Mesh(new THREE.BoxGeometry(16, 14, 12), facadeMat);
+            facade.position.y = 6;
+            group.add(facade);
+            solidColliders.push({ x: x, z: z, sizeX: 16, sizeZ: 12 });
 
-        const trackWidth = 16;
-        const trackSize = 120;
-        createPixelRoad(0, -trackSize, trackWidth, trackSize * 2, 0);
-        createPixelRoad(0, trackSize, trackWidth, trackSize * 2, 0);
-        createPixelRoad(-trackSize, 0, trackWidth, trackSize * 2, Math.PI / 2);
-        createPixelRoad(trackSize, 0, trackWidth, trackSize * 2, Math.PI / 2);
-
-        // --- BLOCK BUILDINGS ---
-        function createPixelBuilding(x, z, height, color, signText) {
-            let group = new THREE.Group();
-            let mat = new THREE.MeshBasicMaterial({ color: color });
-            let box = new THREE.Mesh(new THREE.BoxGeometry(8, height, 8), mat);
-            box.position.y = height / 2 - 1.0;
-            group.add(box);
-
-            // Roof trim block
-            let trimMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-            let trim = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.8, 8.4), trimMat);
-            trim.position.y = height - 1.0;
-            group.add(trim);
+            // Pixel Awning (Store Canopy)
+            let awningCanvas = createPixelTexture((ctx, w, h) => {
+                ctx.fillStyle = awningColor;
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#fff';
+                for (let i = 0; i < w; i += 8) {
+                    ctx.fillRect(i, 0, 4, h);
+                }
+            }, 16, 16);
+            
+            let awningMat = new THREE.MeshBasicMaterial({ map: awningCanvas });
+            let awning = new THREE.Mesh(new THREE.BoxGeometry(16, 1, 6), awningMat);
+            awning.position.set(0, 0, 7);
+            awning.rotation.x = 0.3;
+            group.add(awning);
 
             group.position.set(x, 0, z);
+            group.rotation.y = rotY;
             scene.add(group);
-            solidColliders.push({ x: x, z: z, sizeX: 8, sizeZ: 8 });
 
+            // Floating Retro Sign
             let signEl = document.createElement('div');
             signEl.className = 'building-sign';
-            signEl.innerText = signText;
+            signEl.innerText = storeName;
             speechOverlay.appendChild(signEl);
-            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: height + 0.5 });
+            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 14.5 });
         }
 
-        createPixelBuilding(-60, -60, 10, 0x3b82f6, "Block Bank");
-        createPixelBuilding(60, -60, 14, 0xef4444, "Rug HQ");
-        createPixelBuilding(-60, 60, 8, 0x10b981, "Pixel Mart");
-        createPixelBuilding(60, 60, 12, 0xa855f7, "Token Arcade");
+        // Build a cozy pixel street corridor
+        createStorefront(-20, -30, 0, "PIXEL BAKERY", "#f97316");
+        createStorefront(20, -30, 0, "GENERAL STORE", "#10b981");
+        createStorefront(-20, 30, Math.PI, "COFFEE SHOP", "#eab308");
+        createStorefront(20, 30, Math.PI, "ARCADE GAMES", "#ec4899");
 
-        // --- BLOCKY CARS ---
-        const drivableVehicles = [];
-        let currentVehicle = null;
-
-        function createPixelCar(x, z, color, rotationY = 0) {
-            let carGroup = new THREE.Group();
-            let bodyMat = new THREE.MeshBasicMaterial({ color: color });
-            let body = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 4), bodyMat);
-            body.position.y = -0.5;
-            carGroup.add(body);
-
-            let roofMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            let roof = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 2), roofMat);
-            roof.position.set(0, 0.2, -0.2);
-            carGroup.add(roof);
-
-            carGroup.position.set(x, 0, z);
-            carGroup.rotation.y = rotationY;
-            scene.add(carGroup);
-
-            let carObj = { mesh: carGroup, x: x, z: z, rotationY: rotationY, speed: 0 };
-            drivableVehicles.push(carObj);
-            return carObj;
-        }
-
-        createPixelCar(-20, -90, 0xef4444, 0);
-        createPixelCar(20, 90, 0x3b82f6, Math.PI);
-
-        // Collectibles (Pixel Cubes)
+        // Collectibles / Shops to visit
         let score = 0;
-        let packagesCollected = 0;
-        const totalPackages = 4;
+        let visitedCount = 0;
         let gameWon = false;
         const interactiveObjects = [];
 
-        function createPixelBlockItem(x, z) {
-            let item = new THREE.Mesh(
-                new THREE.BoxGeometry(1.2, 1.2, 1.2),
+        function createShopCoin(x, z) {
+            let coin = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 1.5, 1.5),
                 new THREE.MeshBasicMaterial({ color: 0xfacc15 })
             );
-            item.position.set(x, -0.4, z);
-            item.userData = { type: 'item', x: x, z: z };
-            scene.add(item);
-            interactiveObjects.push(item);
+            coin.position.set(x, -0.2, z);
+            coin.userData = { x: x, z: z };
+            scene.add(coin);
+            interactiveObjects.push(coin);
         }
 
-        createPixelBlockItem(-40, -40);
-        createPixelBlockItem(40, -40);
-        createPixelBlockItem(-40, 40);
-        createPixelBlockItem(40, 40);
+        createShopCoin(-20, -15);
+        createShopCoin(20, -15);
+        createShopCoin(-20, 15);
+        createShopCoin(20, 15);
 
-        let exitZone = new THREE.Mesh(
-            new THREE.BoxGeometry(6, 0.1, 6),
-            new THREE.MeshBasicMaterial({ color: 0x22c55e })
-        );
-        exitZone.position.set(0, -0.95, -100);
-        scene.add(exitZone);
-
-        // Player State & Inputs
-        let playerPos = new THREE.Vector3(0, 0, 70);
+        // Player controls
+        let playerPos = new THREE.Vector3(0, 0, 50);
         camera.position.copy(playerPos);
         let yaw = 0, pitch = 0;
         const playerRadius = 0.4;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        let joystickX = 0, joystickY = 0;
-        let nearbyCar = null;
-
-        // Sound synthesizer
-        let audioCtx = null, radioPlaying = false, musicInterval = null;
-        function toggleRadio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            radioPlaying = !radioPlaying;
-            let statusEl = document.getElementById("radio-status");
-            if (radioPlaying) {
-                statusEl.innerText = "[ CHIP-BEATS ON ]";
-                statusEl.style.color = "#22c55e";
-                musicInterval = setInterval(() => {
-                    if (!radioPlaying || !audioCtx) return;
-                    let osc = audioCtx.createOscillator();
-                    let gain = audioCtx.createGain();
-                    osc.type = 'square'; // 8-bit square wave
-                    osc.frequency.value = [150, 200, 300, 400][Math.floor(Math.random()*4)];
-                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-                }, 300);
-            } else {
-                statusEl.innerText = "[ OFF ]";
-                statusEl.style.color = "#fff";
-                if (musicInterval) clearInterval(musicInterval);
-            }
-        }
-
-        function toggleVehicleMode() {
-            if (!currentVehicle && nearbyCar) {
-                currentVehicle = nearbyCar;
-                document.getElementById("action-btn").innerText = "EXIT CAR";
-                document.getElementById("package-text").innerText = `BLOCKS: ${packagesCollected}/${totalPackages} | MODE: DRIVING`;
-                document.getElementById("cockpit-dash").style.display = "block";
-            } else if (currentVehicle) {
-                playerPos.copy(currentVehicle.mesh.position);
-                playerPos.x += 2.0;
-                currentVehicle = null;
-                document.getElementById("action-btn").style.display = "none";
-                document.getElementById("action-btn").innerText = "DRIVE PIXEL CAR";
-                document.getElementById("package-text").innerText = `BLOCKS: ${packagesCollected}/${totalPackages} | MODE: ON FOOT`;
-                document.getElementById("cockpit-dash").style.display = "none";
-                if (radioPlaying) toggleRadio();
-            }
-        }
 
         renderer.domElement.addEventListener('click', () => {
-            if (!('ontouchstart' in window) && document.pointerLockElement !== document.body && !currentVehicle) {
+            if (document.pointerLockElement !== document.body) {
                 document.body.requestPointerLock();
             }
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== document.body || gameWon || currentVehicle) return;
+            if (document.pointerLockElement !== document.body || gameWon) return;
             yaw -= e.movementX * 0.003;
             pitch -= e.movementY * 0.003;
             pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
@@ -524,7 +284,6 @@
             if (e.code === 'KeyS') moveBackward = true;
             if (e.code === 'KeyA') moveLeft = true;
             if (e.code === 'KeyD') moveRight = true;
-            if (e.code === 'KeyE') toggleVehicleMode();
         });
         document.addEventListener('keyup', (e) => {
             if (e.code === 'KeyW') moveForward = false;
@@ -533,47 +292,11 @@
             if (e.code === 'KeyD') moveRight = false;
         });
 
-        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-        if (isTouchDevice) {
-            document.getElementById('joystick-zone').style.display = 'block';
-            let joystickZone = document.getElementById('joystick-zone');
-            let joystickHandle = document.getElementById('joystick-handle');
-            let touchId = null, centerPos = { x: 0, y: 0 };
-
-            joystickZone.addEventListener('touchstart', (e) => {
-                if (touchId !== null) return;
-                let touch = e.changedTouches[0];
-                touchId = touch.identifier;
-                let rect = joystickZone.getBoundingClientRect();
-                centerPos.x = rect.left + rect.width / 2;
-                centerPos.y = rect.top + rect.height / 2;
-            });
-
-            joystickZone.addEventListener('touchmove', (e) => {
-                for (let i = 0; i < e.changedTouches.length; i++) {
-                    let touch = e.changedTouches[i];
-                    if (touch.identifier === touchId) {
-                        let dx = touch.clientX - centerPos.x;
-                        let dy = touch.clientY - centerPos.y;
-                        let dist = Math.hypot(dx, dy), maxDist = 40;
-                        if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
-                        joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
-                        joystickX = dx / maxDist;
-                        joystickY = dy / maxDist;
-                    }
-                }
-            });
-
-            joystickZone.addEventListener('touchend', () => {
-                touchId = null; joystickX = 0; joystickY = 0;
-                joystickHandle.style.transform = `translate(0px, 0px)`;
-            });
-        }
-
         function checkCollision(x, z) {
             for (let obj of solidColliders) {
-                let half = obj.sizeX / 2;
-                if (x + playerRadius > obj.x - half && x - playerRadius < obj.x + half && z + playerRadius > obj.z - half && z - playerRadius < obj.z + half) {
+                let halfX = obj.sizeX / 2;
+                let halfZ = obj.sizeZ / 2;
+                if (x + playerRadius > obj.x - halfX && x - playerRadius < obj.x + halfX && z + playerRadius > obj.z - halfZ && z - playerRadius < obj.z + halfZ) {
                     return true;
                 }
             }
@@ -589,73 +312,30 @@
             prevTime = time;
 
             if (!gameWon) {
-                if (!currentVehicle) {
-                    let speed = 8.0 * delta;
-                    let dir = new THREE.Vector3();
-                    if (moveForward) dir.z -= 1;
-                    if (moveBackward) dir.z += 1;
-                    if (moveLeft) dir.x -= 1;
-                    if (moveRight) dir.x += 1;
+                let speed = 7.0 * delta;
+                let dir = new THREE.Vector3();
+                if (moveForward) dir.z -= 1;
+                if (moveBackward) dir.z += 1;
+                if (moveLeft) dir.x -= 1;
+                if (moveRight) dir.x += 1;
 
-                    if (isTouchDevice) {
-                        if (Math.abs(joystickX) > 0.1) yaw -= joystickX * 2.0 * delta;
-                        if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
-                    }
-
-                    if (dir.lengthSq() > 0) {
-                        dir.normalize();
-                        dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                        let nx = playerPos.x + dir.x * speed;
-                        let nz = playerPos.z + dir.z * speed;
-                        if (!checkCollision(nx, playerPos.z)) playerPos.x = nx;
-                        if (!checkCollision(playerPos.x, nz)) playerPos.z = nz;
-                    }
-
-                    camera.rotation.set(pitch, yaw, 0, 'YXZ');
-                    camera.position.copy(playerPos);
-                    camera.position.y = 0;
-
-                    nearbyCar = null;
-                    for (let car of drivableVehicles) {
-                        if (playerPos.distanceTo(car.mesh.position) < 4.5) {
-                            nearbyCar = car;
-                            break;
-                        }
-                    }
-                    document.getElementById("action-btn").style.display = nearbyCar ? "block" : "none";
-                } else {
-                    // Driving mode
-                    if (moveForward || joystickY < -0.1) currentVehicle.speed += 12 * delta;
-                    else if (moveBackward || joystickY > 0.1) currentVehicle.speed -= 10 * delta;
-                    else currentVehicle.speed *= 0.92;
-
-                    currentVehicle.speed = Math.max(-10, Math.min(25, currentVehicle.speed));
-
-                    let turnInput = 0;
-                    if (moveLeft || joystickX < -0.1) turnInput = 1;
-                    if (moveRight || joystickX > 0.1) turnInput = -1;
-
-                    currentVehicle.rotationY += 2.5 * delta * turnInput * Math.sign(currentVehicle.speed || 1);
-                    let moveDir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentVehicle.rotationY);
-                    
-                    currentVehicle.x += moveDir.x * currentVehicle.speed * delta;
-                    currentVehicle.z += moveDir.z * currentVehicle.speed * delta;
-
-                    currentVehicle.mesh.position.set(currentVehicle.x, 0, currentVehicle.z);
-                    currentVehicle.mesh.rotation.y = currentVehicle.rotationY;
-
-                    let cockpitPos = currentVehicle.mesh.position.clone().add(new THREE.Vector3(0, 0.4, -0.2));
-                    camera.position.copy(cockpitPos);
-                    camera.lookAt(cockpitPos.clone().add(new THREE.Vector3(0, 0, -10).applyAxisAngle(new THREE.Vector3(0, 1, 0), currentVehicle.rotationY)));
-                    playerPos.copy(currentVehicle.mesh.position);
-
-                    document.getElementById("dash-speed").innerText = Math.round(Math.abs(currentVehicle.speed) * 5);
+                if (dir.lengthSq() > 0) {
+                    dir.normalize();
+                    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                    let nx = playerPos.x + dir.x * speed;
+                    let nz = playerPos.z + dir.z * speed;
+                    if (!checkCollision(nx, playerPos.z)) playerPos.x = nx;
+                    if (!checkCollision(playerPos.x, nz)) playerPos.z = nz;
                 }
+
+                camera.rotation.set(pitch, yaw, 0, 'YXZ');
+                camera.position.copy(playerPos);
+                camera.position.y = 0;
 
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
-                    if (vector.z < 1 && dist < 50) {
+                    if (vector.z < 1 && dist < 40) {
                         b.signElement.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         b.signElement.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         b.signElement.style.display = 'block';
@@ -668,19 +348,17 @@
                     if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 2.0) {
                         scene.remove(obj);
                         interactiveObjects.splice(index, 1);
-                        score += 500;
-                        packagesCollected++;
-                        let modeText = currentVehicle ? "DRIVING" : "ON FOOT";
-                        document.getElementById("score-text").innerText = `RUG VILLE CASH: $${score}`;
-                        document.getElementById("package-text").innerText = `BLOCKS: ${packagesCollected}/${totalPackages} | MODE: ${modeText}`;
+                        score += 250;
+                        visitedCount++;
+                        document.getElementById("score-text").innerText = `CASH: $${score}`;
+                        document.getElementById("package-text").innerText = `STORES VISITED: ${visitedCount}/4`;
+                        if (visitedCount >= 4) {
+                            gameWon = true;
+                            if (document.pointerLockElement) document.exitPointerLock();
+                            document.getElementById("win-screen").style.display = "block";
+                        }
                     }
                 });
-
-                if (Math.hypot(playerPos.x - exitZone.position.x, playerPos.z - exitZone.position.z) < 4 && packagesCollected >= totalPackages) {
-                    gameWon = true;
-                    if (document.pointerLockElement) document.exitPointerLock();
-                    document.getElementById("win-screen").style.display = "block";
-                }
             }
 
             renderer.render(scene, camera);
