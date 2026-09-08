@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Ultra Detail Edition</title>
+    <title>Rug Ville - Ultimate Next-Gen Retro Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #1e1b4b;
+            background-color: #09090b;
             color: #fff;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
@@ -22,15 +22,15 @@
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            background: #0f172a;
+            background: #09090b;
             border: 3px solid #facc15;
             padding: 6px 15px;
             font-weight: bold;
             font-size: 11px;
             letter-spacing: 1px;
             color: #facc15;
-            box-shadow: 3px 3px 0px #000;
-            z-index: 10;
+            box-shadow: 4px 4px 0px #000;
+            z-index: 20;
             pointer-events: none;
             white-space: nowrap;
         }
@@ -40,23 +40,23 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.96);
+            background: rgba(9, 9, 11, 0.96);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: #facc15;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             text-align: center;
             cursor: pointer;
-            z-index: 50;
+            z-index: 100;
             padding: 20px;
         }
         #click-prompt span {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 10px;
+            font-size: 13px;
+            color: #a1a1aa;
+            margin-top: 12px;
         }
         #crosshair {
             position: absolute;
@@ -68,35 +68,45 @@
             background-color: #facc15;
             border: 2px solid #000;
             pointer-events: none;
-            z-index: 10;
+            z-index: 20;
             display: none;
+        }
+        /* CRT Scanlines Overlay */
+        #crt-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 15;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
         }
         #joystick-zone {
             position: absolute;
             bottom: 35px;
             left: 35px;
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 3px solid rgba(255, 255, 255, 0.4);
+            width: 130px;
+            height: 130px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 3px solid rgba(255, 255, 255, 0.35);
             border-radius: 50%;
-            z-index: 20;
+            z-index: 25;
             display: none;
         }
         #joystick-handle {
             position: absolute;
-            top: 36px;
-            left: 36px;
-            width: 48px;
-            height: 48px;
+            top: 40px;
+            left: 40px;
+            width: 44px;
+            height: 44px;
             background: #facc15;
             border: 2px solid #000;
             border-radius: 50%;
             pointer-events: none;
+            box-shadow: 2px 2px 0px #000;
         }
         .building-sign {
             position: absolute;
-            background: #1e1b4b;
+            background: #18181b;
             color: #facc15;
             border: 3px solid #facc15;
             padding: 3px 8px;
@@ -112,7 +122,7 @@
         .npc-speech {
             position: absolute;
             background: #ffffff;
-            color: #0f172a;
+            color: #09090b;
             border: 2px solid #000;
             padding: 4px 8px;
             font-size: 9px;
@@ -121,26 +131,26 @@
             transform: translate(-50%, -120%);
             display: none;
             box-shadow: 2px 2px 0px #000;
-            z-index: 12;
+            z-index: 20;
         }
         #win-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #0f172a;
+            background: #09090b;
             border: 6px solid #22c55e;
-            padding: 30px;
+            padding: 35px;
             text-align: center;
             display: none;
-            z-index: 35;
+            z-index: 110;
             box-shadow: 8px 8px 0px #000;
             color: #fff;
         }
         #win-screen h1 { color: #22c55e; margin-top: 0; }
         #win-screen button {
-            margin-top: 15px;
-            padding: 10px 20px;
+            margin-top: 20px;
+            padding: 12px 24px;
             background: #22c55e;
             color: white;
             border: 4px solid #000;
@@ -155,10 +165,11 @@
 <body>
 
     <div id="click-prompt">
-        ENTER ULTRA RUG VILLE
-        <span>[ High-Detail Textures & Joystick Steering ]</span>
+        ENTER ULTIMATE RUG VILLE
+        <span>[ True 3D Voxel Characters, Dynamic Neon Shaders, & CRT Arcade Overlays ]</span>
     </div>
 
+    <div id="crt-overlay"></div>
     <div id="crosshair"></div>
     <div id="ui">
         <span id="score-text">CASH: $0</span>
@@ -171,15 +182,15 @@
     <div id="speech-overlay"></div>
 
     <div id="win-screen">
-        <h1>AVENUE CONQUERED!</h1>
-        <p>Maximum alpha achieved!</p>
-        <button onclick="location.reload()">PLAY AGAIN</button>
+        <h1>LEGENDARY STATUS!</h1>
+        <p>You conquered the ultimate dgen boulevard!</p>
+        <button onclick="location.reload()">RUN IT BACK</button>
     </div>
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0284c7);
-        scene.fog = new THREE.FogExp2(0x0284c7, 0.015);
+        scene.background = new THREE.Color(0x050508);
+        scene.fog = new THREE.FogExp2(0x050508, 0.012);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -189,17 +200,16 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+        const ambientLight = new THREE.AmbientLight(0x38bdf8, 0.6);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfef08a, 1.2);
-        sunLight.position.set(50, 120, 50);
-        sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 1024;
-        sunLight.shadow.mapSize.height = 1024;
-        scene.add(sunLight);
+        // Moody night-time street lighting with glowing point sources
+        const streetLight = new THREE.DirectionalLight(0xf43f5e, 0.8);
+        streetLight.position.set(30, 80, 30);
+        streetLight.castShadow = true;
+        scene.add(streetLight);
 
-        // --- ULTRA-DETAIL PROCEDURAL PIXEL TEXTURES (128x128) ---
+        // --- HIGH-END PROCEDURAL TEXTURES ---
         function createPixelTexture(drawFunction, width = 128, height = 128) {
             let canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
@@ -213,103 +223,84 @@
             return texture;
         }
 
-        // Detailed Street Asphalt with markings and grit
         const roadTex = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#334155'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#18181b'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#27272a';
             for (let y = 0; y < h; y += 8) {
                 for (let x = (y/8)%2 === 0 ? 0 : 8; x < w; x += 16) {
                     ctx.fillRect(x, y, 14, 6);
                 }
             }
-            // Center yellow divider striping
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(w/2 - 4, 0, 8, h);
-            ctx.fillStyle = '#334155';
-            for (let y = 0; y < h; y += 32) ctx.fillRect(w/2 - 4, y, 8, 16);
+            // Neon glowing cyberpunk striping down center road
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(w/2 - 3, 0, 6, h);
+            ctx.fillStyle = '#18181b';
+            for (let y = 0; y < h; y += 24) ctx.fillRect(w/2 - 3, y, 6, 12);
         }, 128, 128);
-        roadTex.repeat.set(1, 100);
+        roadTex.repeat.set(1, 120);
 
-        // Intricate High-Definition Brick Facade
-        const brickTex = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#450a0a'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#1a0202'; // Deep mortar lines
+        const neonBrickTex = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#09090b'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#2b1b3d'; // Deep cyber brick base
             for (let y = 0; y < h; y += 16) {
-                ctx.fillRect(0, y, w, 3);
+                ctx.fillRect(0, y, w, 2);
                 let offset = (y / 16) % 2 === 0 ? 0 : 16;
-                for (let x = offset; x < w; x += 32) {
-                    ctx.fillRect(x, y, 3, 16);
-                }
-            }
-            // Multi-toned brick texture detailing
-            ctx.fillStyle = '#7f1d1d';
-            for (let y = 3; y < h; y += 16) {
-                let offset = (y / 16) % 2 === 0 ? 0 : 16;
-                for (let x = offset + 3; x < w; x += 32) {
-                    ctx.fillRect(x, y, 26, 11);
-                }
+                for (let x = offset; x < w; x += 32) ctx.fillRect(x, y, 2, 16);
             }
         }, 128, 128);
-        brickTex.repeat.set(4, 4);
-
-        // Store Glass & Neon Interior Glow
-        const windowTex = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#38bdf8'; // neon interior panel
-            ctx.fillRect(16, 16, w - 32, h - 32);
-            ctx.fillStyle = '#facc15'; // display items inside
-            ctx.fillRect(32, 48, w - 64, 16);
-        }, 128, 128);
+        neonBrickTex.repeat.set(4, 5);
 
         // --- ENVIRONMENT SETUP ---
-        let road = new THREE.Mesh(new THREE.PlaneGeometry(20, 500), new THREE.MeshBasicMaterial({ map: roadTex }));
+        let road = new THREE.Mesh(new THREE.PlaneGeometry(22, 600), new THREE.MeshStandardMaterial({ map: roadTex, roughness: 0.5 }));
         road.rotation.x = -Math.PI / 2;
         road.position.y = -0.99;
         road.receiveShadow = true;
         scene.add(road);
 
-        const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
-        let leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(12, 500), sidewalkMat);
+        const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.9 });
+        let leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(14, 600), sidewalkMat);
         leftSidewalk.rotation.x = -Math.PI / 2;
-        leftSidewalk.position.set(-16, -0.98, 0);
+        leftSidewalk.position.set(-18, -0.98, 0);
         leftSidewalk.receiveShadow = true;
         scene.add(leftSidewalk);
 
-        let rightSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(12, 500), sidewalkMat);
+        let rightSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(14, 600), sidewalkMat);
         rightSidewalk.rotation.x = -Math.PI / 2;
-        rightSidewalk.position.set(16, -0.98, 0);
+        rightSidewalk.position.set(18, -0.98, 0);
         rightSidewalk.receiveShadow = true;
         scene.add(rightSidewalk);
 
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        // Detailed Storefront Blocks with Architectural Trims and Window Inserts
-        function createUltraStorefront(x, z, storeName, wallColorHex) {
+        // Masterpiece Cyber-Storefronts with Glowing Neon Trim
+        function createCyberShop(x, z, storeName, wallColor) {
             let group = new THREE.Group();
 
             let facade = new THREE.Mesh(
-                new THREE.BoxGeometry(16, 20, 14), 
-                new THREE.MeshStandardMaterial({ color: wallColorHex, roughness: 0.9 })
+                new THREE.BoxGeometry(18, 24, 16), 
+                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.3, metalness: 0.2 })
             );
-            facade.position.y = 9;
+            facade.position.y = 11;
             facade.castShadow = true;
             facade.receiveShadow = true;
             group.add(facade);
 
-            let displayWindow = new THREE.Mesh(
-                new THREE.BoxGeometry(10, 8, 0.5), 
-                new THREE.MeshBasicMaterial({ map: windowTex })
+            // Glowing Cyber Window
+            let windowMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(10, 10, 0.5), 
+                new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
             );
-            displayWindow.position.set(0, 4, 7.1);
-            group.add(displayWindow);
+            windowMesh.position.set(0, 4, 8.1);
+            group.add(windowMesh);
 
-            let roofTrim = new THREE.Mesh(
-                new THREE.BoxGeometry(17.5, 1.5, 15.5), 
-                new THREE.MeshStandardMaterial({ color: 0xfacc15 })
+            // Bright Neon Roof Trim
+            let neonTrim = new THREE.Mesh(
+                new THREE.BoxGeometry(19, 1.2, 17), 
+                new THREE.MeshBasicMaterial({ color: 0xf43f5e })
             );
-            roofTrim.position.y = 19.5;
-            group.add(roofTrim);
+            neonTrim.position.y = 23.4;
+            group.add(neonTrim);
 
             group.position.set(x, 0, z);
             scene.add(group);
@@ -318,37 +309,49 @@
             signEl.className = 'building-sign';
             signEl.innerText = storeName;
             speechOverlay.appendChild(signEl);
-            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 20.5 });
+            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 24.5 });
         }
 
-        for (let z = -150; z <= 150; z += 50) {
-            createUltraStorefront(-25, z, "ALPHA CALLS", 0x7f1d1d);
-            createUltraStorefront(25, z, "PUMP & DUMP", 0x1e3a8a);
+        for (let z = -180; z <= 180; z += 60) {
+            createCyberShop(-28, z, "LEVERAGE 100X", 0x18181b);
+            createCyberShop(28, z, "LIQUIDATION HQ", 0x18181b);
         }
 
-        // --- HIGH-DETAIL WALKING NPCS ---
-        const degenSlang = [
-            "WAGMI BRO!", "BUY THE DIP!", "TO THE MOON 🚀", 
-            "TOTAL RUG PULL...", "DIAMOND HANDS 💎", "SEND IT! 📈", "BULLISH AF"
-        ];
-        
+        // --- TRUE 3D VOXEL CHARACTERS ---
         const pedestrians = [];
-        function createWalkingDegen(x, z, rangeZ) {
-            let canvas = document.createElement('canvas');
-            canvas.width = 64; canvas.height = 128;
-            let ctx = canvas.getContext('2d');
-            // Enhanced multi-pixel character render
-            ctx.fillStyle = '#f97316'; ctx.fillRect(16, 8, 32, 32); // Hoodie
-            ctx.fillStyle = '#22c55e'; ctx.fillRect(12, 40, 40, 44); // Jacket
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(16, 84, 12, 40); ctx.fillRect(36, 84, 12, 40); // Pants
+        const degenSlang = [
+            "100X LONG OPENED 🚀", "LIQUIDATED AGAIN...", "DIAMOND HANDS 💎", 
+            "DEV PROMISED NO RUG", "GAS FEES ARE INSANE", "SEND IT TO VALHALLA"
+        ];
 
-            let texture = new THREE.CanvasTexture(canvas);
-            texture.magFilter = THREE.NearestFilter;
-            
-            let sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
-            sprite.scale.set(2.6, 5.0, 1);
-            sprite.position.set(x, 1.4, z);
-            scene.add(sprite);
+        function createTrue3DVoxelNPC(x, z, rangeZ) {
+            let npcGroup = new THREE.Group();
+
+            // Voxel Body Blocks
+            let bodyMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.4 });
+            let headMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.4 });
+            let legMat = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.6 });
+
+            let torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), bodyMat);
+            torso.position.y = 1.7;
+            torso.castShadow = true;
+            npcGroup.add(torso);
+
+            let head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), headMat);
+            head.position.y = 2.7;
+            head.castShadow = true;
+            npcGroup.add(head);
+
+            let leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2, 0.4), legMat);
+            leftLeg.position.set(-0.3, 0.6, 0);
+            npcGroup.add(leftLeg);
+
+            let rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2, 0.4), legMat);
+            rightLeg.position.set(0.3, 0.6, 0);
+            npcGroup.add(rightLeg);
+
+            npcGroup.position.set(x, 0, z);
+            scene.add(npcGroup);
 
             let bubble = document.createElement('div');
             bubble.className = 'npc-speech';
@@ -360,20 +363,20 @@
             }, 3000 + Math.random() * 3000);
 
             pedestrians.push({
-                sprite: sprite,
+                group: npcGroup,
                 bubble: bubble,
                 x: x,
                 z: z,
                 minZ: z - rangeZ,
                 maxZ: z + rangeZ,
-                speed: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1)
+                speed: (Math.random() * 2.5 + 1.5) * (Math.random() > 0.5 ? 1 : -1)
             });
         }
 
-        createWalkingDegen(-14, -60, 40);
-        createWalkingDegen(14, -20, 40);
-        createWalkingDegen(-14, 40, 40);
-        createWalkingDegen(14, 80, 40);
+        createTrue3DVoxelNPC(-16, -70, 45);
+        createTrue3DVoxelNPC(16, -20, 45);
+        createTrue3DVoxelNPC(-16, 50, 50);
+        createTrue3DVoxelNPC(16, 90, 50);
 
         // --- COLLECTIBLES ---
         let score = 0, collected = 0, gameWon = false;
@@ -381,23 +384,23 @@
 
         function spawnItem(x, z) {
             let item = new THREE.Mesh(
-                new THREE.BoxGeometry(1.5, 1.5, 1.5),
-                new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.2, metalness: 0.8 })
+                new THREE.BoxGeometry(1.6, 1.6, 1.6),
+                new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.1, metalness: 0.9, emissive: 0xca8a04, emissiveIntensity: 0.4 })
             );
-            item.position.set(x, -0.2, z);
+            item.position.set(x, -0.1, z);
             item.userData = { x: x, z: z };
             item.castShadow = true;
             scene.add(item);
             interactiveObjects.push(item);
         }
 
-        spawnItem(-14, -40);
-        spawnItem(14, -10);
-        spawnItem(-14, 30);
-        spawnItem(14, 60);
+        spawnItem(-16, -50);
+        spawnItem(16, -10);
+        spawnItem(-16, 40);
+        spawnItem(16, 80);
 
         // --- CONTROLS & CAMERA STATE ---
-        let playerPos = new THREE.Vector3(0, 1.6, 110);
+        let playerPos = new THREE.Vector3(0, 1.6, 130);
         camera.position.copy(playerPos);
         let yaw = 0, pitch = 0;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
@@ -431,7 +434,7 @@
             lastX = e.clientX; lastY = e.clientY;
         });
 
-        // Joystick Controls (Horizontal turns screen, Vertical walks)
+        // Joystick Controls (Steering + Turning)
         const joystickZone = document.getElementById('joystick-zone');
         const joystickHandle = document.getElementById('joystick-handle');
         let touchId = null, centerPos = { x: 0, y: 0 };
@@ -451,7 +454,7 @@
                 if (touch.identifier === touchId) {
                     let dx = touch.clientX - centerPos.x;
                     let dy = touch.clientY - centerPos.y;
-                    let dist = Math.hypot(dx, dy), maxDist = 40;
+                    let dist = Math.hypot(dx, dy), maxDist = 45;
                     if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
                     joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
                     joystickX = dx / maxDist;
@@ -489,10 +492,10 @@
 
             if (!gameWon) {
                 if (Math.abs(joystickX) > 0.1) {
-                    yaw -= joystickX * 2.2 * delta;
+                    yaw -= joystickX * 2.4 * delta;
                 }
 
-                let speed = 9.0 * delta;
+                let speed = 9.5 * delta;
                 let dir = new THREE.Vector3();
                 if (moveForward) dir.z -= 1;
                 if (moveBackward) dir.z += 1;
@@ -508,20 +511,21 @@
                     playerPos.z += dir.z * speed;
                 }
 
-                playerPos.x = Math.max(-14, Math.min(14, playerPos.x));
+                playerPos.x = Math.max(-16, Math.min(16, playerPos.x));
                 playerPos.y = 1.6;
 
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.copy(playerPos);
 
+                // Animate Voxel NPCs & Speech Bubbles
                 pedestrians.forEach(npc => {
                     npc.z += npc.speed * delta;
                     if (npc.z > npc.maxZ || npc.z < npc.minZ) npc.speed *= -1;
-                    npc.sprite.position.z = npc.z;
+                    npc.group.position.z = npc.z;
 
-                    let vector = new THREE.Vector3(npc.x, 2.6, npc.z).project(camera);
-                    let dist = camera.position.distanceTo(npc.sprite.position);
-                    if (vector.z < 1 && dist < 45) {
+                    let vector = new THREE.Vector3(npc.x, 3.2, npc.z).project(camera);
+                    let dist = camera.position.distanceTo(npc.group.position);
+                    if (vector.z < 1 && dist < 50) {
                         npc.bubble.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         npc.bubble.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         npc.bubble.style.display = 'block';
@@ -530,10 +534,11 @@
                     }
                 });
 
+                // Render Building Signs
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
-                    if (vector.z < 1 && dist < 65) {
+                    if (vector.z < 1 && dist < 70) {
                         b.signElement.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         b.signElement.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         b.signElement.style.display = 'block';
@@ -542,11 +547,12 @@
                     }
                 });
 
+                // Item Collection Check
                 interactiveObjects.forEach((obj, index) => {
-                    if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 1.5) {
+                    if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 1.6) {
                         scene.remove(obj);
                         interactiveObjects.splice(index, 1);
-                        score += 250;
+                        score += 500;
                         collected++;
                         document.getElementById("score-text").innerText = `CASH: $${score}`;
                         document.getElementById("package-text").innerText = `ITEMS: ${collected}/4`;
