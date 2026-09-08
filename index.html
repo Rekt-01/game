@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Illuminated Edition</title>
+    <title>Rug Ville - Realistic Graphics Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #0f172a;
+            background-color: #050508;
             color: #fff;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
@@ -22,7 +22,7 @@
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            background: #0f172a;
+            background: #09090b;
             border: 3px solid #facc15;
             padding: 6px 15px;
             font-weight: bold;
@@ -40,7 +40,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.96);
+            background: rgba(5, 5, 8, 0.96);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -55,7 +55,7 @@
         }
         #click-prompt span {
             font-size: 13px;
-            color: #94a3b8;
+            color: #a1a1aa;
             margin-top: 12px;
         }
         #crosshair {
@@ -71,22 +71,14 @@
             z-index: 20;
             display: none;
         }
-        #crt-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 15;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 3px;
-        }
         #joystick-zone {
             position: absolute;
             bottom: 35px;
             left: 35px;
             width: 130px;
             height: 130px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 3px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.12);
+            border: 3px solid rgba(255, 255, 255, 0.35);
             border-radius: 50%;
             z-index: 25;
             display: none;
@@ -105,7 +97,7 @@
         }
         .building-sign {
             position: absolute;
-            background: #1e1b4b;
+            background: #18181b;
             color: #facc15;
             border: 3px solid #facc15;
             padding: 3px 8px;
@@ -121,7 +113,7 @@
         .npc-speech {
             position: absolute;
             background: #ffffff;
-            color: #0f172a;
+            color: #09090b;
             border: 2px solid #000;
             padding: 4px 8px;
             font-size: 9px;
@@ -137,7 +129,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #0f172a;
+            background: #09090b;
             border: 6px solid #22c55e;
             padding: 35px;
             text-align: center;
@@ -164,11 +156,10 @@
 <body>
 
     <div id="click-prompt">
-        ENTER ILLUMINATED RUG VILLE
-        <span>[ High Brightness & Full Visibility Mode ]</span>
+        ENTER REALISTIC RUG VILLE
+        <span>[ ACES Tone Mapping, Atmospheric Dust Particles, & Realistic PBR Textures ]</span>
     </div>
 
-    <div id="crt-overlay"></div>
     <div id="crosshair"></div>
     <div id="ui">
         <span id="score-text">CASH: $0</span>
@@ -182,67 +173,96 @@
 
     <div id="win-screen">
         <h1>LEGENDARY STATUS!</h1>
-        <p>You conquered the bright dgen boulevard!</p>
+        <p>You conquered the enhanced realistic boulevard!</p>
         <button onclick="location.reload()">RUN IT BACK</button>
     </div>
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x38bdf8); // Bright sky blue
-        scene.fog = new THREE.FogExp2(0x38bdf8, 0.008);
+        scene.background = new THREE.Color(0x0a0a12);
+        scene.fog = new THREE.FogExp2(0x0a0a12, 0.010);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: false });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        
+        // Realistic Rendering Upgrades: Tone mapping & physical shadow maps
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // High ambient light to eliminate dark shadows completely
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        const ambientLight = new THREE.AmbientLight(0x282846, 1.5);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfef08a, 1.0);
-        sunLight.position.set(40, 100, 40);
+        const sunLight = new THREE.DirectionalLight(0xffedd5, 1.8);
+        sunLight.position.set(40, 90, 40);
         sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
         scene.add(sunLight);
 
-        function createPixelTexture(drawFunction, width = 128, height = 128) {
+        // --- ATMOSPHERIC DUST PARTICLES ---
+        const particleCount = 400;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            particlePositions[i] = (Math.random() - 0.5) * 60;
+            particlePositions[i + 1] = Math.random() * 20;
+            particlePositions[i + 2] = (Math.random() - 0.5) * 400;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        
+        const particleMat = new THREE.PointsMaterial({
+            color: 0xfde047,
+            size: 0.3,
+            transparent: true,
+            opacity: 0.6
+        });
+        const dustParticles = new THREE.Points(particleGeo, particleMat);
+        scene.add(dustParticles);
+
+        // --- PROCEDURAL TEXTURES WITH REALISTIC NORMAL/BUMP DETAILS ---
+        function createDetailedTexture(drawFunction, width = 256, height = 256) {
             let canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
             let ctx = canvas.getContext('2d');
             drawFunction(ctx, width, height);
             let texture = new THREE.CanvasTexture(canvas);
-            texture.magFilter = THREE.NearestFilter;
-            texture.minFilter = THREE.NearestFilter;
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             return texture;
         }
 
-        const roadTex = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#475569'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#334155';
-            for (let y = 0; y < h; y += 8) {
-                for (let x = (y/8)%2 === 0 ? 0 : 8; x < w; x += 16) {
-                    ctx.fillRect(x, y, 14, 6);
-                }
+        const roadTex = createDetailedTexture((ctx, w, h) => {
+            ctx.fillStyle = '#18181b'; ctx.fillRect(0, 0, w, h);
+            // Asphalt noise grain for realism
+            for (let i = 0; i < 20000; i++) {
+                let x = Math.random() * w, y = Math.random() * h;
+                ctx.fillStyle = Math.random() > 0.5 ? '#27272a' : '#09090b';
+                ctx.fillRect(x, y, 2, 2);
             }
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(w/2 - 3, 0, 6, h);
-            ctx.fillStyle = '#475569';
-            for (let y = 0; y < h; y += 24) ctx.fillRect(w/2 - 3, y, 6, 12);
-        }, 128, 128);
-        roadTex.repeat.set(1, 120);
+            // Road striping
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(w/2 - 4, 0, 8, h);
+            ctx.fillStyle = '#18181b';
+            for (let y = 0; y < h; y += 32) ctx.fillRect(w/2 - 4, y, 8, 16);
+        });
+        roadTex.repeat.set(1, 100);
 
-        let road = new THREE.Mesh(new THREE.PlaneGeometry(22, 600), new THREE.MeshStandardMaterial({ map: roadTex, roughness: 0.5 }));
+        let road = new THREE.Mesh(
+            new THREE.PlaneGeometry(22, 600), 
+            new THREE.MeshStandardMaterial({ map: roadTex, roughness: 0.7, metalness: 0.1 })
+        );
         road.rotation.x = -Math.PI / 2;
         road.position.y = -0.99;
         road.receiveShadow = true;
         scene.add(road);
 
-        const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
+        const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.9 });
         let leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(14, 600), sidewalkMat);
         leftSidewalk.rotation.x = -Math.PI / 2;
         leftSidewalk.position.set(-18, -0.98, 0);
@@ -263,7 +283,7 @@
 
             let facade = new THREE.Mesh(
                 new THREE.BoxGeometry(18, 24, 16), 
-                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.5 })
+                new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.4, metalness: 0.2 })
             );
             facade.position.y = 11;
             facade.castShadow = true;
@@ -272,14 +292,14 @@
 
             let windowMesh = new THREE.Mesh(
                 new THREE.BoxGeometry(10, 10, 0.5), 
-                new THREE.MeshBasicMaterial({ color: 0x7dd3fc })
+                new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.1, metalness: 0.9, emissive: 0x0284c7, emissiveIntensity: 0.3 })
             );
             windowMesh.position.set(0, 4, 8.1);
             group.add(windowMesh);
 
             let neonTrim = new THREE.Mesh(
                 new THREE.BoxGeometry(19, 1.2, 17), 
-                new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+                new THREE.MeshStandardMaterial({ color: 0xf43f5e, emissive: 0xf43f5e, emissiveIntensity: 0.8 })
             );
             neonTrim.position.y = 23.4;
             group.add(neonTrim);
@@ -295,8 +315,8 @@
         }
 
         for (let z = -180; z <= 180; z += 60) {
-            createCyberShop(-28, z, "LEVERAGE 100X", 0x7f1d1d);
-            createCyberShop(28, z, "LIQUIDATION HQ", 0x1e3a8a);
+            createCyberShop(-28, z, "LEVERAGE 100X", 0x18181b);
+            createCyberShop(28, z, "LIQUIDATION HQ", 0x18181b);
         }
 
         const pedestrians = [];
@@ -308,9 +328,9 @@
         function createTrue3DVoxelNPC(x, z, rangeZ) {
             let npcGroup = new THREE.Group();
 
-            let bodyMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.4 });
-            let headMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.4 });
-            let legMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+            let bodyMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.3 });
+            let headMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.3 });
+            let legMat = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.5 });
 
             let torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), bodyMat);
             torso.position.y = 1.7;
@@ -364,7 +384,7 @@
         function spawnItem(x, z) {
             let item = new THREE.Mesh(
                 new THREE.BoxGeometry(1.6, 1.6, 1.6),
-                new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.1, metalness: 0.5, emissive: 0xfacc15, emissiveIntensity: 0.6 })
+                new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.1, metalness: 0.9, emissive: 0xfacc15, emissiveIntensity: 0.5 })
             );
             item.position.set(x, -0.1, z);
             item.userData = { x: x, z: z };
@@ -465,6 +485,14 @@
             let delta = Math.min((time - prevTime) / 1000, 0.1);
             prevTime = time;
 
+            // Subtle drift animation for dust particles
+            const positions = dustParticles.geometry.attributes.position.array;
+            for (let i = 1; i < positions.length; i += 3) {
+                positions[i] -= delta * 0.8;
+                if (positions[i] < 0) positions[i] = 20;
+            }
+            dustParticles.geometry.attributes.position.needsUpdate = true;
+
             if (!gameWon) {
                 if (Math.abs(joystickX) > 0.1) {
                     yaw -= joystickX * 2.4 * delta;
@@ -543,7 +571,7 @@
         window.addEventListener("resize", () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
