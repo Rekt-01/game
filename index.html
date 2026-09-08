@@ -3,50 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Pixel Street Edition</title>
+    <title>Rug Ville - Mobile Pixel Street</title>
     <style>
         body {
             margin: 0;
-            background-color: #2b1d2c;
+            background-color: #38bdf8;
             color: #fff;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: none;
         }
         #ui {
             position: absolute;
-            top: 20px;
+            top: 15px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 20px;
+            gap: 15px;
             background: #2b1d2c;
-            border: 4px solid #facc15;
-            padding: 8px 20px;
+            border: 3px solid #facc15;
+            padding: 6px 15px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 11px;
             letter-spacing: 1px;
             color: #facc15;
-            box-shadow: 4px 4px 0px #000;
+            box-shadow: 3px 3px 0px #000;
             z-index: 10;
             pointer-events: none;
+            white-space: nowrap;
         }
         #instructions {
             position: absolute;
-            bottom: 20px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             background: #2b1d2c;
-            padding: 8px 16px;
-            border: 4px solid #facc15;
-            font-size: 11px;
+            padding: 6px 12px;
+            border: 3px solid #facc15;
+            font-size: 10px;
             color: #fde047;
             text-align: center;
             pointer-events: none;
-            box-shadow: 4px 4px 0px #000;
+            box-shadow: 3px 3px 0px #000;
             z-index: 10;
             white-space: nowrap;
+        }
+        #click-prompt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.92);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #facc15;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            z-index: 50;
+            padding: 20px;
+        }
+        #click-prompt span {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 10px;
         }
         #crosshair {
             position: absolute;
@@ -59,6 +85,30 @@
             border: 2px solid #000;
             pointer-events: none;
             z-index: 10;
+        }
+        /* Virtual Touch Joystick */
+        #joystick-zone {
+            position: absolute;
+            bottom: 40px;
+            left: 30px;
+            width: 110px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            z-index: 20;
+            display: none;
+        }
+        #joystick-handle {
+            position: absolute;
+            top: 32px;
+            left: 32px;
+            width: 40px;
+            height: 40px;
+            background: #facc15;
+            border: 2px solid #000;
+            border-radius: 50%;
+            pointer-events: none;
         }
         .building-sign {
             position: absolute;
@@ -106,38 +156,48 @@
 </head>
 <body>
 
+    <div id="click-prompt">
+        TAP TO START EXPLORING
+        <span>[ Mobile & Desktop Compatible ]</span>
+    </div>
+
     <div id="crosshair"></div>
     <div id="ui">
         <span id="score-text">CASH: $0</span>
-        <span id="package-text">STORES VISITED: 0/4</span>
+        <span id="package-text">ITEMS: 0/4</span>
     </div>
-    <div id="instructions">WASD: Walk down the pixel street | Explore shops</div>
+    
+    <div id="joystick-zone">
+        <div id="joystick-handle"></div>
+    </div>
+
+    <div id="instructions">Drag screen to look around | Use joystick or WASD to walk</div>
     <div id="speech-overlay"></div>
 
     <div id="win-screen">
-        <h1>STREET EXPLORED!</h1>
-        <p>You checked out all the pixel storefronts!</p>
+        <h1>STREET CLEARED!</h1>
+        <p>You explored the entire pixel avenue!</p>
         <button onclick="location.reload()">EXPLORE AGAIN</button>
     </div>
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x38bdf8); // Sunny daytime sky
+        scene.background = new THREE.Color(0xbae6fd);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(1);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xfffbeb, 1.0);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfef08a, 1.2);
+        const sunLight = new THREE.DirectionalLight(0xfef08a, 1.0);
         sunLight.position.set(40, 100, 40);
         scene.add(sunLight);
 
-        // --- PROCEDURAL PIXEL TEXTURES (Bricks, Cobblestone, Awnings) ---
+        // --- PROCEDURAL TEXTURES ---
         function createPixelTexture(drawFunction, width = 32, height = 32) {
             let canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
@@ -151,10 +211,8 @@
             return texture;
         }
 
-        // Cobblestone Street Texture
-        const streetTexture = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#64748b';
-            ctx.fillRect(0, 0, w, h);
+        const roadTex = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#64748b'; ctx.fillRect(0, 0, w, h);
             ctx.fillStyle = '#475569';
             for (let y = 0; y < h; y += 4) {
                 for (let x = (y/4)%2 === 0 ? 0 : 4; x < w; x += 8) {
@@ -162,146 +220,206 @@
                 }
             }
         }, 32, 32);
-        streetTexture.repeat.set(40, 40);
+        roadTex.repeat.set(10, 60);
 
-        // Red Brick Building Texture
-        const brickTexture = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#7f1d1d'; // Deep red brick base
-            ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#450a0a'; // Mortar lines
+        const brickTex = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#450a0a';
             for (let y = 0; y < h; y += 8) {
                 ctx.fillRect(0, y, w, 2);
                 let offset = (y / 8) % 2 === 0 ? 0 : 8;
-                for (let x = offset; x < w; x += 16) {
-                    ctx.fillRect(x, y, 2, 8);
-                }
+                for (let x = offset; x < w; x += 16) ctx.fillRect(x, y, 2, 8);
             }
         }, 32, 32);
-        brickTexture.repeat.set(4, 4);
+        brickTex.repeat.set(4, 3);
 
-        // Ground/Sidewalk plane
-        const groundGeo = new THREE.PlaneGeometry(500, 500);
-        const groundMat = new THREE.MeshBasicMaterial({ map: streetTexture });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -1.0;
-        scene.add(ground);
+        // --- ENVIRONMENT SETUP ---
+        let road = new THREE.Mesh(new THREE.PlaneGeometry(16, 300), new THREE.MeshBasicMaterial({ map: roadTex }));
+        road.rotation.x = -Math.PI / 2;
+        road.position.y = -0.99;
+        scene.add(road);
 
-        // --- STREET BUILDINGS & SHOPS ---
-        const solidColliders = [];
+        const sidewalkMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
+        let leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(10, 300), sidewalkMat);
+        leftSidewalk.rotation.x = -Math.PI / 2;
+        leftSidewalk.position.set(-13, -0.98, 0);
+        scene.add(leftSidewalk);
+
+        let rightSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(10, 300), sidewalkMat);
+        rightSidewalk.rotation.x = -Math.PI / 2;
+        rightSidewalk.position.set(13, -0.98, 0);
+        scene.add(rightSidewalk);
+
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        function createStorefront(x, z, rotY, storeName, awningColor) {
+        function createStorefront(x, z, storeName, awningColor) {
             let group = new THREE.Group();
-
-            // Main Building Facade
-            let facadeMat = new THREE.MeshBasicMaterial({ map: brickTexture });
-            let facade = new THREE.Mesh(new THREE.BoxGeometry(16, 14, 12), facadeMat);
-            facade.position.y = 6;
+            let facade = new THREE.Mesh(new THREE.BoxGeometry(14, 12, 10), new THREE.MeshBasicMaterial({ map: brickTex }));
+            facade.position.y = 5;
             group.add(facade);
-            solidColliders.push({ x: x, z: z, sizeX: 16, sizeZ: 12 });
 
-            // Pixel Awning (Store Canopy)
             let awningCanvas = createPixelTexture((ctx, w, h) => {
-                ctx.fillStyle = awningColor;
-                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = awningColor; ctx.fillRect(0, 0, w, h);
                 ctx.fillStyle = '#fff';
-                for (let i = 0; i < w; i += 8) {
-                    ctx.fillRect(i, 0, 4, h);
-                }
+                for (let i = 0; i < w; i += 8) ctx.fillRect(i, 0, 4, h);
             }, 16, 16);
             
-            let awningMat = new THREE.MeshBasicMaterial({ map: awningCanvas });
-            let awning = new THREE.Mesh(new THREE.BoxGeometry(16, 1, 6), awningMat);
-            awning.position.set(0, 0, 7);
+            let awning = new THREE.Mesh(new THREE.BoxGeometry(14, 1, 5), new THREE.MeshBasicMaterial({ map: awningCanvas }));
+            awning.position.set(0, 0, 6);
             awning.rotation.x = 0.3;
             group.add(awning);
 
             group.position.set(x, 0, z);
-            group.rotation.y = rotY;
             scene.add(group);
 
-            // Floating Retro Sign
             let signEl = document.createElement('div');
             signEl.className = 'building-sign';
             signEl.innerText = storeName;
             speechOverlay.appendChild(signEl);
-            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 14.5 });
+            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 12.5 });
         }
 
-        // Build a cozy pixel street corridor
-        createStorefront(-20, -30, 0, "PIXEL BAKERY", "#f97316");
-        createStorefront(20, -30, 0, "GENERAL STORE", "#10b981");
-        createStorefront(-20, 30, Math.PI, "COFFEE SHOP", "#eab308");
-        createStorefront(20, 30, Math.PI, "ARCADE GAMES", "#ec4899");
+        for (let z = -100; z <= 100; z += 40) {
+            createStorefront(-20, z, "PIXEL BAKERY", "#f97316");
+            createStorefront(20, z, "GENERAL STORE", "#10b981");
+        }
 
-        // Collectibles / Shops to visit
-        let score = 0;
-        let visitedCount = 0;
-        let gameWon = false;
+        // --- NPCS ---
+        const pedestrians = [];
+        function createNPC(x, z, rangeZ) {
+            let canvas = document.createElement('canvas');
+            canvas.width = 16; canvas.height = 32;
+            let ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4, 2, 8, 8);
+            ctx.fillStyle = '#ec4899'; ctx.fillRect(2, 10, 12, 12);
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(4, 22, 3, 10); ctx.fillRect(9, 22, 3, 10);
+
+            let texture = new THREE.CanvasTexture(canvas);
+            texture.magFilter = THREE.NearestFilter;
+            
+            let sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
+            sprite.scale.set(2, 4, 1);
+            sprite.position.set(x, 1, z);
+            scene.add(sprite);
+            pedestrians.push({ sprite: sprite, z: z, minZ: z - rangeZ, maxZ: z + rangeZ, speed: (Math.random() * 2 + 1) });
+        }
+
+        createNPC(-10, -20, 25);
+        createNPC(10, 10, 25);
+        createNPC(-11, 50, 30);
+
+        // --- COLLECTIBLES ---
+        let score = 0, collected = 0, gameWon = false;
         const interactiveObjects = [];
 
-        function createShopCoin(x, z) {
-            let coin = new THREE.Mesh(
-                new THREE.BoxGeometry(1.5, 1.5, 1.5),
+        function spawnItem(x, z) {
+            let item = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.2, 1.2),
                 new THREE.MeshBasicMaterial({ color: 0xfacc15 })
             );
-            coin.position.set(x, -0.2, z);
-            coin.userData = { x: x, z: z };
-            scene.add(coin);
-            interactiveObjects.push(coin);
+            item.position.set(x, -0.4, z);
+            item.userData = { x: x, z: z };
+            scene.add(item);
+            interactiveObjects.push(item);
         }
 
-        createShopCoin(-20, -15);
-        createShopCoin(20, -15);
-        createShopCoin(-20, 15);
-        createShopCoin(20, 15);
+        spawnItem(-10, -30);
+        spawnItem(10, -10);
+        spawnItem(-10, 20);
+        spawnItem(10, 40);
 
-        // Player controls
-        let playerPos = new THREE.Vector3(0, 0, 50);
+        // --- CONTROLS STATE ---
+        let playerPos = new THREE.Vector3(0, 0, 80);
         camera.position.copy(playerPos);
         let yaw = 0, pitch = 0;
-        const playerRadius = 0.4;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let joystickX = 0, joystickY = 0;
 
-        renderer.domElement.addEventListener('click', () => {
-            if (document.pointerLockElement !== document.body) {
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (isTouchDevice) {
+            document.getElementById('joystick-zone').style.display = 'block';
+        }
+
+        // Start overlay interaction
+        const clickPrompt = document.getElementById("click-prompt");
+        clickPrompt.addEventListener('click', () => {
+            clickPrompt.style.display = 'none';
+            if (!isTouchDevice && document.body.requestPointerLock) {
                 document.body.requestPointerLock();
             }
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== document.body || gameWon) return;
-            yaw -= e.movementX * 0.003;
-            pitch -= e.movementY * 0.003;
-            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-            camera.rotation.set(pitch, yaw, 0, 'YXZ');
+        // Mouse & Touch Look Drag Handling
+        let isDragging = false, lastTouchX = 0, lastTouchY = 0;
+
+        window.addEventListener('pointerdown', (e) => {
+            if (clickPrompt.style.display !== 'flex') isDragging = true;
+        });
+        window.addEventListener('pointerup', () => { isDragging = false; });
+
+        window.addEventListener('pointermove', (e) => {
+            if (gameWon) return;
+            // Handle pointer lock for desktop or drag-look for mobile/non-locked
+            let movementX = e.movementX || e.clientX - lastTouchX;
+            let movementY = e.movementY || e.clientY - lastTouchY;
+
+            if (isDragging || document.pointerLockElement === document.body) {
+                yaw -= movementX * 0.003;
+                pitch -= movementY * 0.003;
+                pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+            }
+            lastTouchX = e.clientX;
+            lastTouchY = e.clientY;
         });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyW') moveForward = true;
-            if (e.code === 'KeyS') moveBackward = true;
-            if (e.code === 'KeyA') moveLeft = true;
-            if (e.code === 'KeyD') moveRight = true;
-        });
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'KeyW') moveForward = false;
-            if (e.code === 'KeyS') moveBackward = false;
-            if (e.code === 'KeyA') moveLeft = false;
-            if (e.code === 'KeyD') moveRight = false;
+        // Virtual Touch Joystick Logic
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickHandle = document.getElementById('joystick-handle');
+        let touchId = null, centerPos = { x: 0, y: 0 };
+
+        joystickZone.addEventListener('touchstart', (e) => {
+            if (touchId !== null) return;
+            let touch = e.changedTouches[0];
+            touchId = touch.identifier;
+            let rect = joystickZone.getBoundingClientRect();
+            centerPos.x = rect.left + rect.width / 2;
+            centerPos.y = rect.top + rect.height / 2;
         });
 
-        function checkCollision(x, z) {
-            for (let obj of solidColliders) {
-                let halfX = obj.sizeX / 2;
-                let halfZ = obj.sizeZ / 2;
-                if (x + playerRadius > obj.x - halfX && x - playerRadius < obj.x + halfX && z + playerRadius > obj.z - halfZ && z - playerRadius < obj.z + halfZ) {
-                    return true;
+        joystickZone.addEventListener('touchmove', (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                let touch = e.changedTouches[i];
+                if (touch.identifier === touchId) {
+                    let dx = touch.clientX - centerPos.x;
+                    let dy = touch.clientY - centerPos.y;
+                    let dist = Math.hypot(dx, dy), maxDist = 35;
+                    if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+                    joystickHandle.style.transform = `translate(${dx}px, ${dy}px)`;
+                    joystickX = dx / maxDist;
+                    joystickY = dy / maxDist;
                 }
             }
-            return false;
-        }
+        });
+
+        joystickZone.addEventListener('touchend', () => {
+            touchId = null; joystickX = 0; joystickY = 0;
+            joystickHandle.style.transform = `translate(0px, 0px)`;
+        });
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = true;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = false;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = false;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveLeft = false;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') moveRight = false;
+        });
 
         let prevTime = performance.now();
 
@@ -312,30 +430,41 @@
             prevTime = time;
 
             if (!gameWon) {
-                let speed = 7.0 * delta;
+                let speed = 8.0 * delta;
                 let dir = new THREE.Vector3();
                 if (moveForward) dir.z -= 1;
                 if (moveBackward) dir.z += 1;
                 if (moveLeft) dir.x -= 1;
                 if (moveRight) dir.x += 1;
 
+                // Factor in mobile joystick inputs
+                if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
+                if (Math.abs(joystickX) > 0.1) dir.x += joystickX;
+
                 if (dir.lengthSq() > 0) {
                     dir.normalize();
                     dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                    let nx = playerPos.x + dir.x * speed;
-                    let nz = playerPos.z + dir.z * speed;
-                    if (!checkCollision(nx, playerPos.z)) playerPos.x = nx;
-                    if (!checkCollision(playerPos.x, nz)) playerPos.z = nz;
+                    playerPos.x += dir.x * speed;
+                    playerPos.z += dir.z * speed;
                 }
+
+                // Keep player bounded on walkways
+                playerPos.x = Math.max(-11, Math.min(11, playerPos.x));
 
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.copy(playerPos);
                 camera.position.y = 0;
 
+                pedestrians.forEach(npc => {
+                    npc.z += npc.speed * delta;
+                    if (npc.z > npc.maxZ || npc.z < npc.minZ) npc.speed *= -1;
+                    npc.sprite.position.z = npc.z;
+                });
+
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
-                    if (vector.z < 1 && dist < 40) {
+                    if (vector.z < 1 && dist < 50) {
                         b.signElement.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         b.signElement.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         b.signElement.style.display = 'block';
@@ -345,16 +474,15 @@
                 });
 
                 interactiveObjects.forEach((obj, index) => {
-                    if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 2.0) {
+                    if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 1.5) {
                         scene.remove(obj);
                         interactiveObjects.splice(index, 1);
                         score += 250;
-                        visitedCount++;
+                        collected++;
                         document.getElementById("score-text").innerText = `CASH: $${score}`;
-                        document.getElementById("package-text").innerText = `STORES VISITED: ${visitedCount}/4`;
-                        if (visitedCount >= 4) {
+                        document.getElementById("package-text").innerText = `ITEMS: ${collected}/4`;
+                        if (collected >= 4) {
                             gameWon = true;
-                            if (document.pointerLockElement) document.exitPointerLock();
                             document.getElementById("win-screen").style.display = "block";
                         }
                     }
