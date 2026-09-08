@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - High Detail Degen Avenue</title>
+    <title>Rug Ville - Ultra Detail Edition</title>
     <style>
         body {
             margin: 0;
-            background-color: #38bdf8;
+            background-color: #1e1b4b;
             color: #fff;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
@@ -22,7 +22,7 @@
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            background: #2b1d2c;
+            background: #0f172a;
             border: 3px solid #facc15;
             padding: 6px 15px;
             font-weight: bold;
@@ -40,7 +40,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.96);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -71,7 +71,6 @@
             z-index: 10;
             display: none;
         }
-        /* Virtual Touch Joystick */
         #joystick-zone {
             position: absolute;
             bottom: 35px;
@@ -97,7 +96,7 @@
         }
         .building-sign {
             position: absolute;
-            background: #451a03;
+            background: #1e1b4b;
             color: #facc15;
             border: 3px solid #facc15;
             padding: 3px 8px;
@@ -129,7 +128,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #2b1d2c;
+            background: #0f172a;
             border: 6px solid #22c55e;
             padding: 30px;
             text-align: center;
@@ -156,8 +155,8 @@
 <body>
 
     <div id="click-prompt">
-        TAP TO LAUNCH RUG VILLE
-        <span>[ Joystick Steers & Turns Screen | High-Detail Pixel Textures ]</span>
+        ENTER ULTRA RUG VILLE
+        <span>[ High-Detail Textures & Joystick Steering ]</span>
     </div>
 
     <div id="crosshair"></div>
@@ -172,30 +171,36 @@
     <div id="speech-overlay"></div>
 
     <div id="win-screen">
-        <h1>GAUNTLET CLEARED!</h1>
-        <p>You survived the ultimate pixel block!</p>
+        <h1>AVENUE CONQUERED!</h1>
+        <p>Maximum alpha achieved!</p>
         <button onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x38bdf8);
+        scene.background = new THREE.Color(0x0284c7);
+        scene.fog = new THREE.FogExp2(0x0284c7, 0.015);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
         scene.add(ambientLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfef08a, 0.9);
-        sunLight.position.set(40, 100, 40);
+        const sunLight = new THREE.DirectionalLight(0xfef08a, 1.2);
+        sunLight.position.set(50, 120, 50);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 1024;
+        sunLight.shadow.mapSize.height = 1024;
         scene.add(sunLight);
 
-        // --- HIGH-DETAIL PROCEDURAL PIXEL TEXTURES ---
-        function createPixelTexture(drawFunction, width = 64, height = 64) {
+        // --- ULTRA-DETAIL PROCEDURAL PIXEL TEXTURES (128x128) ---
+        function createPixelTexture(drawFunction, width = 128, height = 128) {
             let canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
             let ctx = canvas.getContext('2d');
@@ -208,102 +213,103 @@
             return texture;
         }
 
-        // Detailed Asphalt Street with cracks and varied pavement blocks
+        // Detailed Street Asphalt with markings and grit
         const roadTex = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#475569'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#334155';
-            for (let y = 0; y < h; y += 4) {
-                for (let x = (y/4)%2 === 0 ? 0 : 4; x < w; x += 8) {
-                    ctx.fillRect(x, y, 7, 3);
-                }
-            }
-            // Add subtle road grit lines
+            ctx.fillStyle = '#334155'; ctx.fillRect(0, 0, w, h);
             ctx.fillStyle = '#1e293b';
-            ctx.fillRect(12, 0, 2, h);
-            ctx.fillRect(50, 0, 2, h);
-        }, 64, 64);
-        roadTex.repeat.set(12, 80);
-
-        // Intricate Brickwork with mortar shading
-        const brickTex = createPixelTexture((ctx, w, h) => {
-            ctx.fillStyle = '#5c1313'; ctx.fillRect(0, 0, w, h);
-            ctx.fillStyle = '#2a0505'; // dark mortar
             for (let y = 0; y < h; y += 8) {
-                ctx.fillRect(0, y, w, 2);
-                let offset = (y / 8) % 2 === 0 ? 0 : 8;
-                for (let x = offset; x < w; x += 16) {
-                    ctx.fillRect(x, y, 2, 8);
+                for (let x = (y/8)%2 === 0 ? 0 : 8; x < w; x += 16) {
+                    ctx.fillRect(x, y, 14, 6);
                 }
             }
-            // Highlights on individual bricks
-            ctx.fillStyle = '#991b1b';
-            for (let y = 2; y < h; y += 8) {
-                let offset = (y / 8) % 2 === 0 ? 0 : 8;
-                for (let x = offset + 2; x < w; x += 16) {
-                    ctx.fillRect(x, y, 4, 3);
+            // Center yellow divider striping
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(w/2 - 4, 0, 8, h);
+            ctx.fillStyle = '#334155';
+            for (let y = 0; y < h; y += 32) ctx.fillRect(w/2 - 4, y, 8, 16);
+        }, 128, 128);
+        roadTex.repeat.set(1, 100);
+
+        // Intricate High-Definition Brick Facade
+        const brickTex = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#450a0a'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#1a0202'; // Deep mortar lines
+            for (let y = 0; y < h; y += 16) {
+                ctx.fillRect(0, y, w, 3);
+                let offset = (y / 16) % 2 === 0 ? 0 : 16;
+                for (let x = offset; x < w; x += 32) {
+                    ctx.fillRect(x, y, 3, 16);
                 }
             }
-        }, 64, 64);
+            // Multi-toned brick texture detailing
+            ctx.fillStyle = '#7f1d1d';
+            for (let y = 3; y < h; y += 16) {
+                let offset = (y / 16) % 2 === 0 ? 0 : 16;
+                for (let x = offset + 3; x < w; x += 32) {
+                    ctx.fillRect(x, y, 26, 11);
+                }
+            }
+        }, 128, 128);
         brickTex.repeat.set(4, 4);
 
-        // Detailed Display Glass & Neon Window Trim
-        const storefrontGlassTex = createPixelTexture((ctx, w, h) => {
+        // Store Glass & Neon Interior Glow
+        const windowTex = createPixelTexture((ctx, w, h) => {
             ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, w, h);
-            // Neon sign glow frame inside window
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(8, 8, w - 16, h - 16);
-            ctx.fillStyle = '#1e1b4b';
-            ctx.fillRect(12, 12, w - 24, h - 24);
-        }, 64, 64);
-        storefrontGlassTex.repeat.set(1, 1);
+            ctx.fillStyle = '#38bdf8'; // neon interior panel
+            ctx.fillRect(16, 16, w - 32, h - 32);
+            ctx.fillStyle = '#facc15'; // display items inside
+            ctx.fillRect(32, 48, w - 64, 16);
+        }, 128, 128);
 
         // --- ENVIRONMENT SETUP ---
-        let road = new THREE.Mesh(new THREE.PlaneGeometry(18, 400), new THREE.MeshBasicMaterial({ map: roadTex }));
+        let road = new THREE.Mesh(new THREE.PlaneGeometry(20, 500), new THREE.MeshBasicMaterial({ map: roadTex }));
         road.rotation.x = -Math.PI / 2;
         road.position.y = -0.99;
+        road.receiveShadow = true;
         scene.add(road);
 
-        const sidewalkMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
-        let leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(12, 400), sidewalkMat);
+        const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
+        let leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(12, 500), sidewalkMat);
         leftSidewalk.rotation.x = -Math.PI / 2;
-        leftSidewalk.position.set(-14, -0.98, 0);
+        leftSidewalk.position.set(-16, -0.98, 0);
+        leftSidewalk.receiveShadow = true;
         scene.add(leftSidewalk);
 
-        let rightSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(12, 400), sidewalkMat);
+        let rightSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(12, 500), sidewalkMat);
         rightSidewalk.rotation.x = -Math.PI / 2;
-        rightSidewalk.position.set(14, -0.98, 0);
+        rightSidewalk.position.set(16, -0.98, 0);
+        rightSidewalk.receiveShadow = true;
         scene.add(rightSidewalk);
 
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        // Highly Detailed Storefront Blocks (No canopies, added neon windows and structural trims)
-        function createDetailedShop(x, z, storeName, wallColor) {
+        // Detailed Storefront Blocks with Architectural Trims and Window Inserts
+        function createUltraStorefront(x, z, storeName, wallColorHex) {
             let group = new THREE.Group();
 
-            // Main Building Walls
             let facade = new THREE.Mesh(
-                new THREE.BoxGeometry(16, 18, 12), 
-                new THREE.MeshBasicMaterial({ color: wallColor })
+                new THREE.BoxGeometry(16, 20, 14), 
+                new THREE.MeshStandardMaterial({ color: wallColorHex, roughness: 0.9 })
             );
-            facade.position.y = 8;
+            facade.position.y = 9;
+            facade.castShadow = true;
+            facade.receiveShadow = true;
             group.add(facade);
 
-            // Detailed Glass Storefront Insert
-            let windowMesh = new THREE.Mesh(
+            let displayWindow = new THREE.Mesh(
                 new THREE.BoxGeometry(10, 8, 0.5), 
-                new THREE.MeshBasicMaterial({ map: storefrontGlassTex })
+                new THREE.MeshBasicMaterial({ map: windowTex })
             );
-            windowMesh.position.set(0, 3, 6.1);
-            group.add(windowMesh);
+            displayWindow.position.set(0, 4, 7.1);
+            group.add(displayWindow);
 
-            // Roof Decorative Trim
-            let trim = new THREE.Mesh(
-                new THREE.BoxGeometry(17, 1.5, 13), 
-                new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+            let roofTrim = new THREE.Mesh(
+                new THREE.BoxGeometry(17.5, 1.5, 15.5), 
+                new THREE.MeshStandardMaterial({ color: 0xfacc15 })
             );
-            trim.position.y = 17.5;
-            group.add(trim);
+            roofTrim.position.y = 19.5;
+            group.add(roofTrim);
 
             group.position.set(x, 0, z);
             scene.add(group);
@@ -312,36 +318,36 @@
             signEl.className = 'building-sign';
             signEl.innerText = storeName;
             speechOverlay.appendChild(signEl);
-            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 18.5 });
+            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 20.5 });
         }
 
-        for (let z = -120; z <= 120; z += 40) {
-            createDetailedShop(-22, z, "ALPHA CALLS", 0x7f1d1d);
-            createDetailedShop(22, z, "PUMP & DUMP", 0x1e3a8a);
+        for (let z = -150; z <= 150; z += 50) {
+            createUltraStorefront(-25, z, "ALPHA CALLS", 0x7f1d1d);
+            createUltraStorefront(25, z, "PUMP & DUMP", 0x1e3a8a);
         }
 
-        // --- WALKING DEGEN NPCS WITH SPEECH BUBBLES ---
+        // --- HIGH-DETAIL WALKING NPCS ---
         const degenSlang = [
             "WAGMI BRO!", "BUY THE DIP!", "TO THE MOON 🚀", 
-            "TOTAL RUG PULL...", "DIAMOND HANDS 💎", "SEND IT! 📈", "FEELING BULLISH"
+            "TOTAL RUG PULL...", "DIAMOND HANDS 💎", "SEND IT! 📈", "BULLISH AF"
         ];
         
         const pedestrians = [];
         function createWalkingDegen(x, z, rangeZ) {
             let canvas = document.createElement('canvas');
-            canvas.width = 32; canvas.height = 64;
+            canvas.width = 64; canvas.height = 128;
             let ctx = canvas.getContext('2d');
-            // High detail sprite drawing
-            ctx.fillStyle = '#f97316'; ctx.fillRect(8, 4, 16, 16); // Hood
-            ctx.fillStyle = '#22c55e'; ctx.fillRect(6, 20, 20, 22); // Jacket
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(8, 42, 6, 20); ctx.fillRect(18, 42, 6, 20); // Pants
+            // Enhanced multi-pixel character render
+            ctx.fillStyle = '#f97316'; ctx.fillRect(16, 8, 32, 32); // Hoodie
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(12, 40, 40, 44); // Jacket
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(16, 84, 12, 40); ctx.fillRect(36, 84, 12, 40); // Pants
 
             let texture = new THREE.CanvasTexture(canvas);
             texture.magFilter = THREE.NearestFilter;
             
             let sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
-            sprite.scale.set(2.4, 4.6, 1);
-            sprite.position.set(x, 1.2, z);
+            sprite.scale.set(2.6, 5.0, 1);
+            sprite.position.set(x, 1.4, z);
             scene.add(sprite);
 
             let bubble = document.createElement('div');
@@ -351,7 +357,7 @@
 
             setInterval(() => {
                 bubble.innerText = degenSlang[Math.floor(Math.random() * degenSlang.length)];
-            }, 3500 + Math.random() * 3000);
+            }, 3000 + Math.random() * 3000);
 
             pedestrians.push({
                 sprite: sprite,
@@ -360,14 +366,14 @@
                 z: z,
                 minZ: z - rangeZ,
                 maxZ: z + rangeZ,
-                speed: (Math.random() * 2.5 + 1.5) * (Math.random() > 0.5 ? 1 : -1)
+                speed: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1)
             });
         }
 
-        createWalkingDegen(-12, -40, 30);
-        createWalkingDegen(12, -10, 30);
-        createWalkingDegen(-12, 50, 35);
-        createWalkingDegen(12, 30, 35);
+        createWalkingDegen(-14, -60, 40);
+        createWalkingDegen(14, -20, 40);
+        createWalkingDegen(-14, 40, 40);
+        createWalkingDegen(14, 80, 40);
 
         // --- COLLECTIBLES ---
         let score = 0, collected = 0, gameWon = false;
@@ -375,22 +381,23 @@
 
         function spawnItem(x, z) {
             let item = new THREE.Mesh(
-                new THREE.BoxGeometry(1.4, 1.4, 1.4),
-                new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+                new THREE.BoxGeometry(1.5, 1.5, 1.5),
+                new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.2, metalness: 0.8 })
             );
-            item.position.set(x, -0.3, z);
+            item.position.set(x, -0.2, z);
             item.userData = { x: x, z: z };
+            item.castShadow = true;
             scene.add(item);
             interactiveObjects.push(item);
         }
 
-        spawnItem(-12, -30);
-        spawnItem(12, -10);
-        spawnItem(-12, 20);
-        spawnItem(12, 40);
+        spawnItem(-14, -40);
+        spawnItem(14, -10);
+        spawnItem(-14, 30);
+        spawnItem(14, 60);
 
         // --- CONTROLS & CAMERA STATE ---
-        let playerPos = new THREE.Vector3(0, 1.6, 90); // Head-level perspective height
+        let playerPos = new THREE.Vector3(0, 1.6, 110);
         camera.position.copy(playerPos);
         let yaw = 0, pitch = 0;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
@@ -408,7 +415,7 @@
             clickPrompt.style.display = 'none';
         });
 
-        // Desktop Mouse Drag Look
+        // Desktop Look Support
         let isLooking = false, lastX = 0, lastY = 0;
         window.addEventListener('pointerdown', (e) => {
             if (clickPrompt.style.display !== 'flex' && !isTouchDevice) {
@@ -424,7 +431,7 @@
             lastX = e.clientX; lastY = e.clientY;
         });
 
-        // Virtual Touch Joystick Logic (Turning Screen on Horizontal Axis, Moving on Vertical Axis)
+        // Joystick Controls (Horizontal turns screen, Vertical walks)
         const joystickZone = document.getElementById('joystick-zone');
         const joystickHandle = document.getElementById('joystick-handle');
         let touchId = null, centerPos = { x: 0, y: 0 };
@@ -481,19 +488,17 @@
             prevTime = time;
 
             if (!gameWon) {
-                // Map joystick horizontal movement directly to turning the screen view left/right
                 if (Math.abs(joystickX) > 0.1) {
-                    yaw -= joystickX * 2.0 * delta;
+                    yaw -= joystickX * 2.2 * delta;
                 }
 
-                let speed = 8.0 * delta;
+                let speed = 9.0 * delta;
                 let dir = new THREE.Vector3();
                 if (moveForward) dir.z -= 1;
                 if (moveBackward) dir.z += 1;
                 if (moveLeft) dir.x -= 1;
                 if (moveRight) dir.x += 1;
 
-                // Map joystick vertical movement to forward/backward walking
                 if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
 
                 if (dir.lengthSq() > 0) {
@@ -503,22 +508,20 @@
                     playerPos.z += dir.z * speed;
                 }
 
-                // Keep player bounded safely on sidewalks
-                playerPos.x = Math.max(-12, Math.min(12, playerPos.x));
+                playerPos.x = Math.max(-14, Math.min(14, playerPos.x));
                 playerPos.y = 1.6;
 
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.copy(playerPos);
 
-                // Animate Pedestrians & UI Bubbles
                 pedestrians.forEach(npc => {
                     npc.z += npc.speed * delta;
                     if (npc.z > npc.maxZ || npc.z < npc.minZ) npc.speed *= -1;
                     npc.sprite.position.z = npc.z;
 
-                    let vector = new THREE.Vector3(npc.x, 2.4, npc.z).project(camera);
+                    let vector = new THREE.Vector3(npc.x, 2.6, npc.z).project(camera);
                     let dist = camera.position.distanceTo(npc.sprite.position);
-                    if (vector.z < 1 && dist < 40) {
+                    if (vector.z < 1 && dist < 45) {
                         npc.bubble.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         npc.bubble.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         npc.bubble.style.display = 'block';
@@ -527,11 +530,10 @@
                     }
                 });
 
-                // Render Building Signs
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
-                    if (vector.z < 1 && dist < 60) {
+                    if (vector.z < 1 && dist < 65) {
                         b.signElement.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
                         b.signElement.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
                         b.signElement.style.display = 'block';
@@ -540,7 +542,6 @@
                     }
                 });
 
-                // Check item pickups
                 interactiveObjects.forEach((obj, index) => {
                     if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 1.5) {
                         scene.remove(obj);
