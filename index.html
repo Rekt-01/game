@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rug Ville - Mobile Pixel Street</title>
+    <title>Rug Ville - Degen Pixel Avenue</title>
     <style>
         body {
             margin: 0;
@@ -32,22 +32,6 @@
             box-shadow: 3px 3px 0px #000;
             z-index: 10;
             pointer-events: none;
-            white-space: nowrap;
-        }
-        #instructions {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2b1d2c;
-            padding: 6px 12px;
-            border: 3px solid #facc15;
-            font-size: 10px;
-            color: #fde047;
-            text-align: center;
-            pointer-events: none;
-            box-shadow: 3px 3px 0px #000;
-            z-index: 10;
             white-space: nowrap;
         }
         #click-prompt {
@@ -85,11 +69,12 @@
             border: 2px solid #000;
             pointer-events: none;
             z-index: 10;
+            display: none;
         }
-        /* Virtual Touch Joystick */
+        /* Split Screen Controls for Mobile/Desktop */
         #joystick-zone {
             position: absolute;
-            bottom: 40px;
+            bottom: 30px;
             left: 30px;
             width: 110px;
             height: 110px;
@@ -110,6 +95,15 @@
             border-radius: 50%;
             pointer-events: none;
         }
+        #look-pad {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 15;
+            display: none;
+        }
         .building-sign {
             position: absolute;
             background: #451a03;
@@ -124,6 +118,20 @@
             display: none;
             box-shadow: 3px 3px 0px #000;
             text-transform: uppercase;
+        }
+        .npc-speech {
+            position: absolute;
+            background: #ffffff;
+            color: #0f172a;
+            border: 2px solid #000;
+            padding: 4px 8px;
+            font-size: 9px;
+            font-weight: bold;
+            white-space: nowrap;
+            transform: translate(-50%, -120%);
+            display: none;
+            box-shadow: 2px 2px 0px #000;
+            z-index: 12;
         }
         #win-screen {
             position: absolute;
@@ -157,8 +165,8 @@
 <body>
 
     <div id="click-prompt">
-        TAP TO START EXPLORING
-        <span>[ Mobile & Desktop Compatible ]</span>
+        TAP TO START RUG VILLE
+        <span>[ Smooth Camera Look & Dual Controls Enabled ]</span>
     </div>
 
     <div id="crosshair"></div>
@@ -170,13 +178,12 @@
     <div id="joystick-zone">
         <div id="joystick-handle"></div>
     </div>
-
-    <div id="instructions">Drag screen to look around | Use joystick or WASD to walk</div>
+    <div id="look-pad"></div>
     <div id="speech-overlay"></div>
 
     <div id="win-screen">
-        <h1>STREET CLEARED!</h1>
-        <p>You explored the entire pixel avenue!</p>
+        <h1>AVENUE CLEARED!</h1>
+        <p>You survived the degen gauntlet!</p>
         <button onclick="location.reload()">EXPLORE AGAIN</button>
     </div>
 
@@ -184,6 +191,7 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xbae6fd);
 
+        // Raised height for a proper head-level perspective (Y = 1.6)
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -197,7 +205,7 @@
         sunLight.position.set(40, 100, 40);
         scene.add(sunLight);
 
-        // --- PROCEDURAL TEXTURES ---
+        // --- PROCEDURAL PIXEL TEXTURES ---
         function createPixelTexture(drawFunction, width = 32, height = 32) {
             let canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
@@ -233,6 +241,12 @@
         }, 32, 32);
         brickTex.repeat.set(4, 3);
 
+        const windowTex = createPixelTexture((ctx, w, h) => {
+            ctx.fillStyle = '#334155'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#facc15'; ctx.fillRect(4, 4, 8, 12); // lit storefront window
+        }, 16, 16);
+        windowTex.repeat.set(2, 2);
+
         // --- ENVIRONMENT SETUP ---
         let road = new THREE.Mesh(new THREE.PlaneGeometry(16, 300), new THREE.MeshBasicMaterial({ map: roadTex }));
         road.rotation.x = -Math.PI / 2;
@@ -253,22 +267,25 @@
         const buildingSignsData = [];
         const speechOverlay = document.getElementById('speech-overlay');
 
-        function createStorefront(x, z, storeName, awningColor) {
+        // Detailed Storefronts (Canopies Removed, Added Windows & Architectural Trims)
+        function createDetailedStorefront(x, z, storeName, wallColorHex) {
             let group = new THREE.Group();
-            let facade = new THREE.Mesh(new THREE.BoxGeometry(14, 12, 10), new THREE.MeshBasicMaterial({ map: brickTex }));
-            facade.position.y = 5;
+
+            // Main Building Box
+            let facadeMat = new THREE.MeshBasicMaterial({ color: wallColorHex });
+            let facade = new THREE.Mesh(new THREE.BoxGeometry(14, 16, 10), facadeMat);
+            facade.position.y = 7;
             group.add(facade);
 
-            let awningCanvas = createPixelTexture((ctx, w, h) => {
-                ctx.fillStyle = awningColor; ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = '#fff';
-                for (let i = 0; i < w; i += 8) ctx.fillRect(i, 0, 4, h);
-            }, 16, 16);
-            
-            let awning = new THREE.Mesh(new THREE.BoxGeometry(14, 1, 5), new THREE.MeshBasicMaterial({ map: awningCanvas }));
-            awning.position.set(0, 0, 6);
-            awning.rotation.x = 0.3;
-            group.add(awning);
+            // Detailed Store Glass Display Window
+            let windowMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.5), new THREE.MeshBasicMaterial({ map: windowTex }));
+            windowMesh.position.set(0, 2, 5.1);
+            group.add(windowMesh);
+
+            // Store Roof Accent Trim
+            let trim = new THREE.Mesh(new THREE.BoxGeometry(14.6, 1, 10.6), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+            trim.position.y = 15.5;
+            group.add(trim);
 
             group.position.set(x, 0, z);
             scene.add(group);
@@ -277,37 +294,63 @@
             signEl.className = 'building-sign';
             signEl.innerText = storeName;
             speechOverlay.appendChild(signEl);
-            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 12.5 });
+            buildingSignsData.push({ mesh: group, signElement: signEl, offsetY: 16.5 });
         }
 
         for (let z = -100; z <= 100; z += 40) {
-            createStorefront(-20, z, "PIXEL BAKERY", "#f97316");
-            createStorefront(20, z, "GENERAL STORE", "#10b981");
+            createDetailedStorefront(-20, z, "ALPHA CALLS", 0x7f1d1d);
+            createDetailedStorefront(20, z, "PUMP & DUMP", 0x1e3a8a);
         }
 
-        // --- NPCS ---
+        // --- WALKING DEGEN NPCS WITH SPEECH BUBBLES ---
+        const degenSlang = [
+            "WAGMI!", "BUY THE DIP!", "TO THE MOON 🚀", 
+            "TOTAL RUG PULL...", "HODL!", "SEND IT 📈", "FEELING BULLISH"
+        ];
+        
         const pedestrians = [];
-        function createNPC(x, z, rangeZ) {
+        function createWalkingDegen(x, z, rangeZ) {
             let canvas = document.createElement('canvas');
             canvas.width = 16; canvas.height = 32;
             let ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#38bdf8'; ctx.fillRect(4, 2, 8, 8);
-            ctx.fillStyle = '#ec4899'; ctx.fillRect(2, 10, 12, 12);
-            ctx.fillStyle = '#1e293b'; ctx.fillRect(4, 22, 3, 10); ctx.fillRect(9, 22, 3, 10);
+            ctx.fillStyle = '#f97316'; ctx.fillRect(4, 2, 8, 8); // Head / Hoodie
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(2, 10, 12, 12); // Degen Jacket
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(4, 22, 3, 10); ctx.fillRect(9, 22, 3, 10); // Pants
 
             let texture = new THREE.CanvasTexture(canvas);
             texture.magFilter = THREE.NearestFilter;
             
             let sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
-            sprite.scale.set(2, 4, 1);
-            sprite.position.set(x, 1, z);
+            sprite.scale.set(2.2, 4.2, 1);
+            sprite.position.set(x, 1.1, z);
             scene.add(sprite);
-            pedestrians.push({ sprite: sprite, z: z, minZ: z - rangeZ, maxZ: z + rangeZ, speed: (Math.random() * 2 + 1) });
+
+            // Speech Bubble Element
+            let bubble = document.createElement('div');
+            bubble.className = 'npc-speech';
+            bubble.innerText = degenSlang[Math.floor(Math.random() * degenSlang.length)];
+            speechOverlay.appendChild(bubble);
+
+            // Periodic phrase rotation
+            setInterval(() => {
+                bubble.innerText = degenSlang[Math.floor(Math.random() * degenSlang.length)];
+            }, 4000 + Math.random() * 3000);
+
+            pedestrians.push({
+                sprite: sprite,
+                bubble: bubble,
+                x: x,
+                z: z,
+                minZ: z - rangeZ,
+                maxZ: z + rangeZ,
+                speed: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1)
+            });
         }
 
-        createNPC(-10, -20, 25);
-        createNPC(10, 10, 25);
-        createNPC(-11, 50, 30);
+        createWalkingDegen(-10, -30, 25);
+        createWalkingDegen(10, 0, 25);
+        createWalkingDegen(-11, 40, 30);
+        createWalkingDegen(11, -60, 30);
 
         // --- COLLECTIBLES ---
         let score = 0, collected = 0, gameWon = false;
@@ -324,13 +367,13 @@
             interactiveObjects.push(item);
         }
 
-        spawnItem(-10, -30);
-        spawnItem(10, -10);
-        spawnItem(-10, 20);
-        spawnItem(10, 40);
+        spawnItem(-10, -20);
+        spawnItem(10, -20);
+        spawnItem(-10, 30);
+        spawnItem(10, 30);
 
-        // --- CONTROLS STATE ---
-        let playerPos = new THREE.Vector3(0, 0, 80);
+        // --- CONTROLS & CAMERA STATE ---
+        let playerPos = new THREE.Vector3(0, 1.6, 80); // Height set to 1.6 for realistic first-person head level
         camera.position.copy(playerPos);
         let yaw = 0, pitch = 0;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
@@ -339,38 +382,40 @@
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         if (isTouchDevice) {
             document.getElementById('joystick-zone').style.display = 'block';
+            document.getElementById('look-pad').style.display = 'block';
+        } else {
+            document.getElementById('crosshair').style.display = 'block';
         }
 
-        // Start overlay interaction
         const clickPrompt = document.getElementById("click-prompt");
         clickPrompt.addEventListener('click', () => {
             clickPrompt.style.display = 'none';
-            if (!isTouchDevice && document.body.requestPointerLock) {
-                document.body.requestPointerLock();
-            }
         });
 
-        // Mouse & Touch Look Drag Handling
-        let isDragging = false, lastTouchX = 0, lastTouchY = 0;
+        // Enhanced Smooth Look-Around Mechanics (Works seamlessly on desktop & mobile drag)
+        let isLooking = false, lastX = 0, lastY = 0;
 
         window.addEventListener('pointerdown', (e) => {
-            if (clickPrompt.style.display !== 'flex') isDragging = true;
+            if (clickPrompt.style.display !== 'flex') {
+                isLooking = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
         });
-        window.addEventListener('pointerup', () => { isDragging = false; });
+
+        window.addEventListener('pointerup', () => { isLooking = false; });
 
         window.addEventListener('pointermove', (e) => {
-            if (gameWon) return;
-            // Handle pointer lock for desktop or drag-look for mobile/non-locked
-            let movementX = e.movementX || e.clientX - lastTouchX;
-            let movementY = e.movementY || e.clientY - lastTouchY;
+            if (gameWon || !isLooking) return;
+            let movementX = e.clientX - lastX;
+            let movementY = e.clientY - lastY;
 
-            if (isDragging || document.pointerLockElement === document.body) {
-                yaw -= movementX * 0.003;
-                pitch -= movementY * 0.003;
-                pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-            }
-            lastTouchX = e.clientX;
-            lastTouchY = e.clientY;
+            yaw -= movementX * 0.003;
+            pitch -= movementY * 0.003;
+            pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+
+            lastX = e.clientX;
+            lastY = e.clientY;
         });
 
         // Virtual Touch Joystick Logic
@@ -407,7 +452,7 @@
             joystickHandle.style.transform = `translate(0px, 0px)`;
         });
 
-        // Keyboard Controls
+        // Keyboard Movement Controls
         window.addEventListener('keydown', (e) => {
             if (e.code === 'KeyW' || e.code === 'ArrowUp') moveForward = true;
             if (e.code === 'KeyS' || e.code === 'ArrowDown') moveBackward = true;
@@ -437,7 +482,6 @@
                 if (moveLeft) dir.x -= 1;
                 if (moveRight) dir.x += 1;
 
-                // Factor in mobile joystick inputs
                 if (Math.abs(joystickY) > 0.1) dir.z += joystickY;
                 if (Math.abs(joystickX) > 0.1) dir.x += joystickX;
 
@@ -448,19 +492,31 @@
                     playerPos.z += dir.z * speed;
                 }
 
-                // Keep player bounded on walkways
+                // Bound player safely on walkways
                 playerPos.x = Math.max(-11, Math.min(11, playerPos.x));
+                playerPos.y = 1.6; // Lock camera height at correct first-person level
 
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
                 camera.position.copy(playerPos);
-                camera.position.y = 0;
 
+                // Animate Pedestrians & Floating Speech Bubbles
                 pedestrians.forEach(npc => {
                     npc.z += npc.speed * delta;
                     if (npc.z > npc.maxZ || npc.z < npc.minZ) npc.speed *= -1;
                     npc.sprite.position.z = npc.z;
+
+                    let vector = new THREE.Vector3(npc.x, 2.2, npc.z).project(camera);
+                    let dist = camera.position.distanceTo(npc.sprite.position);
+                    if (vector.z < 1 && dist < 35) {
+                        npc.bubble.style.left = `${(vector.x * 0.5 + 0.5) * window.innerWidth}px`;
+                        npc.bubble.style.top = `${(-(vector.y * 0.5) + 0.5) * window.innerHeight}px`;
+                        npc.bubble.style.display = 'block';
+                    } else {
+                        npc.bubble.style.display = 'none';
+                    }
                 });
 
+                // Render Building Signs
                 buildingSignsData.forEach(b => {
                     let vector = new THREE.Vector3(b.mesh.position.x, b.offsetY, b.mesh.position.z).project(camera);
                     let dist = camera.position.distanceTo(b.mesh.position);
@@ -473,6 +529,7 @@
                     }
                 });
 
+                // Check item pickups
                 interactiveObjects.forEach((obj, index) => {
                     if (Math.hypot(playerPos.x - obj.userData.x, playerPos.z - obj.userData.z) < 1.5) {
                         scene.remove(obj);
